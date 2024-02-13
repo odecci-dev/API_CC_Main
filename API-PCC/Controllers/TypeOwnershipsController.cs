@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.ATypeOwnerships.Add(aTypeOwnership);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetATypeOwnership", new { id = aTypeOwnership.Id }, aTypeOwnership);
+            return CreatedAtAction("save", new { id = aTypeOwnership.Id }, aTypeOwnership);
         }
 
         // DELETE: TypeOwnerships/delete/5

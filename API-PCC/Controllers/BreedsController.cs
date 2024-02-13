@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.ABreeds.Add(aBreed);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetABreed", new { id = aBreed.Id }, aBreed);
+            return CreatedAtAction("save", new { id = aBreed.Id }, aBreed);
         }
 
         // DELETE: Breeds/delete/5

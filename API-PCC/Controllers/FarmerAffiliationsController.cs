@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.HFarmerAffiliations.Add(hFarmerAffiliation);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHFarmerAffiliation", new { id = hFarmerAffiliation.Id }, hFarmerAffiliation);
+            return CreatedAtAction("save", new { id = hFarmerAffiliation.Id }, hFarmerAffiliation);
         }
 
         // DELETE: FarmerAffiliations/delete/5

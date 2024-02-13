@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.HBuffHerds.Add(hBuffHerd);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHBuffHerd", new { id = hBuffHerd.Id }, hBuffHerd);
+            return CreatedAtAction("save", new { id = hBuffHerd.Id }, hBuffHerd);
         }
 
         // DELETE: BuffHerds/delete/5

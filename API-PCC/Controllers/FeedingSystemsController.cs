@@ -161,7 +161,7 @@ namespace API_PCC.Controllers
             _context.HFeedingSystems.Add(hFeedingSystem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHFeedingSystem", new { id = hFeedingSystem.Id }, hFeedingSystem);
+            return CreatedAtAction("save", new { id = hFeedingSystem.Id }, hFeedingSystem);
         }
 
         // DELETE: FeedingSystems/delete/5

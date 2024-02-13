@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.ABloodComps.Add(aBloodComp);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetABloodComp", new { id = aBloodComp.Id }, aBloodComp);
+            return CreatedAtAction("save", new { id = aBloodComp.Id }, aBloodComp);
         }
 
         // DELETE: BloodComps/delete/5

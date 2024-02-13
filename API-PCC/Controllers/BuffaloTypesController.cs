@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.HBuffaloTypes.Add(hBuffaloType);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHBuffaloType", new { id = hBuffaloType.Id }, hBuffaloType);
+            return CreatedAtAction("save", new { id = hBuffaloType.Id }, hBuffaloType);
         }
 
         // DELETE: BuffaloTypes/delete/5

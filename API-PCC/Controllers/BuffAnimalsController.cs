@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.ABuffAnimals.Add(aBuffAnimal);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetABuffAnimal", new { id = aBuffAnimal.Id }, aBuffAnimal);
+            return CreatedAtAction("save", new { id = aBuffAnimal.Id }, aBuffAnimal);
         }
 
         // DELETE: BuffAnimals/delete/5

@@ -134,7 +134,7 @@ namespace API_PCC.Controllers
         // POST: HerdTypes/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<HHerdType>> save(HHerdType hHerdType)
+        public  ActionResult<HHerdType> save(HHerdType hHerdType)
         {
           if (_context.HHerdTypes == null)
           {
@@ -146,9 +146,9 @@ namespace API_PCC.Controllers
               return Conflict("Entity already exists");
           }
             _context.HHerdTypes.Add(hHerdType);
-            await _context.SaveChangesAsync();
+             _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHHerdType", new { id = hHerdType.Id }, hHerdType);
+            return CreatedAtAction("save", new { id = hHerdType.Id }, hHerdType);
         }
 
         // DELETE: HerdTypes/delete/5

@@ -92,7 +92,7 @@ namespace API_PCC.Controllers
             _context.ABirthTypes.Add(aBirthType);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetABirthType", new { id = aBirthType.Id }, aBirthType);
+            return CreatedAtAction("save", new { id = aBirthType.Id }, aBirthType);
         }
 
         // DELETE: BirthTypes/delete/5

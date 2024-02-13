@@ -153,7 +153,7 @@ namespace API_PCC.Controllers
               return Problem("Entity set 'PCC_DEVContext.HFeedingSystems'  is null.");
           }
 
-          if(HFeedingSystemExists(hFeedingSystem.Id))
+          if(HFeedingSystemExists(hFeedingSystem.Id) || (HFeedingSystemFeedCodeExists(hFeedingSystem.FeedCode) && HFeedingSystemFeedDescExists(hFeedingSystem.FeedDesc)))
             {
                 return Conflict("Entity already exists");
             }
@@ -187,6 +187,16 @@ namespace API_PCC.Controllers
         private bool HFeedingSystemExists(int id)
         {
             return (_context.HFeedingSystems?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+        
+        private bool HFeedingSystemFeedCodeExists(String feedCode)
+        {
+            return (_context.HFeedingSystems?.Any(e => e.FeedCode == feedCode)).GetValueOrDefault();
+        }
+
+        private bool HFeedingSystemFeedDescExists(String feedDesc)
+        {
+            return (_context.HFeedingSystems?.Any(e => e.FeedDesc == feedDesc)).GetValueOrDefault();
         }
     }
 }

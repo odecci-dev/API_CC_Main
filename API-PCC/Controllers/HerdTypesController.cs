@@ -141,7 +141,7 @@ namespace API_PCC.Controllers
               return Problem("Entity set 'PCC_DEVContext.HHerdTypes'  is null.");
           }
 
-          if (HHerdTypeExists(hHerdType.Id))
+          if (HHerdTypeExists(hHerdType.Id) || (HHerdTypeCodeExists(hHerdType.HTypeDesc) && HHerdTypeDescExists(hHerdType.HTypeDesc)))
           {
               return Conflict("Entity already exists");
           }
@@ -174,6 +174,16 @@ namespace API_PCC.Controllers
         private bool HHerdTypeExists(int id)
         {
             return (_context.HHerdTypes?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private bool HHerdTypeCodeExists(String typeCode)
+        {
+            return (_context.HHerdTypes?.Any(e => e.HTypeCode == typeCode)).GetValueOrDefault();
+        }
+
+        private bool HHerdTypeDescExists(String typeDesc)
+        {
+            return (_context.HHerdTypes?.Any(e => e.HTypeDesc == typeDesc)).GetValueOrDefault();
         }
     }
 }

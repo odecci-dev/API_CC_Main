@@ -9,57 +9,57 @@ using Microsoft.AspNetCore.Authorization;
 namespace API_PCC.Controllers
 {
     [Authorize("ApiKey")]
-    [Route("api/[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
-    public class HBuffHerdsController : ControllerBase
+    public class BloodCompsController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
 
-        public HBuffHerdsController(PCC_DEVContext context)
+        public BloodCompsController(PCC_DEVContext context)
         {
             _context = context;
         }
 
-        // GET: api/HBuffHerds
+        // GET: BloodComps/list
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HBuffHerd>>> GetHBuffHerds()
+        public async Task<ActionResult<IEnumerable<ABloodComp>>> list()
         {
-          if (_context.HBuffHerds == null)
+          if (_context.ABloodComps == null)
           {
               return NotFound();
           }
-            return await _context.HBuffHerds.ToListAsync();
+            return await _context.ABloodComps.ToListAsync();
         }
 
-        // GET: api/HBuffHerds/5
+        // GET: BloodComps/search/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<HBuffHerd>> GetHBuffHerd(int id)
+        public async Task<ActionResult<ABloodComp>> search(int id)
         {
-          if (_context.HBuffHerds == null)
+          if (_context.ABloodComps == null)
           {
               return NotFound();
           }
-            var hBuffHerd = await _context.HBuffHerds.FindAsync(id);
+            var aBloodComp = await _context.ABloodComps.FindAsync(id);
 
-            if (hBuffHerd == null)
+            if (aBloodComp == null)
             {
                 return NotFound();
             }
 
-            return hBuffHerd;
+            return aBloodComp;
         }
 
-        // PUT: api/HBuffHerds/5
+        // PUT: BloodComps/update/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutHBuffHerd(int id, HBuffHerd hBuffHerd)
+        public async Task<IActionResult> update(int id, ABloodComp aBloodComp)
         {
-            if (id != hBuffHerd.Id)
+            if (id != aBloodComp.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(hBuffHerd).State = EntityState.Modified;
+            _context.Entry(aBloodComp).State = EntityState.Modified;
 
             try
             {
@@ -67,7 +67,7 @@ namespace API_PCC.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!HBuffHerdExists(id))
+                if (!ABloodCompExists(id))
                 {
                     return NotFound();
                 }
@@ -80,44 +80,44 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
-        // POST: api/HBuffHerds
+        // POST: BloodComps/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<HBuffHerd>> PostHBuffHerd(HBuffHerd hBuffHerd)
+        public async Task<ActionResult<ABloodComp>> save(ABloodComp aBloodComp)
         {
-          if (_context.HBuffHerds == null)
+          if (_context.ABloodComps == null)
           {
-              return Problem("Entity set 'PCC_DEVContext.HBuffHerds'  is null.");
+              return Problem("Entity set 'PCC_DEVContext.ABloodComps'  is null.");
           }
-            _context.HBuffHerds.Add(hBuffHerd);
+            _context.ABloodComps.Add(aBloodComp);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHBuffHerd", new { id = hBuffHerd.Id }, hBuffHerd);
+            return CreatedAtAction("GetABloodComp", new { id = aBloodComp.Id }, aBloodComp);
         }
 
-        // DELETE: api/HBuffHerds/5
+        // DELETE: BloodComps/delete/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteHBuffHerd(int id)
+        public async Task<IActionResult> delete(int id)
         {
-            if (_context.HBuffHerds == null)
+            if (_context.ABloodComps == null)
             {
                 return NotFound();
             }
-            var hBuffHerd = await _context.HBuffHerds.FindAsync(id);
-            if (hBuffHerd == null)
+            var aBloodComp = await _context.ABloodComps.FindAsync(id);
+            if (aBloodComp == null)
             {
                 return NotFound();
             }
 
-            _context.HBuffHerds.Remove(hBuffHerd);
+            _context.ABloodComps.Remove(aBloodComp);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool HBuffHerdExists(int id)
+        private bool ABloodCompExists(int id)
         {
-            return (_context.HBuffHerds?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.ABloodComps?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

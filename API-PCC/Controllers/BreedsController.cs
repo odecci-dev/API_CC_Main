@@ -9,20 +9,20 @@ using Microsoft.AspNetCore.Authorization;
 namespace API_PCC.Controllers
 {
     [Authorize("ApiKey")]
-    [Route("api/[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
-    public class ABreedsController : ControllerBase
+    public class BreedsController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
 
-        public ABreedsController(PCC_DEVContext context)
+        public BreedsController(PCC_DEVContext context)
         {
             _context = context;
         }
 
-        // GET: api/ABreeds
+        // GET: Breeds/list
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ABreed>>> GetABreeds()
+        public async Task<ActionResult<IEnumerable<ABreed>>> list()
         {
           if (_context.ABreeds == null)
           {
@@ -31,9 +31,9 @@ namespace API_PCC.Controllers
             return await _context.ABreeds.ToListAsync();
         }
 
-        // GET: api/ABreeds/5
+        // GET: Breeds/search/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ABreed>> GetABreed(int id)
+        public async Task<ActionResult<ABreed>> search(int id)
         {
           if (_context.ABreeds == null)
           {
@@ -49,10 +49,10 @@ namespace API_PCC.Controllers
             return aBreed;
         }
 
-        // PUT: api/ABreeds/5
+        // PUT: Breeds/update/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutABreed(int id, ABreed aBreed)
+        public async Task<IActionResult> update(int id, ABreed aBreed)
         {
             if (id != aBreed.Id)
             {
@@ -80,10 +80,10 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
-        // POST: api/ABreeds
+        // POST: Breeds/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ABreed>> PostABreed(ABreed aBreed)
+        public async Task<ActionResult<ABreed>> save(ABreed aBreed)
         {
           if (_context.ABreeds == null)
           {
@@ -95,9 +95,9 @@ namespace API_PCC.Controllers
             return CreatedAtAction("GetABreed", new { id = aBreed.Id }, aBreed);
         }
 
-        // DELETE: api/ABreeds/5
+        // DELETE: Breeds/delete/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteABreed(int id)
+        public async Task<IActionResult> delete(int id)
         {
             if (_context.ABreeds == null)
             {

@@ -9,57 +9,57 @@ using Microsoft.AspNetCore.Authorization;
 namespace API_PCC.Controllers
 {
     [Authorize("ApiKey")]
-    [Route("api/[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
-    public class HHerdTypesController : ControllerBase
+    public class HBuffHerdsController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
 
-        public HHerdTypesController(PCC_DEVContext context)
+        public HBuffHerdsController(PCC_DEVContext context)
         {
             _context = context;
         }
 
-        // GET: api/HHerdTypes
+        // GET: BuffHerds/list
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HHerdType>>> GetHHerdTypes()
+        public async Task<ActionResult<IEnumerable<HBuffHerd>>> list()
         {
-          if (_context.HHerdTypes == null)
+          if (_context.HBuffHerds == null)
           {
               return NotFound();
           }
-            return await _context.HHerdTypes.ToListAsync();
+            return await _context.HBuffHerds.ToListAsync();
         }
 
-        // GET: api/HHerdTypes/5
+        // GET: BuffHerds/search/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<HHerdType>> GetHHerdType(int id)
+        public async Task<ActionResult<HBuffHerd>> search(int id)
         {
-          if (_context.HHerdTypes == null)
+          if (_context.HBuffHerds == null)
           {
               return NotFound();
           }
-            var hHerdType = await _context.HHerdTypes.FindAsync(id);
+            var hBuffHerd = await _context.HBuffHerds.FindAsync(id);
 
-            if (hHerdType == null)
+            if (hBuffHerd == null)
             {
                 return NotFound();
             }
 
-            return hHerdType;
+            return hBuffHerd;
         }
 
-        // PUT: api/HHerdTypes/5
+        // PUT: BuffHerds/update/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutHHerdType(int id, HHerdType hHerdType)
+        public async Task<IActionResult> update(int id, HBuffHerd hBuffHerd)
         {
-            if (id != hHerdType.Id)
+            if (id != hBuffHerd.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(hHerdType).State = EntityState.Modified;
+            _context.Entry(hBuffHerd).State = EntityState.Modified;
 
             try
             {
@@ -67,7 +67,7 @@ namespace API_PCC.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!HHerdTypeExists(id))
+                if (!HBuffHerdExists(id))
                 {
                     return NotFound();
                 }
@@ -80,44 +80,44 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
-        // POST: api/HHerdTypes
+        // POST: BuffHerds/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<HHerdType>> PostHHerdType(HHerdType hHerdType)
+        public async Task<ActionResult<HBuffHerd>> save(HBuffHerd hBuffHerd)
         {
-          if (_context.HHerdTypes == null)
+          if (_context.HBuffHerds == null)
           {
-              return Problem("Entity set 'PCC_DEVContext.HHerdTypes'  is null.");
+              return Problem("Entity set 'PCC_DEVContext.HBuffHerds'  is null.");
           }
-            _context.HHerdTypes.Add(hHerdType);
+            _context.HBuffHerds.Add(hBuffHerd);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHHerdType", new { id = hHerdType.Id }, hHerdType);
+            return CreatedAtAction("GetHBuffHerd", new { id = hBuffHerd.Id }, hBuffHerd);
         }
 
-        // DELETE: api/HHerdTypes/5
+        // DELETE: BuffHerds/delete/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteHHerdType(int id)
+        public async Task<IActionResult> delete(int id)
         {
-            if (_context.HHerdTypes == null)
+            if (_context.HBuffHerds == null)
             {
                 return NotFound();
             }
-            var hHerdType = await _context.HHerdTypes.FindAsync(id);
-            if (hHerdType == null)
+            var hBuffHerd = await _context.HBuffHerds.FindAsync(id);
+            if (hBuffHerd == null)
             {
                 return NotFound();
             }
 
-            _context.HHerdTypes.Remove(hHerdType);
+            _context.HBuffHerds.Remove(hBuffHerd);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool HHerdTypeExists(int id)
+        private bool HBuffHerdExists(int id)
         {
-            return (_context.HHerdTypes?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.HBuffHerds?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

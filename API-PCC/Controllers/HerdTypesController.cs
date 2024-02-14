@@ -33,6 +33,12 @@ namespace API_PCC.Controllers
             public int pageSize { get; set; }
         }
 
+        public class RestorationModel
+        {
+            public int id { get; set; }
+            public string? restoredBy { get; set; }
+        }
+
         private readonly PCC_DEVContext _context;
 
         public HerdTypesController(PCC_DEVContext context)
@@ -121,6 +127,14 @@ namespace API_PCC.Controllers
                 return BadRequest();
             }
 
+            bool hasDuplicateOnUpdate = (_context.HHerdTypes?.Any(ht => ht.HTypeDesc == hHerdType.HTypeDesc && ht.HTypeCode == hHerdType.HTypeCode && ht.Id != id)).GetValueOrDefault();
+
+            // check for duplication
+            if (hasDuplicateOnUpdate)
+            {
+                return Conflict("Entity already exists");
+            }
+
             _context.Entry(hHerdType).State = EntityState.Modified;
 
             try
@@ -152,8 +166,10 @@ namespace API_PCC.Controllers
               return Problem("Entity set 'PCC_DEVContext.HHerdTypes'  is null.");
           }
 
-          // check for duplication
-          if (HHerdTypeExists(hHerdType.Id) || (HHerdTypeCodeExists(hHerdType.HTypeDesc) && HHerdTypeDescExists(hHerdType.HTypeDesc)))
+          bool hasDuplicateOnSave = (_context.HHerdTypes?.Any(ht => ht.HTypeDesc == hHerdType.HTypeDesc && ht.HTypeCode == hHerdType.HTypeCode)).GetValueOrDefault();
+
+            // check for duplication
+          if (hasDuplicateOnSave)
           {
               return Conflict("Entity already exists");
           }
@@ -191,19 +207,47 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
+        // GET: FeedingSystems/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<HHerdType>>> view()
+        {
+            if (_context.HHerdTypes == null)
+            {
+                return NotFound();
+            }
+            return await _context.HHerdTypes.ToListAsync();
+        }
+
+        // POST: HerdTypes/restore/
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<IActionResult> restore(RestorationModel restorationModel)
+        {
+            var hHerdType = await _context.HHerdTypes.FindAsync(restorationModel.id);
+
+            if(hHerdType == null)
+            {
+                return NotFound();
+            }
+
+
+            hHerdType.DeleteFlag = !hHerdType.DeleteFlag;
+            hHerdType.DateDelete = null;
+            hHerdType.DeletedBy = "";
+            hHerdType.DateRestored = DateTime.Now;
+            hHerdType.RestoredBy = restorationModel.restoredBy;
+
+            _context.Entry(hHerdType).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
         private bool HHerdTypeExists(int id)
         {
             return (_context.HHerdTypes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        private bool HHerdTypeCodeExists(String typeCode)
-        {
-            return (_context.HHerdTypes?.Any(e => e.HTypeCode == typeCode)).GetValueOrDefault();
-        }
 
-        private bool HHerdTypeDescExists(String typeDesc)
-        {
-            return (_context.HHerdTypes?.Any(e => e.HTypeDesc == typeDesc)).GetValueOrDefault();
-        }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using System.Linq;
 using PeterO.Numbers;
+using static API_PCC.Controllers.HerdTypesController;
 
 namespace API_PCC.Controllers
 {
@@ -123,8 +124,10 @@ namespace API_PCC.Controllers
                 return BadRequest();
             }
 
+            bool hasDuplicateOnUpdate = (_context.HFeedingSystems?.Any(fs => fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc && fs.Id != id)).GetValueOrDefault();
+
             // check for duplication
-            if (HFeedingSystemFeedCodeExists(hFeedingSystem.FeedCode) && HFeedingSystemFeedDescExists(hFeedingSystem.FeedDesc))
+            if (hasDuplicateOnUpdate)
             {
                 return Conflict("Entity already exists");
             }
@@ -160,10 +163,13 @@ namespace API_PCC.Controllers
               return Problem("Entity set 'PCC_DEVContext.HFeedingSystems'  is null.");
           }
 
-          if(HFeedingSystemExists(hFeedingSystem.Id) || (HFeedingSystemFeedCodeExists(hFeedingSystem.FeedCode) && HFeedingSystemFeedDescExists(hFeedingSystem.FeedDesc)))
-            {
+          bool hasDuplicateOnSave = (_context.HFeedingSystems?.Any(fs => fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc)).GetValueOrDefault();
+
+
+          if (hasDuplicateOnSave)
+          {
                 return Conflict("Entity already exists");
-            }
+          }
 
             _context.HFeedingSystems.Add(hFeedingSystem);
             await _context.SaveChangesAsync();
@@ -197,20 +203,46 @@ namespace API_PCC.Controllers
 
             return NoContent();
         }
+        
+
+        // GET: FeedingSystems/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<HFeedingSystem>>> view()
+        {
+            if (_context.HFeedingSystems == null)
+            {
+                return NotFound();
+            }
+            return await _context.HFeedingSystems.ToListAsync();
+        }
+
+        // POST: FeedingSystems/restore/
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<IActionResult> restore(RestorationModel restorationModel)
+        {
+            var feedingSystem = await _context.HFeedingSystems.FindAsync(restorationModel.id);
+
+            if (feedingSystem == null)
+            {
+                return NotFound();
+            }
+
+            feedingSystem.DeleteFlag = !feedingSystem.DeleteFlag;
+            feedingSystem.DateDelete = null;
+            feedingSystem.DeletedBy = "";
+            feedingSystem.DateRestored = DateTime.Now;
+            feedingSystem.RestoredBy = restorationModel.restoredBy;
+
+            _context.Entry(feedingSystem).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
         private bool HFeedingSystemExists(int id)
         {
             return (_context.HFeedingSystems?.Any(e => e.Id == id)).GetValueOrDefault();
         }
         
-        private bool HFeedingSystemFeedCodeExists(String feedCode)
-        {
-            return (_context.HFeedingSystems?.Any(e => e.FeedCode == feedCode)).GetValueOrDefault();
-        }
-
-        private bool HFeedingSystemFeedDescExists(String feedDesc)
-        {
-            return (_context.HFeedingSystems?.Any(e => e.FeedDesc == feedDesc)).GetValueOrDefault();
-        }
     }
 }

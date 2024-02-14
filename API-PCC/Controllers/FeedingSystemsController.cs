@@ -7,10 +7,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using System.Linq;
+using PeterO.Numbers;
 
 namespace API_PCC.Controllers
 {
-    //[Authorize("ApiKey")]
+    [Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class FeedingSystemsController : ControllerBase
@@ -122,6 +123,12 @@ namespace API_PCC.Controllers
                 return BadRequest();
             }
 
+            // check for duplication
+            if (HFeedingSystemFeedCodeExists(hFeedingSystem.FeedCode) && HFeedingSystemFeedDescExists(hFeedingSystem.FeedDesc))
+            {
+                return Conflict("Entity already exists");
+            }
+
             _context.Entry(hFeedingSystem).State = EntityState.Modified;
 
             try
@@ -176,6 +183,13 @@ namespace API_PCC.Controllers
             if (hFeedingSystem == null)
             {
                 return NotFound();
+            }
+
+            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => buffHerd.FeedCode == hFeedingSystem.FeedCode);
+
+            if(feedCodeExistsInBuffHerd)
+            {
+                return Conflict("Used by other table!");
             }
 
             _context.HFeedingSystems.Remove(hFeedingSystem);

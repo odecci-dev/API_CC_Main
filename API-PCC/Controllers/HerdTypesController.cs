@@ -14,6 +14,17 @@ namespace API_PCC.Controllers
     [ApiController]
     public class HerdTypesController : ControllerBase
     {
+        public class PaginationModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public List<HHerdType> items { get; set; }
+        }
+
         public class HerdTypesSearchFilter
         {
             public string? typeCode { get; set; }
@@ -38,23 +49,23 @@ namespace API_PCC.Controllers
             int totalItems = 0;
             int totalPages = 0;
 
-            var feedingSystemList = _context.HHerdTypes.AsNoTracking();
+            var herdTypesList = _context.HHerdTypes.AsNoTracking();
             try
             {
                 if (searchFilter.typeCode != null && searchFilter.typeCode != "")
                 {
-                    feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.HTypeCode.Contains(searchFilter.typeCode));
+                    herdTypesList = herdTypesList.Where(feedingSystem => feedingSystem.HTypeCode.Contains(searchFilter.typeCode));
                 }
 
                 if (searchFilter.typeDesc != null && searchFilter.typeDesc != "")
                 {
-                    feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.HTypeDesc.Contains(searchFilter.typeDesc));
+                    herdTypesList = herdTypesList.Where(feedingSystem => feedingSystem.HTypeDesc.Contains(searchFilter.typeDesc));
 
                 }
 
-                totalItems = feedingSystemList.ToList().Count();
+                totalItems = herdTypesList.ToList().Count();
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-                items = feedingSystemList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
+                items = herdTypesList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
                 var result = new List<PaginationModel>();
                 var item = new PaginationModel();
@@ -134,21 +145,23 @@ namespace API_PCC.Controllers
         // POST: HerdTypes/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public  ActionResult<HHerdType> save(HHerdType hHerdType)
+        public async Task<ActionResult<HHerdType>> save(HHerdType hHerdType)
         {
           if (_context.HHerdTypes == null)
           {
               return Problem("Entity set 'PCC_DEVContext.HHerdTypes'  is null.");
           }
 
+          // check for duplication
           if (HHerdTypeExists(hHerdType.Id) || (HHerdTypeCodeExists(hHerdType.HTypeDesc) && HHerdTypeDescExists(hHerdType.HTypeDesc)))
           {
               return Conflict("Entity already exists");
           }
-            _context.HHerdTypes.Add(hHerdType);
-             _context.SaveChangesAsync();
 
-            return CreatedAtAction("save", new { id = hHerdType.Id }, hHerdType);
+          _context.HHerdTypes.Add(hHerdType);
+          await _context.SaveChangesAsync();
+
+           return CreatedAtAction("save", new { id = hHerdType.Id }, hHerdType);
         }
 
         // DELETE: HerdTypes/delete/5
@@ -163,6 +176,13 @@ namespace API_PCC.Controllers
             if (hHerdType == null)
             {
                 return NotFound();
+            }
+
+            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => buffHerd.HTypeCode == hHerdType.HTypeCode);
+
+            if (typeCodeExistsInBuffHerd)
+            {
+                return Conflict("Used by other table!");
             }
 
             _context.HHerdTypes.Remove(hHerdType);

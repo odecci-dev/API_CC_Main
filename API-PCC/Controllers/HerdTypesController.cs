@@ -5,7 +5,6 @@ using API_PCC.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
-using static API_PCC.Controllers.FeedingSystemsController;
 
 namespace API_PCC.Controllers
 {
@@ -60,12 +59,12 @@ namespace API_PCC.Controllers
             {
                 if (searchFilter.typeCode != null && searchFilter.typeCode != "")
                 {
-                    herdTypesList = herdTypesList.Where(feedingSystem => feedingSystem.HTypeCode.Contains(searchFilter.typeCode));
+                    herdTypesList = herdTypesList.Where(herdTypes => herdTypes.HTypeCode.Contains(searchFilter.typeCode));
                 }
 
                 if (searchFilter.typeDesc != null && searchFilter.typeDesc != "")
                 {
-                    herdTypesList = herdTypesList.Where(feedingSystem => feedingSystem.HTypeDesc.Contains(searchFilter.typeDesc));
+                    herdTypesList = herdTypesList.Where(herdTypes => herdTypes.HTypeDesc.Contains(searchFilter.typeDesc));
 
                 }
 
@@ -207,7 +206,7 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
-        // GET: FeedingSystems/view
+        // GET: herdTypes/view
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HHerdType>>> view()
         {

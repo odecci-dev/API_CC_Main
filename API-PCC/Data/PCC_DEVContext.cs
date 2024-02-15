@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using API_PCC.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using API_PCC.Models;
 
 namespace API_PCC.Data
 {
@@ -30,6 +30,7 @@ namespace API_PCC.Data
         public virtual DbSet<HHerdType> HHerdTypes { get; set; } = null!;
         public virtual DbSet<ModuleTbl> ModuleTbls { get; set; } = null!;
         public virtual DbSet<TblApiTokenModel> TblApiTokenModels { get; set; } = null!;
+        public virtual DbSet<UserTbl> UserTbls { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -762,9 +763,47 @@ namespace API_PCC.Data
                 entity.Property(e => e.Role).IsUnicode(false);
             });
 
+            modelBuilder.Entity<UserTbl>(entity =>
+            {
+                entity.ToTable("User_tbl");
+
+                entity.Property(e => e.Address).IsUnicode(false);
+
+                entity.Property(e => e.ApprovedBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Approved_By");
+
+                entity.Property(e => e.CenterId)
+                    .HasMaxLength(10)
+                    .HasColumnName("Center_Id")
+                    .IsFixedLength();
+
+                entity.Property(e => e.Cno).IsUnicode(false);
+
+                entity.Property(e => e.DateApproved)
+                    .IsUnicode(false)
+                    .HasColumnName("Date_Approved");
+
+                entity.Property(e => e.Email)
+                    .IsUnicode(false)
+                    .HasColumnName("email");
+
+                entity.Property(e => e.Fname).IsUnicode(false);
+
+                entity.Property(e => e.Lname).IsUnicode(false);
+
+                entity.Property(e => e.Mname).IsUnicode(false);
+
+                entity.Property(e => e.Password).IsUnicode(false);
+
+                entity.Property(e => e.RememberToken)
+                    .HasMaxLength(10)
+                    .HasColumnName("Remember_Token")
+                    .IsFixedLength();
+            });
 
             // Exclude Deleted Records
-            /*modelBuilder.Entity<ABirthType>().HasQueryFilter(a => !a.DeleteFlag);
+            modelBuilder.Entity<ABirthType>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<ABloodComp>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<ABreed>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<ABuffAnimal>().HasQueryFilter(a => !a.DeleteFlag);
@@ -774,8 +813,8 @@ namespace API_PCC.Data
             modelBuilder.Entity<HBuffHerd>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<HFarmerAffiliation>().HasQueryFilter(a => !a.DeleteFlag);*/
             modelBuilder.Entity<HFeedingSystem>().HasQueryFilter(a => !a.DeleteFlag);
-            /*modelBuilder.Entity<HHerdType>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ModuleTbl>().HasQueryFilter(a => !a.DeleteFlag);*/
+            modelBuilder.Entity<HHerdType>().HasQueryFilter(a => !a.DeleteFlag);
+            modelBuilder.Entity<ModuleTbl>().HasQueryFilter(a => !a.DeleteFlag);
 
             OnModelCreatingPartial(modelBuilder);
         }

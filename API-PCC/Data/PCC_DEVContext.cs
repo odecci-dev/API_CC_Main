@@ -811,7 +811,7 @@ namespace API_PCC.Data
             modelBuilder.Entity<ATypeOwnership>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<HBuffaloType>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<HBuffHerd>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<HFarmerAffiliation>().HasQueryFilter(a => !a.DeleteFlag);*/
+            modelBuilder.Entity<HFarmerAffiliation>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<HFeedingSystem>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<HHerdType>().HasQueryFilter(a => !a.DeleteFlag);
             modelBuilder.Entity<ModuleTbl>().HasQueryFilter(a => !a.DeleteFlag);

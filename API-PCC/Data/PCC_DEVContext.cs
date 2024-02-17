@@ -30,7 +30,8 @@ namespace API_PCC.Data
         public virtual DbSet<HHerdType> HHerdTypes { get; set; } = null!;
         public virtual DbSet<ModuleTbl> ModuleTbls { get; set; } = null!;
         public virtual DbSet<TblApiTokenModel> TblApiTokenModels { get; set; } = null!;
-        public virtual DbSet<UserTbl> UserTbls { get; set; } = null!;
+        public virtual DbSet<TblRegistrationOtpmodel> TblRegistrationOtpmodels { get; set; } = null!;
+        public virtual DbSet<TblUsersModel> TblUsersModels { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -763,43 +764,103 @@ namespace API_PCC.Data
                 entity.Property(e => e.Role).IsUnicode(false);
             });
 
-            modelBuilder.Entity<UserTbl>(entity =>
+            modelBuilder.Entity<TblRegistrationOtpmodel>(entity =>
             {
-                entity.ToTable("User_tbl");
+                entity.ToTable("tbl_RegistrationOTPModel");
+
+                entity.Property(e => e.Email).IsUnicode(false);
+
+                entity.Property(e => e.Otp)
+                    .IsUnicode(false)
+                    .HasColumnName("OTP");
+            });
+
+            modelBuilder.Entity<TblUsersModel>(entity =>
+            {
+                entity.ToTable("tbl_UsersModel");
 
                 entity.Property(e => e.Address).IsUnicode(false);
 
-                entity.Property(e => e.ApprovedBy)
+                entity.Property(e => e.Cno)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CreatedBy)
                     .IsUnicode(false)
-                    .HasColumnName("Approved_By");
+                    .HasColumnName("Created_By");
 
-                entity.Property(e => e.CenterId)
-                    .HasMaxLength(10)
-                    .HasColumnName("Center_Id")
-                    .IsFixedLength();
+                entity.Property(e => e.DateCreated).HasColumnType("date");
 
-                entity.Property(e => e.Cno).IsUnicode(false);
+                entity.Property(e => e.DateCreated1)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Created");
 
-                entity.Property(e => e.DateApproved)
+                entity.Property(e => e.DateDelete)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Delete");
+
+                entity.Property(e => e.DateRestored)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Restored");
+
+                entity.Property(e => e.DateUpdated)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Updated");
+
+                entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+
+                entity.Property(e => e.DeletedBy)
                     .IsUnicode(false)
-                    .HasColumnName("Date_Approved");
+                    .HasColumnName("Deleted_By");
 
                 entity.Property(e => e.Email)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.EmployeeId)
+                    .HasMaxLength(255)
                     .IsUnicode(false)
-                    .HasColumnName("email");
+                    .HasColumnName("EmployeeID");
+
+                entity.Property(e => e.FilePath)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Fname).IsUnicode(false);
+
+                entity.Property(e => e.Fullname)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Gender)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Jwtoken)
+                    .IsUnicode(false)
+                    .HasColumnName("JWToken");
 
                 entity.Property(e => e.Lname).IsUnicode(false);
 
                 entity.Property(e => e.Mname).IsUnicode(false);
 
+                entity.Property(e => e.Otp)
+                    .IsUnicode(false)
+                    .HasColumnName("OTP");
+
                 entity.Property(e => e.Password).IsUnicode(false);
 
-                entity.Property(e => e.RememberToken)
-                    .HasMaxLength(10)
-                    .HasColumnName("Remember_Token")
-                    .IsFixedLength();
+                entity.Property(e => e.RestoredBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Restored_By");
+
+                entity.Property(e => e.UpdatedBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Updated_By");
+
+                entity.Property(e => e.Username)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
             });
 
             // Exclude Deleted Records

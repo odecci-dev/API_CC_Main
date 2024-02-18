@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using API_PCC.Data;
+﻿using API_PCC.Data;
 using API_PCC.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_PCC.Controllers
 {
@@ -37,6 +35,11 @@ namespace API_PCC.Controllers
             public int id { get; set; }
             public string? restoredBy { get; set; }
         }
+        public class DeletionModel
+        {
+            public int id { get; set; }
+            public string deletedBy { get; set; }
+        }
 
         private readonly PCC_DEVContext _context;
 
@@ -48,6 +51,11 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<IActionResult> List(HerdTypesSearchFilter searchFilter)
         {
+            if (_context.HHerdTypes == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+            }
+
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
@@ -55,6 +63,7 @@ namespace API_PCC.Controllers
             int totalPages = 0;
 
             var herdTypesList = _context.HHerdTypes.AsNoTracking();
+            herdTypesList = herdTypesList.Where(herdTypes => !herdTypes.DeleteFlag);
             try
             {
                 if (searchFilter.typeCode != null && searchFilter.typeCode != "")
@@ -92,9 +101,10 @@ namespace API_PCC.Controllers
                 return Ok(items);
             }
 
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest("ERROR");
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
             }
         }
 
@@ -102,15 +112,15 @@ namespace API_PCC.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<HHerdType>> search(int id)
         {
-          if (_context.HHerdTypes == null)
-          {
-              return NotFound();
-          }
+            if (_context.HHerdTypes == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+            }
             var hHerdType = await _context.HHerdTypes.FindAsync(id);
 
-            if (hHerdType == null)
+            if (hHerdType == null || hHerdType.DeleteFlag)
             {
-                return NotFound();
+                return Conflict("No records found!");
             }
 
             return hHerdType;
@@ -121,12 +131,24 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, HHerdType hHerdType)
         {
-            if (id != hHerdType.Id)
+            if (_context.HHerdTypes == null)
             {
-                return BadRequest();
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.HHerdTypes?.Any(ht => ht.HTypeDesc == hHerdType.HTypeDesc && ht.HTypeCode == hHerdType.HTypeCode && ht.Id != id)).GetValueOrDefault();
+            var herdType = _context.HHerdTypes.AsNoTracking().Where(herdType => !herdType.DeleteFlag && herdType.Id == id).FirstOrDefault();
+
+            if (herdType == null)
+            {
+                return Conflict("No records matched!");
+            }
+
+            if (id != hHerdType.Id)
+            {
+                return Conflict("Ids mismatched!");
+            }
+
+            bool hasDuplicateOnUpdate = (_context.HHerdTypes.Any(ht => !ht.DeleteFlag && ht.HTypeDesc == hHerdType.HTypeDesc && ht.HTypeCode == hHerdType.HTypeCode && ht.Id != id));
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -134,25 +156,18 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            _context.Entry(hHerdType).State = EntityState.Modified;
-
             try
             {
+                _context.Entry(hHerdType).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                return Ok("Update Successful!");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!HHerdTypeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
             }
 
-            return NoContent();
         }
 
         // POST: HerdTypes/save
@@ -162,48 +177,66 @@ namespace API_PCC.Controllers
         {
           if (_context.HHerdTypes == null)
           {
-              return Problem("Entity set 'PCC_DEVContext.HHerdTypes'  is null.");
+            return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
           }
 
-          bool hasDuplicateOnSave = (_context.HHerdTypes?.Any(ht => ht.HTypeDesc == hHerdType.HTypeDesc && ht.HTypeCode == hHerdType.HTypeCode)).GetValueOrDefault();
+            bool hasDuplicateOnSave = (_context.HHerdTypes?.Any(ht => !ht.DeleteFlag && ht.HTypeDesc == hHerdType.HTypeDesc && ht.HTypeCode == hHerdType.HTypeCode)).GetValueOrDefault();
 
             // check for duplication
           if (hasDuplicateOnSave)
           {
               return Conflict("Entity already exists");
           }
-
-          _context.HHerdTypes.Add(hHerdType);
-          await _context.SaveChangesAsync();
-
-           return CreatedAtAction("save", new { id = hHerdType.Id }, hHerdType);
+          try
+          {
+                _context.HHerdTypes.Add(hHerdType);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("save", new { id = hHerdType.Id }, hHerdType);
+          }
+          catch (Exception ex) 
+          { 
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+          }
         }
 
-        // DELETE: HerdTypes/delete/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> delete(int id)
+        // POST: HerdTypes/delete/5
+        [HttpPost]
+        public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
             if (_context.HHerdTypes == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
             }
-            var hHerdType = await _context.HHerdTypes.FindAsync(id);
-            if (hHerdType == null)
+            var hHerdType = await _context.HHerdTypes.FindAsync(deletionModel.id);
+            if (hHerdType == null || hHerdType.DeleteFlag)
             {
-                return NotFound();
+                return Conflict("No records found!");
             }
 
-            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => buffHerd.HTypeCode == hHerdType.HTypeCode);
+            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HTypeCode == hHerdType.HTypeCode);
 
             if (typeCodeExistsInBuffHerd)
             {
                 return Conflict("Used by other table!");
             }
 
-            _context.HHerdTypes.Remove(hHerdType);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                hHerdType.DeleteFlag = true;
+                hHerdType.DateDelete = DateTime.Now;
+                hHerdType.DeletedBy = deletionModel.deletedBy;
+                hHerdType.DateRestored = null;
+                hHerdType.RestoredBy = "";
+                _context.Entry(hHerdType).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Deletion Successful!");
+            }
+            catch(Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
 
         // GET: herdTypes/view
@@ -212,9 +245,9 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdTypes == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
             }
-            return await _context.HHerdTypes.ToListAsync();
+            return await _context.HHerdTypes.Where(herdTypes => !herdTypes.DeleteFlag).ToListAsync();
         }
 
         // POST: HerdTypes/restore/
@@ -222,31 +255,40 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<IActionResult> restore(RestorationModel restorationModel)
         {
-            var hHerdType = await _context.HHerdTypes.FindAsync(restorationModel.id);
 
-            if(hHerdType == null)
+            if(_context.HHerdTypes == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
             }
 
+            var hHerdType = await _context.HHerdTypes.FindAsync(restorationModel.id);
+            if (hHerdType == null || !hHerdType.DeleteFlag)
+            {
+                return Conflict("No deleted records matched!");
+            }
 
-            hHerdType.DeleteFlag = !hHerdType.DeleteFlag;
-            hHerdType.DateDelete = null;
-            hHerdType.DeletedBy = "";
-            hHerdType.DateRestored = DateTime.Now;
-            hHerdType.RestoredBy = restorationModel.restoredBy;
+            try
+            {
+                hHerdType.DeleteFlag = !hHerdType.DeleteFlag;
+                hHerdType.DateDelete = null;
+                hHerdType.DeletedBy = "";
+                hHerdType.DateRestored = DateTime.Now;
+                hHerdType.RestoredBy = restorationModel.restoredBy;
 
-            _context.Entry(hHerdType).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return NoContent();
+                _context.Entry(hHerdType).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Restoration Successful!");
+            }
+            catch (Exception ex) 
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
-
 
         private bool HHerdTypeExists(int id)
         {
             return (_context.HHerdTypes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
-
-
     }
 }

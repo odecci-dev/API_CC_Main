@@ -1,26 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using API_PCC.Data;
-using API_PCC.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using API_PCC.Data;
 using API_PCC.Manager;
-using PeterO.Numbers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Data;
-using MimeKit;
-using MailKit.Net.Smtp;
-using static API_PCC.Controllers.UserController;
-using System.Web.Http.Results;
+using API_PCC.Models;
 using API_PCC.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace API_PCC.Controllers
 {
@@ -50,10 +34,10 @@ namespace API_PCC.Controllers
         {
             if (_context.TblUsersModels == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null!");
             }
 
-            var userCredentials = _context.TblUsersModels.Where(user => user.Email == loginModel.email && user.Password == Cryptography.Encrypt(loginModel.password)).First();
+            var userCredentials = _context.TblUsersModels.Where(user => !user.DeleteFlag && user.Email == loginModel.email && user.Password == Cryptography.Encrypt(loginModel.password)).FirstOrDefault();
 
             if (userCredentials == null)
             {
@@ -67,17 +51,17 @@ namespace API_PCC.Controllers
 
             return Ok("Login Successful !!");
         }
-
+            
         //POST: user/info
         [HttpPost]
         public async Task<ActionResult<IEnumerable<TblUsersModel>>> info(String email)
         {
             if (_context.TblUsersModels == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var userInfo = _context.TblUsersModels.Where(user => user.Email == email).First();
+            var userInfo = _context.TblUsersModels.Where(user => !user.DeleteFlag && user.Email == email).FirstOrDefault();
 
             if (userInfo == null)
             {
@@ -93,10 +77,10 @@ namespace API_PCC.Controllers
         {
             if (_context.TblUsersModels == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var userList = _context.TblUsersModels.ToList();
+            var userList = _context.TblUsersModels.Where(users => !users.DeleteFlag).ToList();
 
             if (userList == null)
             {
@@ -112,24 +96,27 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<TblUsersModel>> register(TblUsersModel userTbl)
         {
-            if (_context.TblUsersModels == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null.");
-            }
-
-            var isEmailExists = _context.TblUsersModels.Any(user => user.Email == userTbl.Email);
+            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == userTbl.Email);
 
             if (isEmailExists)
             {
                 return Conflict("Email already exists!");
             }
 
-            userTbl.Password = Cryptography.Encrypt(userTbl.Password);
+            try
+            {
+                userTbl.Password = Cryptography.Encrypt(userTbl.Password);
 
-            _context.TblUsersModels.Add(userTbl);
-            await _context.SaveChangesAsync();
+                _context.TblUsersModels.Add(userTbl);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("register", new { id = userTbl.Id }, userTbl);
+                return CreatedAtAction("register", new { id = userTbl.Id }, userTbl);
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return BadRequest(exception);
+            }
         }
 
         // GET: user/rememberPassword
@@ -144,10 +131,10 @@ namespace API_PCC.Controllers
         {
             if (_context.TblUsersModels == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null.");
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null!");
             }
 
-            var isEmailExists = _context.TblUsersModels.Any(user => user.Email == email); 
+            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == email); 
 
             if (!isEmailExists)
             {
@@ -171,10 +158,10 @@ namespace API_PCC.Controllers
         {
             if (_context.TblUsersModels == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null.");
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var isEmailExists = _context.TblUsersModels.Any(user => user.Email == email);
+            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == email);
 
             if (!isEmailExists)
             {

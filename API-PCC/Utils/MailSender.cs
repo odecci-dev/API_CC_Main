@@ -1,7 +1,6 @@
 ﻿using API_PCC.Models;
-using MimeKit;
 using MailKit.Net.Smtp;
-using static API_PCC.Controllers.UserController;
+using MimeKit;
 
 namespace API_PCC.Utils
 {

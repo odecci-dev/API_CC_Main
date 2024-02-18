@@ -218,6 +218,10 @@ namespace API_PCC.Data
                     .IsUnicode(false)
                     .HasColumnName("Breed_Code");
 
+                entity.Property(e => e.BuffaloType)
+                    .IsUnicode(false)
+                    .HasColumnName("Buffalo_type");
+
                 entity.Property(e => e.CountryBirth)
                     .HasMaxLength(50)
                     .IsUnicode(false)
@@ -254,6 +258,10 @@ namespace API_PCC.Data
                     .IsUnicode(false)
                     .HasColumnName("Herd_Code");
 
+                entity.Property(e => e.IdSystem)
+                    .IsUnicode(false)
+                    .HasColumnName("ID_System");
+
                 entity.Property(e => e.Marking).IsUnicode(false);
 
                 entity.Property(e => e.Name)
@@ -263,6 +271,10 @@ namespace API_PCC.Data
                 entity.Property(e => e.OriginAcquisition)
                     .IsUnicode(false)
                     .HasColumnName("Origin_Acquisition");
+
+                entity.Property(e => e.PedigreeRecords)
+                    .IsUnicode(false)
+                    .HasColumnName("Pedigree_Records");
 
                 entity.Property(e => e.RestoredBy)
                     .IsUnicode(false)

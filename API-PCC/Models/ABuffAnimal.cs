@@ -12,6 +12,10 @@ namespace API_PCC.Models
         public string HerdCode { get; set; } = null!;
         public DateTime DateOfBirth { get; set; }
         public string Sex { get; set; } = null!;
+        public string? BuffaloType { get; set; }
+        public string? IdSystem { get; set; }
+        public string? PedigreeRecords { get; set; }
+        public byte[]? Photo { get; set; }
         public string CountryBirth { get; set; } = null!;
         public string OriginAcquisition { get; set; } = null!;
         public DateTime DateAcquisition { get; set; }

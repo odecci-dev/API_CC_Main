@@ -29,13 +29,16 @@ namespace API_PCC.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        MailSender _mailSender = new MailSender();
+        MailSender _mailSender;
         private readonly PCC_DEVContext _context;
         private String status = "";
 
-        public UserController(PCC_DEVContext context)
-        {
+        private readonly IConfiguration _configuration;
+
+        public UserController(PCC_DEVContext context, IConfiguration configuration)
+       {
             _context = context;
+            _mailSender = new MailSender(configuration);
         }
 
         public class Registerstats

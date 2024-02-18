@@ -7,15 +7,20 @@ namespace API_PCC.Utils
 {
     public class MailSender
     {
+        private readonly IConfiguration _configuration;
+
+        public MailSender(IConfiguration configuration)
+        {
+            this._configuration = configuration;
+        }
 
         public async void sendOtpMail (TblRegistrationOtpmodel data)
         {
-
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("lbarasona@vertere-gs.com", "lbarasona@vertere-gs.com"));
-                message.To.Add(new MailboxAddress("learijohnb@gmail.com", data.Email));
+                message.From.Add(new MailboxAddress(_configuration["Mail:sender"], _configuration["Mail:sender"]));
+                message.To.Add(new MailboxAddress(data.Email, data.Email));
                 message.Subject = "OTP";
 
                 var bodyBuilder = new BodyBuilder();
@@ -67,8 +72,8 @@ namespace API_PCC.Utils
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync("lbarasona@vertere-gs.com", "LerVer123456#");
+                    await client.ConnectAsync(_configuration["Mail:host"], 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(_configuration["Mail:username"], _configuration["Mail:password"]);
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }
@@ -87,8 +92,8 @@ namespace API_PCC.Utils
 
                 var emailsend = "" + email;
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("lbarasona@vertere-gs.com", "lbarasona@vertere-gs.com"));
-                message.To.Add(new MailboxAddress("", data.Email));
+                message.From.Add(new MailboxAddress(_configuration["Mail:sender"], _configuration["Mail:sender"]));
+                message.To.Add(new MailboxAddress(data.Email, data.Email));
                 message.Subject = "Reset Password";
                 var bodyBuilder = new BodyBuilder();
                 bodyBuilder.HtmlBody = @"<!DOCTYPE html>
@@ -114,10 +119,6 @@ namespace API_PCC.Utils
                         flex-direction: column;
                         font-family: 'Montserrat-Reg';
                     }
-                    .img-container {
-                        width: 200px;
-                        margin:0 auto;
-                    }
                     h3{
                         width: 400px;
                         text-align: center;
@@ -138,8 +139,8 @@ namespace API_PCC.Utils
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync("lbarasona@vertere-gs.com", "LerVer123456#");
+                    await client.ConnectAsync(_configuration["Mail:host"], 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(_configuration["Mail:username"], _configuration["Mail:password"]);
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }

@@ -24,11 +24,11 @@ namespace API_PCC.Models
         public string? Otp { get; set; }
         public int? Attempts { get; set; }
         public int? Status { get; set; }
-        public DateTime? DateCreated1 { get; set; }
-        public DateTime? DateUpdated { get; set; }
-        public bool? DeleteFlag { get; set; }
-        public string? CreatedBy { get; set; }
-        public string? UpdatedBy { get; set; }
+        public DateTime DateCreated1 { get; set; }
+        public DateTime DateUpdated { get; set; }
+        public bool DeleteFlag { get; set; }
+        public string CreatedBy { get; set; } = null!;
+        public string UpdatedBy { get; set; } = null!;
         public DateTime? DateDelete { get; set; }
         public string? DeletedBy { get; set; }
         public DateTime? DateRestored { get; set; }

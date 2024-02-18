@@ -700,9 +700,9 @@ namespace API_PCC.Data
                     .HasColumnName("H_Type_Code");
 
                 entity.Property(e => e.HTypeDesc)
-                    .HasMaxLength(17)
-                    .HasColumnName("H_Type_Desc")
-                    .IsFixedLength();
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("H_Type_Desc");
 
                 entity.Property(e => e.RestoredBy)
                     .IsUnicode(false)
@@ -874,20 +874,6 @@ namespace API_PCC.Data
                     .HasMaxLength(255)
                     .IsUnicode(false);
             });
-
-            // Exclude Deleted Records
-            modelBuilder.Entity<ABirthType>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ABloodComp>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ABreed>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ABuffAnimal>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ActionTbl>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ATypeOwnership>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<HBuffaloType>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<HBuffHerd>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<HFarmerAffiliation>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<HFeedingSystem>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<HHerdType>().HasQueryFilter(a => !a.DeleteFlag);
-            modelBuilder.Entity<ModuleTbl>().HasQueryFilter(a => !a.DeleteFlag);
 
             OnModelCreatingPartial(modelBuilder);
         }

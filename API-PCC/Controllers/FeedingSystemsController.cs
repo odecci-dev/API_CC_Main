@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using API_PCC.Data;
+﻿using API_PCC.Data;
 using API_PCC.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Linq;
-using PeterO.Numbers;
 using static API_PCC.Controllers.HerdTypesController;
 
 namespace API_PCC.Controllers
@@ -46,13 +42,20 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<IActionResult> List(FeedingSystemSearchFilter searchFilter)
         {
-            int pagesize = searchFilter.pageSize == 0 ? 10: searchFilter.pageSize;
-            int page = searchFilter.page == 0? 1: searchFilter.page;
+            if (_context.HFeedingSystems == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
+            }
+
+            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
             int totalItems = 0;
             int totalPages = 0;
 
+
             var feedingSystemList = _context.HFeedingSystems.AsNoTracking();
+            feedingSystemList = feedingSystemList.Where(feedingSystem => !feedingSystem.DeleteFlag);
             try
             {
                 if (searchFilter.feedCode != null && searchFilter.feedCode != "")
@@ -63,9 +66,8 @@ namespace API_PCC.Controllers
                 if (searchFilter.feedDesc != null && searchFilter.feedDesc != "")
                 {
                     feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.FeedDesc.Contains(searchFilter.feedDesc));
-
                 }
-
+                
                 totalItems = feedingSystemList.ToList().Count();
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
                 items = feedingSystemList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
@@ -90,9 +92,10 @@ namespace API_PCC.Controllers
                 return Ok(items);
             }
 
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest("ERROR");
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
             }
         }
 
@@ -100,15 +103,15 @@ namespace API_PCC.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<HFeedingSystem>> Search(int id)
         {
-          if (_context.HFeedingSystems == null)
-          {
-              return NotFound();
-          }
+            if (_context.HFeedingSystems == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
+            }
             var hFeedingSystem = await _context.HFeedingSystems.FindAsync(id);
 
-            if (hFeedingSystem == null)
+            if (hFeedingSystem == null || hFeedingSystem.DeleteFlag)
             {
-                return NotFound();
+                return Conflict("No records found!");
             }
 
             return hFeedingSystem;
@@ -119,12 +122,24 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, HFeedingSystem hFeedingSystem)
         {
-            if (id != hFeedingSystem.Id)
+            if (_context.HHerdTypes == null)
             {
-                return BadRequest();
+                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.HFeedingSystems?.Any(fs => fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc && fs.Id != id)).GetValueOrDefault();
+            var feedingSystem = _context.HFeedingSystems.AsNoTracking().Where(feedSys => !feedSys.DeleteFlag && feedSys.Id == id).FirstOrDefault();
+
+            if (feedingSystem == null)
+            {
+                return Conflict("No records matched!");
+            }
+
+            if (id != hFeedingSystem.Id)
+            {
+                return Conflict("Ids mismatched!");
+            }
+
+            bool hasDuplicateOnUpdate = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc && fs.Id != id)).GetValueOrDefault();
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -132,25 +147,19 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            _context.Entry(hFeedingSystem).State = EntityState.Modified;
-
             try
             {
+                _context.Entry(hFeedingSystem).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+
+                return Ok("Update Successful!");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!HFeedingSystemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
             }
 
-            return NoContent();
         }
 
         // POST: FeedingSystems/save
@@ -160,48 +169,68 @@ namespace API_PCC.Controllers
         {
           if (_context.HFeedingSystems == null)
           {
-              return Problem("Entity set 'PCC_DEVContext.HFeedingSystems'  is null.");
+              return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
           }
 
-          bool hasDuplicateOnSave = (_context.HFeedingSystems?.Any(fs => fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc)).GetValueOrDefault();
-
+            bool hasDuplicateOnSave = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc)).GetValueOrDefault();
 
           if (hasDuplicateOnSave)
           {
                 return Conflict("Entity already exists");
           }
 
-            _context.HFeedingSystems.Add(hFeedingSystem);
-            await _context.SaveChangesAsync();
+          try
+          {
+                _context.HFeedingSystems.Add(hFeedingSystem);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("save", new { id = hFeedingSystem.Id }, hFeedingSystem);
+                return CreatedAtAction("save", new { id = hFeedingSystem.Id }, hFeedingSystem);
+          }
+          catch (Exception ex)
+          {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+          }
         }
 
         // DELETE: FeedingSystems/delete/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> delete(int id)
+        [HttpPost]
+        public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
             if (_context.HFeedingSystems == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
             }
-            var hFeedingSystem = await _context.HFeedingSystems.FindAsync(id);
-            if (hFeedingSystem == null)
+            var hFeedingSystem = await _context.HFeedingSystems.FindAsync(deletionModel.id);
+            if (hFeedingSystem == null || hFeedingSystem.DeleteFlag)
             {
-                return NotFound();
+                return Conflict("No records matched!");
             }
 
-            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => buffHerd.FeedCode == hFeedingSystem.FeedCode);
+            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.FeedCode == hFeedingSystem.FeedCode);
 
             if(feedCodeExistsInBuffHerd)
             {
                 return Conflict("Used by other table!");
             }
 
-            _context.HFeedingSystems.Remove(hFeedingSystem);
-            await _context.SaveChangesAsync();
+            try
+            {
+                hFeedingSystem.DeleteFlag = true;
+                hFeedingSystem.DateDelete = DateTime.Now;
+                hFeedingSystem.DeletedBy = deletionModel.deletedBy;
+                hFeedingSystem.DateRestored = null;
+                hFeedingSystem.RestoredBy = "";
+                _context.Entry(hFeedingSystem).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
 
-            return NoContent();
+                return Ok("Deletion Successful!");
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
         
 
@@ -211,9 +240,9 @@ namespace API_PCC.Controllers
         {
             if (_context.HFeedingSystems == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HFeedingSystem' is null.");
             }
-            return await _context.HFeedingSystems.ToListAsync();
+            return await _context.HFeedingSystems.Where(feedingSystem => !feedingSystem.DeleteFlag).ToListAsync();
         }
 
         // POST: FeedingSystems/restore/
@@ -221,28 +250,41 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<IActionResult> restore(RestorationModel restorationModel)
         {
-            var feedingSystem = await _context.HFeedingSystems.FindAsync(restorationModel.id);
 
-            if (feedingSystem == null)
+            if (_context.HFeedingSystems == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HFeedingSystem' is null.");
             }
 
-            feedingSystem.DeleteFlag = !feedingSystem.DeleteFlag;
-            feedingSystem.DateDelete = null;
-            feedingSystem.DeletedBy = "";
-            feedingSystem.DateRestored = DateTime.Now;
-            feedingSystem.RestoredBy = restorationModel.restoredBy;
+            var feedingSystem = await _context.HFeedingSystems.FindAsync(restorationModel.id);
 
-            _context.Entry(feedingSystem).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            if (feedingSystem == null || !feedingSystem.DeleteFlag)
+            {
+                return Conflict("No deleted records matched!");
+            }
+
+            try
+            {
+                feedingSystem.DeleteFlag = !feedingSystem.DeleteFlag;
+                feedingSystem.DateDelete = null;
+                feedingSystem.DeletedBy = "";
+                feedingSystem.DateRestored = DateTime.Now;
+                feedingSystem.RestoredBy = restorationModel.restoredBy;
+
+                _context.Entry(feedingSystem).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Restoration Successful!");
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
 
         private bool HFeedingSystemExists(int id)
         {
             return (_context.HFeedingSystems?.Any(e => e.Id == id)).GetValueOrDefault();
         }
-        
     }
 }

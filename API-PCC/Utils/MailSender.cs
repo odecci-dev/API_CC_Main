@@ -83,17 +83,17 @@ namespace API_PCC.Utils
                 throw;
             }
         }
-        public async void sendForgotPasswordMail(JWTokenModel data)
+        public async void sendForgotPasswordMail(String email)
         {
             try
             {
-                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(data.Email);
-                string email = System.Convert.ToBase64String(plainTextBytes);
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(email);
+                string emailBase64 = System.Convert.ToBase64String(plainTextBytes);
 
                 var emailsend = "" + email;
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(_configuration["Mail:sender"], _configuration["Mail:sender"]));
-                message.To.Add(new MailboxAddress(data.Email, data.Email));
+                message.To.Add(new MailboxAddress(email, email));
                 message.Subject = "Reset Password";
                 var bodyBuilder = new BodyBuilder();
                 bodyBuilder.HtmlBody = @"<!DOCTYPE html>
@@ -145,7 +145,7 @@ namespace API_PCC.Utils
                     client.Disconnect(true);
                 }
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 throw;
             }

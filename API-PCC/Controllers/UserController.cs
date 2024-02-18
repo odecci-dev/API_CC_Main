@@ -31,37 +31,11 @@ namespace API_PCC.Controllers
     {
         MailSender _mailSender;
         private readonly PCC_DEVContext _context;
-        private String status = "";
-
-        private readonly IConfiguration _configuration;
 
         public UserController(PCC_DEVContext context, IConfiguration configuration)
        {
             _context = context;
             _mailSender = new MailSender(configuration);
-        }
-
-        public class Registerstats
-        {
-            public string Status { get; set; }
-
-        }
-        public class OTP
-        {
-            public string otp { get; set; }
-
-        }
-
-        public class JWTokenModel
-        {
-            public string? Email { get; set; }
-
-        }
-
-        public class StatusResult
-        {
-            public string Status { get; set; }
-
         }
 
         public class LoginModel
@@ -158,106 +132,6 @@ namespace API_PCC.Controllers
             return CreatedAtAction("register", new { id = userTbl.Id }, userTbl);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> SendOTP(TblRegistrationOtpmodel data)
-        {
-            var result = new OTP();
-            try
-            {
-                var model = new TblRegistrationOtpmodel()
-                {
-                    Email = data.Email,
-                    Otp = data.Otp,
-                    Status = 10,
-
-                };
-                _context.TblRegistrationOtpmodels.Add(model);
-                _context.SaveChanges();
-
-                _mailSender.sendOtpMail(data);
-                result.otp = "Success";
-            }
-
-            catch (Exception ex)
-            {
-                string status = ex.GetBaseException().ToString();
-                return Problem(status);
-            }
-            return Ok(status);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> VerifyOTP(TblRegistrationOtpmodel data)
-        {
-            var result = new Registerstats();
-            try
-            {
-                string query = "";
-
-                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Otp == data.Otp && otpModel.Email == data.Email && (otpModel.Status == 9 || otpModel.Status == 10)); 
-
-                if (registOtpModels != null)
-                {
-                    data.Status = 1;
-                    _context.Entry(data).State = EntityState.Modified;
-
-                    var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email && user.Otp == data.Otp).First();
-                    _context.Entry(userModel).State = EntityState.Modified;
-                    userModel.Status = 1;
-
-                    await _context.SaveChangesAsync();
-                    result.Status = "OTP Matched!";
-                    return Ok(result);
-                } else
-                {
-                    var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email && user.Otp == data.Otp).First();
-                    _context.Entry(userModel).State = EntityState.Modified;
-                    userModel.Status = 10;
-                    result.Status = "OTP UnMatched!";
-                    return BadRequest(result);
-                }
-            }
-
-            catch (Exception ex)
-            {
-                result.Status = "OTP UnMatched!";
-                return BadRequest(result);
-            }
-            return Ok(result);
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> ResendOTP(TblRegistrationOtpmodel data)
-        {
-            var result = new OTP();
-            try
-            {
-                var registrationOtpModel = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 10).First();
-                if (registrationOtpModel != null)
-                {
-                    registrationOtpModel.Otp = data.Otp;
-                    _context.Entry(registrationOtpModel).State = EntityState.Modified;
-
-                    await _context.SaveChangesAsync();
-
-;                   _mailSender.sendOtpMail(data);
-                    result.otp = "Success";
-                } else
-                {
-                    result.otp = "Error";
-                    return BadRequest(result);
-                }
-            }
-
-            catch (Exception ex)
-            {
-                result.otp = "Error";
-                return BadRequest(result);
-            }
-            return Ok(result);
-        }
-
         // GET: user/rememberPassword
         [HttpGet("{email}")]
         public async Task<IActionResult> rememberPassword(String email)
@@ -280,24 +154,42 @@ namespace API_PCC.Controllers
                 return BadRequest("User does not exists!!"); 
             }
 
-            return NoContent();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> sendResetPasswordMail(JWTokenModel data)
-        {
-            string status = "";
-            var result = new StatusResult();
             try
             {
-                _mailSender.sendForgotPasswordMail(data);
-                result.Status = "Success!";
-                return Ok(result);
+                _mailSender.sendForgotPasswordMail(email);
+                return Ok("Password Reset Email sent successfully!");
             }
             catch (Exception ex)
             {
-                result.Status = "Error";
-                return BadRequest(result);
+                String exception = ex.GetBaseException().ToString();
+                return BadRequest(exception);
+            }
+        }
+
+        [HttpGet("{email}")]
+        public async Task<IActionResult> resendForgotPassword(String email)
+        {
+            if (_context.TblUsersModels == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null.");
+            }
+
+            var isEmailExists = _context.TblUsersModels.Any(user => user.Email == email);
+
+            if (!isEmailExists)
+            {
+                return BadRequest("User does not exists!!");
+            }
+
+            try
+            {
+                _mailSender.sendForgotPasswordMail(email);
+                return Ok("Password Reset Email resent successfully!");
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return BadRequest(exception);
             }
         }
 

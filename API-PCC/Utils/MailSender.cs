@@ -1,16 +1,18 @@
 ﻿using API_PCC.Models;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 using MimeKit;
+using static API_PCC.Controllers.UserController;
 
 namespace API_PCC.Utils
 {
     public class MailSender
     {
-        private readonly IConfiguration _configuration;
+        private readonly EmailSettings _appSettings;
 
-        public MailSender(IConfiguration configuration)
+        public MailSender(EmailSettings appSettings)
         {
-            this._configuration = configuration;
+            _appSettings = appSettings;
         }
 
         public async void sendOtpMail (TblRegistrationOtpmodel data)
@@ -18,8 +20,8 @@ namespace API_PCC.Utils
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_configuration["Mail:sender"], _configuration["Mail:sender"]));
-                message.To.Add(new MailboxAddress(data.Email, data.Email));
+                message.From.Add(new MailboxAddress(_appSettings.Title, _appSettings.username));
+                message.To.Add(new MailboxAddress("PCC-Administrator", data.Email));
                 message.Subject = "OTP";
 
                 var bodyBuilder = new BodyBuilder();
@@ -71,8 +73,8 @@ namespace API_PCC.Utils
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(_configuration["Mail:host"], 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_configuration["Mail:username"], _configuration["Mail:password"]);
+                    await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(_appSettings.username, _appSettings.password);
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }
@@ -91,8 +93,8 @@ namespace API_PCC.Utils
 
                 var emailsend = "" + email;
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_configuration["Mail:sender"], _configuration["Mail:sender"]));
-                message.To.Add(new MailboxAddress(email, email));
+                message.From.Add(new MailboxAddress(_appSettings.Title, _appSettings.username));
+                message.To.Add(new MailboxAddress("PCC-Administrator", email));
                 message.Subject = "Reset Password";
                 var bodyBuilder = new BodyBuilder();
                 bodyBuilder.HtmlBody = @"<!DOCTYPE html>
@@ -138,16 +140,16 @@ namespace API_PCC.Utils
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(_configuration["Mail:host"], 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_configuration["Mail:username"], _configuration["Mail:password"]);
+                    await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(_appSettings.username, _appSettings.password);
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }
             }
-            catch (Exception )
+            catch (Exception)
             {
                 throw;
             }
+            //}
         }
     }
-}

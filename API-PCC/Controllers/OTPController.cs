@@ -4,6 +4,8 @@ using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using static API_PCC.Controllers.UserController;
 
 namespace API_PCC.Controllers
 {
@@ -15,13 +17,25 @@ namespace API_PCC.Controllers
     {
         MailSender _mailSender;
         private readonly PCC_DEVContext _context;
-
-        public OTPController(PCC_DEVContext context, IConfiguration configuration)
+        private readonly EmailSettings _emailsettings;
+        public OTPController(PCC_DEVContext context, IOptions<EmailSettings> emailsettings)
         {
             _context = context;
-            _mailSender = new MailSender(configuration);
+            _emailsettings = emailsettings.Value;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> OTPList()
+        {//
+            var list = _context.TblUsersModels.ToList();
+            return Ok(list);
+        }
+        [HttpPost]
+        public async Task<IActionResult> OTPFilterbyEmail(TblRegistrationOtpmodel data)
+        {
+            var list = _context.TblRegistrationOtpmodels.Where(a=>a.Email == data.Email).ToList();
+            return Ok();
+        }
         [HttpPost]
         public async Task<IActionResult> SendOTP(TblRegistrationOtpmodel data)
         {
@@ -69,18 +83,18 @@ namespace API_PCC.Controllers
                 {
                     return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
                 }
-                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && (otpModel.Status == 9 || otpModel.Status == 10)).FirstOrDefault();
+                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 4  || otpModel.Status == 6).FirstOrDefault();
 
                 if (registOtpModels != null)
                 {
                     if (registOtpModels.Otp == data.Otp)
                     {
-                        registOtpModels.Status = 1;
+                        registOtpModels.Status = 3;
                         _context.Entry(registOtpModels).State = EntityState.Modified;
 
-                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email && user.Otp == data.Otp).FirstOrDefault();
+                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email ).FirstOrDefault();
                         _context.Entry(userModel).State = EntityState.Modified;
-                        userModel.Status = 1;
+                        userModel.Status = 3;
 
                         await _context.SaveChangesAsync();
                         return Ok("OTP verification successful!");
@@ -88,7 +102,7 @@ namespace API_PCC.Controllers
                     {
                         var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
                         _context.Entry(userModel).State = EntityState.Modified;
-                        userModel.Status = 10;
+                        userModel.Status = 4;
                         return BadRequest("OTP verification unsuccessful!");
                     }
                     
@@ -117,10 +131,15 @@ namespace API_PCC.Controllers
                     return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
                 }
 
-                var registrationOtpModel = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Otp == data.Otp &&  otpModel.Email == data.Email && otpModel.Status == 10).FirstOrDefault();
+                var registrationOtpModel = _context.TblRegistrationOtpmodels.Where(otpModel =>  otpModel.Email == data.Email && otpModel.Status == 4).FirstOrDefault();
                 if (registrationOtpModel != null)
                 {
-                    _mailSender.sendOtpMail(data);
+                    TblRegistrationOtpmodel item = new TblRegistrationOtpmodel();
+                    item.Email = registrationOtpModel.Email;
+                    item.Otp = registrationOtpModel.Otp;
+
+                    MailSender email = new MailSender(_emailsettings);
+                    email.sendOtpMail(item);
                     return Ok("Resending OTP successful!");
                 }
                 else

@@ -4,7 +4,12 @@ using API_PCC.Models;
 using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Configuration;
 using System.Data;
+using System.Text;
+using static API_PCC.Manager.DBMethods;
 
 namespace API_PCC.Controllers
 {
@@ -13,45 +18,113 @@ namespace API_PCC.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        string sql = "";
+        string Stats = "";
+        string Mess = "";
+        string JWT = "";
+        DbManager db = new DbManager();
         MailSender _mailSender;
         private readonly PCC_DEVContext _context;
-
-        public UserController(PCC_DEVContext context, IConfiguration configuration)
-       {
+        DBMethods dbmet = new DBMethods();
+        private readonly EmailSettings _emailsettings;
+        public UserController(PCC_DEVContext context, IOptions <EmailSettings> emailsettings)
+        {
             _context = context;
-            _mailSender = new MailSender(configuration);
+            _emailsettings = emailsettings.Value;
         }
+        public class EmailSettings
+        {
+            public string Title { get; set; }
+            public string Host { get; set; }
+            public string username { get; set; }
+            public string password { get; set; }
+            public string sender { get; set; }
 
+        }
         public class LoginModel
         {
             public string? email { get; set; }
             public string? password { get; set; }
         }
-
-        // POST: user/login
-        [HttpPost]
-        public async Task<ActionResult<IEnumerable<TblUsersModel>>> login(LoginModel loginModel)
+        public class loginCredentials
         {
-            if (_context.TblUsersModels == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null!");
-            }
-
-            var userCredentials = _context.TblUsersModels.Where(user => !user.DeleteFlag && user.Email == loginModel.email && user.Password == Cryptography.Encrypt(loginModel.password)).FirstOrDefault();
-
-            if (userCredentials == null)
-            {
-                return Unauthorized("User Credentials Invalid !!");
-            }
-
-            if (userCredentials.Status == 0)
-            {
-                return Unauthorized("Account under approval !!");
-            }
-
-            return Ok("Login Successful !!");
+            public string? username { get; set; }
+            public string? password { get; set; }
+            public string? ipaddress { get; set; }
+            public string? location { get; set; }
         }
-            
+        public class StatusReturns
+        {
+            public string? Status { get; set; }
+            public string? Message { get; set; }
+            public string? JwtToken { get; set; }
+        }
+        [HttpGet]
+        public async Task<IActionResult> UserForApprovalList()
+        {
+            var list = _context.TblUsersModels.Where(a=>a.Status == 3).ToList();
+            return Ok(list);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveRegistration(TblRegistrationOtpmodel data)
+        {
+            try
+            {
+                if (_context.TblRegistrationOtpmodels == null)
+                {
+                    return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
+                }
+                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 4).FirstOrDefault();
+
+                if (registOtpModels != null)
+                {
+                    if (registOtpModels.Otp == data.Otp)
+                    {
+                        registOtpModels.Status = 3;
+                        _context.Entry(registOtpModels).State = EntityState.Modified;
+
+                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
+                        _context.Entry(userModel).State = EntityState.Modified;
+                        userModel.Status = 5;
+
+                        await _context.SaveChangesAsync();
+                        return Ok("OTP verification successful!");
+                    }
+                    else
+                    {
+                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
+                        _context.Entry(userModel).State = EntityState.Modified;
+                        userModel.Status = 4;
+                        return BadRequest("OTP verification unsuccessful!");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Record not found on database!");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
+        }
+        // POST: user/login
+
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<TblUsersModel>>> login(loginCredentials data)
+        {
+            var loginstats = dbmet.GetUserLogIn(data.username, data.password, data.ipaddress, data.location);
+            var item = new StatusReturns();
+            item.Status = loginstats.Status;
+            item.Message = loginstats.Message;
+            item.JwtToken = loginstats.JwtToken;
+            return Ok(item);
+        }
+
         //POST: user/info
         [HttpPost]
         public async Task<ActionResult<IEnumerable<TblUsersModel>>> info(String email)
@@ -61,7 +134,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var userInfo = _context.TblUsersModels.Where(user => !user.DeleteFlag && user.Email == email).FirstOrDefault();
+            var userInfo = _context.TblUsersModels.Where(user => user.DeleteFlag != false && user.Email == email).FirstOrDefault();
 
             if (userInfo == null)
             {
@@ -80,7 +153,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var userList = _context.TblUsersModels.Where(users => !users.DeleteFlag).ToList();
+            var userList = _context.TblUsersModels.Where(users => users.DeleteFlag != false).ToList();
 
             if (userList == null)
             {
@@ -90,34 +163,131 @@ namespace API_PCC.Controllers
             return Ok(userList);
         }
 
-
-        // POST: user/register
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TblUsersModel>> register(TblUsersModel userTbl)
+        public async Task<ActionResult<TblUsersModel>> register(RegistrationModel userTbl)
         {
-            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == userTbl.Email);
-
-            if (isEmailExists)
+            string filepath = "";
+            var user_list = _context.TblUsersModels.AsEnumerable().Where(a => a.Username.Equals(userTbl.Username, StringComparison.Ordinal)).ToList();
+            if (user_list.Count == 0)
             {
-                return Conflict("Email already exists!");
-            }
+                var email_count = _context.TblUsersModels.Where(a => a.Email == userTbl.Email).ToList();
+                if (email_count.Count != 0)
+                {
+                    Stats = "Error";
+                    Mess = "Email Already Used!";
+                    JWT = "";
+                }
+                else
+                {
+                    StringBuilder str_build = new StringBuilder();
+                    Random random = new Random();
+                    int length = 8;
+                    char letter;
 
-            try
+                    for (int i = 0; i < length; i++)
+                    {
+                        double flt = random.NextDouble();
+                        int shift = Convert.ToInt32(Math.Floor(25 * flt));
+                        letter = Convert.ToChar(shift + 2);
+                        str_build.Append(letter);
+                    }
+
+                    var token = Cryptography.Encrypt(str_build.ToString());
+                    string strtokenresult = token;
+                    string[] charsToRemove = new string[] { "/", ",", ".", ";", "'", "=", "+" };
+                    foreach (var c in charsToRemove)
+                    {
+                        strtokenresult = strtokenresult.Replace(c, string.Empty);
+                    }
+                    if (userTbl.FilePath == null)
+                    {
+                        filepath = "";
+                    }
+                    else
+                    {
+                        filepath = userTbl.FilePath.Replace(" ", "%20");
+                    }
+                    string fullname = userTbl.Fname + ", " + userTbl.Mname + ", " + userTbl.Lname;
+                    string user_insert = $@"INSERT INTO [dbo].[tbl_UsersModel]
+                                           ([Username]
+                                           ,[Password]
+                                           ,[Fullname]
+                                           ,[Fname]
+                                           ,[Lname]
+                                           ,[Mname]
+                                           ,[Email]
+                                           ,[Gender]
+                                           ,[EmployeeID]
+                                           ,[JWToken]
+                                           ,[FilePath]
+                                           ,[Active]
+                                           ,[Cno]
+                                           ,[Address]
+                                           ,[Status]
+                                           ,[Date_Created]
+                                           ,[CenterId]
+                                           ,[AgreementStatus])
+                                     VALUES
+                                           ('" + userTbl.Username + "'" +
+                                            ",'" + Cryptography.Encrypt(userTbl.Password) + "'," +
+                                           "'" + fullname + "'," +
+                                           "'" + userTbl.Fname + "'," +
+                                           "'" + userTbl.Lname + "'," +
+                                           "'" + userTbl.Mname + "'," +
+                                           "'" + userTbl.Email + "'," +
+                                           "'" + userTbl.Gender + "'," +
+                                           "'" + userTbl.EmployeeId + "'," +
+                                           "'" + string.Concat(strtokenresult.TakeLast(15)) + "'," +
+                                           "'" + filepath + "'," +
+                                           "'1'," +
+                                           "'" + userTbl.Cno + "'," +
+                                           "'" + userTbl.Address + "'," +
+                                           "'6'," +
+                                           "'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," +
+                                           "'" + userTbl.CenterId + "'," +
+                                           "'" + userTbl.AgreementStatus + "')";
+                    db.DB_WithParam(user_insert);
+
+
+                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    Random random_OTP = new Random();
+                    string otp_res = "";
+                    char[] randomArray = new char[8];
+                    for (int i = 0; i < 8; i++)
+                    {
+                        otp_res += chars[random.Next(chars.Length)];
+                    }
+                    TblRegistrationOtpmodel items = new TblRegistrationOtpmodel();
+                   items.Email = userTbl.Email;
+                    items.Otp = otp_res.ToString();
+                    
+                    MailSender email =  new MailSender(_emailsettings);
+                    email.sendOtpMail(items);
+
+                    string OTPInsert = $@"insert into tbl_RegistrationOTPModel (email,OTP,status) values ('" + userTbl.Email + "','" + otp_res + "','4')";
+                    db.DB_WithParam(OTPInsert);
+
+                    Stats = "Ok";
+                    Mess = "User is for Verification, OTP Already Send!";
+                    JWT = string.Concat(strtokenresult.TakeLast(15));
+                }
+            }
+            else
             {
-                userTbl.Password = Cryptography.Encrypt(userTbl.Password);
-
-                _context.TblUsersModels.Add(userTbl);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("register", new { id = userTbl.Id }, userTbl);
+                Stats = "Error";
+                Mess = "Username Already Exist!";
+                JWT = "";
             }
-            catch (Exception ex)
+            StatusReturns result = new StatusReturns
             {
-                String exception = ex.GetBaseException().ToString();
-                return BadRequest(exception);
-            }
+                Status = Stats,
+                Message = Mess,
+                JwtToken = JWT
+            };
+
+            return Ok(result);
         }
+    
 
         // GET: user/rememberPassword
         [HttpGet("{email}")]
@@ -126,7 +296,7 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
-        [HttpGet("{email}")]
+        //[HttpGet("{email}")]
         public async Task<IActionResult> forgotPassword(String email)
         {
             if (_context.TblUsersModels == null)
@@ -134,11 +304,11 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null!");
             }
 
-            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == email); 
+            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag != false && user.Email == email);
 
             if (!isEmailExists)
             {
-                return BadRequest("User does not exists!!"); 
+                return BadRequest("User does not exists!!");
             }
 
             try
@@ -161,7 +331,8 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == email);
+            var isEmailExists = _context.TblUsersModels.Any(user => user.Email == email);
+            //var isEmailExists = _context.TblUsersModels.Any(user => !user.DeleteFlag && user.Email == email);
 
             if (!isEmailExists)
             {

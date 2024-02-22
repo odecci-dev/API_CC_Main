@@ -16,7 +16,7 @@ namespace API_PCC.Manager
       
         public void ConnectioStr()
         {
-           // cnnstr = "Data Source=LERJUN-PC;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!";// local
+          // cnnstr = "Data Source=LERJUN-PC;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!";// local
             cnnstr = "Data Source=EC2AMAZ-V52FJK1;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server
 
             conn = new SqlConnection(cnnstr);

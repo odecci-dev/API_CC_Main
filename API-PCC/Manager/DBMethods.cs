@@ -93,12 +93,8 @@ namespace API_PCC.Manager
                                 break;
                             case "5":
                                 //APPROVED
-                                Stats = "Error";
-                                Mess = "Your account is under screening or Your account has been disapproved . Please contact admin to check the status.";
-                                JWT = "";
-                                break;
-                            case "6":
-                                //REGISTERED
+                           
+
                                 compr_user = String.Equals(dt.Rows[0]["Username"].ToString().Trim(), username, StringComparison.Ordinal);
 
                                 if (compr_user)
@@ -179,6 +175,12 @@ namespace API_PCC.Manager
 
                                     }
                                 }
+                                break;
+                            case "6":
+                                //REGISTERED
+                                Stats = "Error";
+                                Mess = "Your account is under screening or Your account has been disapproved . Please contact admin to check the status.";
+                                JWT = "";
 
                                 break;
                             default:

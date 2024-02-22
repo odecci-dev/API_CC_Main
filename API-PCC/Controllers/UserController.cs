@@ -296,7 +296,7 @@ namespace API_PCC.Controllers
             return NoContent();
         }
 
-        //[HttpGet("{email}")]
+        [HttpGet("{email}")]
         public async Task<IActionResult> forgotPassword(String email)
         {
             if (_context.TblUsersModels == null)

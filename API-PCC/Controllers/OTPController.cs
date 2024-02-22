@@ -27,14 +27,15 @@ namespace API_PCC.Controllers
         [HttpGet]
         public async Task<IActionResult> OTPList()
         {//
-            var list = _context.TblUsersModels.ToList();
+            var list = _context.TblRegistrationOtpmodels.ToList();
             return Ok(list);
         }
+      
         [HttpPost]
         public async Task<IActionResult> OTPFilterbyEmail(TblRegistrationOtpmodel data)
         {
             var list = _context.TblRegistrationOtpmodels.Where(a=>a.Email == data.Email).ToList();
-            return Ok();
+            return Ok(list);
         }
         [HttpPost]
         public async Task<IActionResult> SendOTP(TblRegistrationOtpmodel data)
@@ -83,7 +84,7 @@ namespace API_PCC.Controllers
                 {
                     return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
                 }
-                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 4  || otpModel.Status == 6).FirstOrDefault();
+                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 4  ).FirstOrDefault();
 
                 if (registOtpModels != null)
                 {

@@ -15,12 +15,12 @@ namespace API_PCC.Utils
             _appSettings = appSettings;
         }
 
-        public async void sendOtpMail (TblRegistrationOtpmodel data)
+        public async void sendOtpMail(TblRegistrationOtpmodel data)
         {
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_appSettings.Title, _appSettings.username));
+                message.From.Add(new MailboxAddress(_appSettings.Title, "misbuff@pcc.gov.ph"));
                 message.To.Add(new MailboxAddress("PCC-Administrator", data.Email));
                 message.Subject = "OTP";
 
@@ -73,8 +73,8 @@ namespace API_PCC.Utils
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_appSettings.username, _appSettings.password);
+                    await client.ConnectAsync("smtp.office365.com", 25,false);
+                    await client.AuthenticateAsync("misbuff@pcc.gov.ph", "Gipabgs2024");
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }
@@ -140,7 +140,7 @@ namespace API_PCC.Utils
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.ConnectAsync(_appSettings.Host,25 /*587*/, /*MailKit.Security.SecureSocketOptions.StartTls*/ false);
                     await client.AuthenticateAsync(_appSettings.username, _appSettings.password);
                     await client.SendAsync(message);
                     client.Disconnect(true);
@@ -153,3 +153,4 @@ namespace API_PCC.Utils
             //}
         }
     }
+}

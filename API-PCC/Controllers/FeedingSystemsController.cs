@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using static API_PCC.Controllers.HerdTypesController;
+using static API_PCC.Controllers.HerdClassificationController;
 
 namespace API_PCC.Controllers
 {
@@ -122,7 +122,7 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, HFeedingSystem hFeedingSystem)
         {
-            if (_context.HHerdTypes == null)
+            if (_context.HHerdClassifications == null)
             {
                 return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
             }

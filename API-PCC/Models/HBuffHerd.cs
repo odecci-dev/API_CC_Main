@@ -30,5 +30,7 @@ namespace API_PCC.Models
         public string? DeletedBy { get; set; }
         public DateTime? DateRestored { get; set; }
         public string? RestoredBy { get; set; }
+        public string? OrganizationName { get; set; }
+        public string? Center { get; set; }
     }
 }

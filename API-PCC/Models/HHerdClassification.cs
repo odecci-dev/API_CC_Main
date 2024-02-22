@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace API_PCC.Models
 {
-    public partial class HHerdType
+    public partial class HHerdClassification
     {
         public int Id { get; set; }
         public string HTypeCode { get; set; } = null!;
@@ -18,5 +18,7 @@ namespace API_PCC.Models
         public string? DeletedBy { get; set; }
         public DateTime? DateRestored { get; set; }
         public string? RestoredBy { get; set; }
+        public string? LevelFrom { get; set; }
+        public string? LevelTo { get; set; }
     }
 }

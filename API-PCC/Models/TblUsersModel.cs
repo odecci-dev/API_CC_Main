@@ -34,5 +34,6 @@ namespace API_PCC.Models
         public DateTime? DateRestored { get; set; }
         public string? RestoredBy { get; set; }
         public int? CenterId { get; set; }
+        public string? Center { get; set; }
     }
 }

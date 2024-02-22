@@ -27,7 +27,7 @@ namespace API_PCC.Data
         public virtual DbSet<HBuffaloType> HBuffaloTypes { get; set; } = null!;
         public virtual DbSet<HFarmerAffiliation> HFarmerAffiliations { get; set; } = null!;
         public virtual DbSet<HFeedingSystem> HFeedingSystems { get; set; } = null!;
-        public virtual DbSet<HHerdType> HHerdTypes { get; set; } = null!;
+        public virtual DbSet<HHerdClassification> HHerdClassifications { get; set; } = null!;
         public virtual DbSet<ModuleTbl> ModuleTbls { get; set; } = null!;
         public virtual DbSet<TblApiTokenModel> TblApiTokenModels { get; set; } = null!;
         public virtual DbSet<TblRegistrationOtpmodel> TblRegistrationOtpmodels { get; set; } = null!;
@@ -426,6 +426,8 @@ namespace API_PCC.Data
                     .IsUnicode(false)
                     .HasColumnName("B_Buff_Code");
 
+                entity.Property(e => e.Center).IsUnicode(false);
+
                 entity.Property(e => e.CreatedBy)
                     .IsUnicode(false)
                     .HasColumnName("Created_By");
@@ -492,6 +494,10 @@ namespace API_PCC.Data
                     .HasMaxLength(13)
                     .IsUnicode(false)
                     .HasColumnName("M_No");
+
+                entity.Property(e => e.OrganizationName)
+                    .IsUnicode(false)
+                    .HasColumnName("Organization_name");
 
                 entity.Property(e => e.Owner).IsUnicode(false);
 
@@ -662,9 +668,9 @@ namespace API_PCC.Data
                     .HasColumnName("Updated_By");
             });
 
-            modelBuilder.Entity<HHerdType>(entity =>
+            modelBuilder.Entity<HHerdClassification>(entity =>
             {
-                entity.ToTable("H_Herd_Type");
+                entity.ToTable("H_Herd_Classification");
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
@@ -703,6 +709,14 @@ namespace API_PCC.Data
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasColumnName("H_Type_Desc");
+
+                entity.Property(e => e.LevelFrom)
+                    .IsUnicode(false)
+                    .HasColumnName("Level_from");
+
+                entity.Property(e => e.LevelTo)
+                    .IsUnicode(false)
+                    .HasColumnName("Level_to");
 
                 entity.Property(e => e.RestoredBy)
                     .IsUnicode(false)
@@ -792,6 +806,8 @@ namespace API_PCC.Data
                 entity.ToTable("tbl_UsersModel");
 
                 entity.Property(e => e.Address).IsUnicode(false);
+
+                entity.Property(e => e.Center).IsUnicode(false);
 
                 entity.Property(e => e.Cno)
                     .HasMaxLength(255)

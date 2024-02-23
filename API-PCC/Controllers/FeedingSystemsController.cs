@@ -122,9 +122,9 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, HFeedingSystem hFeedingSystem)
         {
-            if (_context.HHerdClassifications == null)
+            if (_context.HFeedingSystems == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.Feeding System' is null!");
             }
 
             var feedingSystem = _context.HFeedingSystems.AsNoTracking().Where(feedSys => !feedSys.DeleteFlag && feedSys.Id == id).FirstOrDefault();

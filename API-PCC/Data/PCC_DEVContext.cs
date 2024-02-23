@@ -30,6 +30,7 @@ namespace API_PCC.Data
         public virtual DbSet<HHerdClassification> HHerdClassifications { get; set; } = null!;
         public virtual DbSet<ModuleTbl> ModuleTbls { get; set; } = null!;
         public virtual DbSet<TblApiTokenModel> TblApiTokenModels { get; set; } = null!;
+        public virtual DbSet<TblCenterModel> TblCenterModels { get; set; } = null!;
         public virtual DbSet<TblRegistrationOtpmodel> TblRegistrationOtpmodels { get; set; } = null!;
         public virtual DbSet<TblUsersModel> TblUsersModels { get; set; } = null!;
 
@@ -788,6 +789,55 @@ namespace API_PCC.Data
                 entity.Property(e => e.Name).IsUnicode(false);
 
                 entity.Property(e => e.Role).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblCenterModel>(entity =>
+            {
+                entity.ToTable("tbl_CenterModel");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.CenterCode)
+                    .IsUnicode(false)
+                    .HasColumnName("Center_code");
+
+                entity.Property(e => e.CenterDesc)
+                    .IsUnicode(false)
+                    .HasColumnName("Center_desc");
+
+                entity.Property(e => e.CreatedBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Created_By");
+
+                entity.Property(e => e.DateCreated)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Created");
+
+                entity.Property(e => e.DateDeleted)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Deleted");
+
+                entity.Property(e => e.DateRestored)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Restored");
+
+                entity.Property(e => e.DateUpdated)
+                    .HasColumnType("date")
+                    .HasColumnName("Date_Updated");
+
+                entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+
+                entity.Property(e => e.DeletedBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Deleted_By");
+
+                entity.Property(e => e.RestoredBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Restored_By");
+
+                entity.Property(e => e.UpdatedBy)
+                    .IsUnicode(false)
+                    .HasColumnName("Updated_By");
             });
 
             modelBuilder.Entity<TblRegistrationOtpmodel>(entity =>

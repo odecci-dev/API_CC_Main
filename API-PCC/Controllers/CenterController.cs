@@ -29,7 +29,7 @@ namespace API_PCC.Controllers
         }
         public class CenterSearchFilter
         {
-            public string? CenterCode { get; set; }
+            public string? CenterName { get; set; }
             public string? CenterDesc { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
@@ -60,9 +60,9 @@ namespace API_PCC.Controllers
             centerList = centerList.Where(centerModel => !centerModel.DeleteFlag);
             try
             {
-                if (searchFilter.CenterCode != null && searchFilter.CenterCode != "")
+                if (searchFilter.CenterName != null && searchFilter.CenterName != "")
                 {
-                    centerList = centerList.Where(centerModel => centerModel.CenterCode.Contains(searchFilter.CenterCode));
+                    centerList = centerList.Where(centerModel => centerModel.CenterName.Contains(searchFilter.CenterName));
                 }
 
                 if (searchFilter.CenterDesc != null && searchFilter.CenterDesc != "")
@@ -140,7 +140,7 @@ namespace API_PCC.Controllers
                 return Conflict("Ids mismatched!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.TblCenterModels?.Any(fs => !fs.DeleteFlag && fs.CenterCode == tblCenterModel.CenterCode && fs.CenterDesc == tblCenterModel.CenterDesc && fs.Id != id)).GetValueOrDefault();
+            bool hasDuplicateOnUpdate = (_context.TblCenterModels?.Any(fs => !fs.DeleteFlag && fs.CenterName == tblCenterModel.CenterName && fs.CenterDesc == tblCenterModel.CenterDesc && fs.Id != id)).GetValueOrDefault();
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -173,7 +173,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
             }
 
-            bool hasDuplicateOnSave = (_context.TblCenterModels?.Any(fs => !fs.DeleteFlag && fs.CenterCode == tblCenterModel.CenterCode && fs.CenterDesc == tblCenterModel.CenterDesc)).GetValueOrDefault();
+            bool hasDuplicateOnSave = (_context.TblCenterModels?.Any(fs => !fs.DeleteFlag && fs.CenterName == tblCenterModel.CenterName && fs.CenterDesc == tblCenterModel.CenterDesc)).GetValueOrDefault();
 
             if (hasDuplicateOnSave)
             {
@@ -208,9 +208,9 @@ namespace API_PCC.Controllers
                 return Conflict("No records matched!");
             }
 
-            bool CenterCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.Center == tblCenterModel.CenterCode);
+            bool CenterNameExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.Center == tblCenterModel.CenterName);
 
-            if (CenterCodeExistsInBuffHerd)
+            if (CenterNameExistsInBuffHerd)
             {
                 return Conflict("Used by other table!");
             }
@@ -218,7 +218,7 @@ namespace API_PCC.Controllers
             try
             {
                 tblCenterModel.DeleteFlag = true;
-                tblCenterModel.DateDeleted = DateTime.Now;
+                tblCenterModel.DateDelete = DateTime.Now;
                 tblCenterModel.DeletedBy = deletionModel.deletedBy;
                 tblCenterModel.DateRestored = null;
                 tblCenterModel.RestoredBy = "";
@@ -267,7 +267,7 @@ namespace API_PCC.Controllers
             try
             {
                 centerModel.DeleteFlag = !centerModel.DeleteFlag;
-                centerModel.DateDeleted = null;
+                centerModel.DateDelete = null;
                 centerModel.DeletedBy = "";
                 centerModel.DateRestored = DateTime.Now;
                 centerModel.RestoredBy = restorationModel.restoredBy;

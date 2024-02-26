@@ -5,13 +5,9 @@ using System.Collections.Generic;
 
 namespace API_PCC.Models;
 
-public partial class TblRegistrationOtpmodel
+public partial class TblStatusModel
 {
     public int Id { get; set; }
 
-    public string Email { get; set; }
-
-    public string Otp { get; set; }
-
-    public int? Status { get; set; }
+    public string Status { get; set; }
 }

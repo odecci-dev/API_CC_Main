@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace API_PCC.Models;
 
-public partial class TblRegistrationOtpmodel
+public partial class TblAttempt
 {
     public int Id { get; set; }
 
-    public string Email { get; set; }
+    public int? UserId { get; set; }
 
-    public string Otp { get; set; }
+    public int? AttemptCount { get; set; }
 
-    public int? Status { get; set; }
+    public string Ipaddress { get; set; }
+
+    public string Location { get; set; }
 }

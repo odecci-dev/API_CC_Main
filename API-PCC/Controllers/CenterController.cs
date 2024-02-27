@@ -41,7 +41,7 @@ namespace API_PCC.Controllers
         }
 
         // GET: Center/list
-        [HttpGet]
+        [HttpPost]
         public async Task<ActionResult<IEnumerable<TblCenterModel>>> list(CenterSearchFilter searchFilter)
         {
           if (_context.TblCenterModels == null)
@@ -218,7 +218,7 @@ namespace API_PCC.Controllers
             try
             {
                 tblCenterModel.DeleteFlag = true;
-                tblCenterModel.DateDelete = DateTime.Now;
+                tblCenterModel.DateDeleted = DateTime.Now;
                 tblCenterModel.DeletedBy = deletionModel.deletedBy;
                 tblCenterModel.DateRestored = null;
                 tblCenterModel.RestoredBy = "";
@@ -267,7 +267,7 @@ namespace API_PCC.Controllers
             try
             {
                 centerModel.DeleteFlag = !centerModel.DeleteFlag;
-                centerModel.DateDelete = null;
+                centerModel.DateDeleted = null;
                 centerModel.DeletedBy = "";
                 centerModel.DateRestored = DateTime.Now;
                 centerModel.RestoredBy = restorationModel.restoredBy;

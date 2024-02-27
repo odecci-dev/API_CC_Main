@@ -217,7 +217,7 @@ namespace API_PCC.Controllers
             try
             {
                 hFeedingSystem.DeleteFlag = true;
-                hFeedingSystem.DateDelete = DateTime.Now;
+                hFeedingSystem.DateDeleted = DateTime.Now;
                 hFeedingSystem.DeletedBy = deletionModel.deletedBy;
                 hFeedingSystem.DateRestored = null;
                 hFeedingSystem.RestoredBy = "";
@@ -266,7 +266,7 @@ namespace API_PCC.Controllers
             try
             {
                 feedingSystem.DeleteFlag = !feedingSystem.DeleteFlag;
-                feedingSystem.DateDelete = null;
+                feedingSystem.DateDeleted = null;
                 feedingSystem.DeletedBy = "";
                 feedingSystem.DateRestored = DateTime.Now;
                 feedingSystem.RestoredBy = restorationModel.restoredBy;

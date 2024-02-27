@@ -224,7 +224,7 @@ namespace API_PCC.Controllers
             try
             {
                 HHerdClassification.DeleteFlag = true;
-                HHerdClassification.DateDelete = DateTime.Now;
+                HHerdClassification.DateDeleted = DateTime.Now;
                 HHerdClassification.DeletedBy = deletionModel.deletedBy;
                 HHerdClassification.DateRestored = null;
                 HHerdClassification.RestoredBy = "";
@@ -270,7 +270,7 @@ namespace API_PCC.Controllers
             try
             {
                 HHerdClassification.DeleteFlag = !HHerdClassification.DeleteFlag;
-                HHerdClassification.DateDelete = null;
+                HHerdClassification.DateDeleted = null;
                 HHerdClassification.DeletedBy = "";
                 HHerdClassification.DateRestored = DateTime.Now;
                 HHerdClassification.RestoredBy = restorationModel.restoredBy;

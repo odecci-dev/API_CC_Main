@@ -1,4 +1,6 @@
-﻿using API_PCC.Models;
+﻿using API_PCC.Data;
+using API_PCC.Manager;
+using API_PCC.Models;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -20,7 +22,7 @@ namespace API_PCC.Utils
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_appSettings.Title.OTP, "misbuff@pcc.gov.ph"));
+                message.From.Add(new MailboxAddress(_appSettings.Title.OTP, Cryptography.Decrypt(_appSettings.username)));
                 message.To.Add(new MailboxAddress("PCC-Administrator", data.Email));
                 message.Subject = "OTP";
 
@@ -74,7 +76,7 @@ namespace API_PCC.Utils
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_appSettings.username, _appSettings.password);
+                    await client.AuthenticateAsync(Cryptography.Decrypt(_appSettings.username), Cryptography.Decrypt(_appSettings.password));
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }
@@ -90,7 +92,7 @@ namespace API_PCC.Utils
             {
              
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_appSettings.Title.ForgotPassword, _appSettings.username));
+                message.From.Add(new MailboxAddress(_appSettings.Title.ForgotPassword, Cryptography.Decrypt(_appSettings.username)));
                 message.To.Add(new MailboxAddress("PCC-Administrator", email));
                 message.Subject = "Reset Password";
                 var bodyBuilder = new BodyBuilder();
@@ -138,7 +140,7 @@ namespace API_PCC.Utils
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_appSettings.username, _appSettings.password);
+                    await client.AuthenticateAsync(Cryptography.Decrypt(_appSettings.username), Cryptography.Decrypt(_appSettings.password));
                     await client.SendAsync(message);
                     client.Disconnect(true);
                 }

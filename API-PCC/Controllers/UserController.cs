@@ -31,6 +31,10 @@ namespace API_PCC.Controllers
         {
             _context = context;
             _emailsettings = emailsettings.Value;
+            TblMailSenderCredential tblMailSenderCredential = _context.TblMailSenderCredentials.First();
+            _emailsettings.username = tblMailSenderCredential.Email;
+            _emailsettings.password = tblMailSenderCredential.Password;
+
         }
         public class EmailSettings
         {

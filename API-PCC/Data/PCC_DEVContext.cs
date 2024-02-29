@@ -52,6 +52,8 @@ public partial class PCC_DEVContext : DbContext
 
     public virtual DbSet<TblTokenModel> TblTokenModels { get; set; }
 
+    public virtual DbSet<TblMailSenderCredential> TblMailSenderCredentials { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ABirthType>(entity =>
@@ -868,6 +870,34 @@ public partial class PCC_DEVContext : DbContext
                    .IsUnicode(false)
                    .IsRequired()
                    .HasColumnName("Date_Created");
+        });
+
+        modelBuilder.Entity<TblMailSenderCredential>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_MailSenderCredential");
+
+            entity.ToTable("tbl_MailSenderCredential");
+
+            entity.Property(e => e.Email)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasMaxLength(255);
+            entity.Property(e => e.Password)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasMaxLength(255);
+            entity.Property(e => e.DateCreated)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("DateCreated");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Status");
+            entity.Property(e => e.ExpiryDate)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("ExpiryDate");
         });
             
         OnModelCreatingGeneratedProcedures(modelBuilder);

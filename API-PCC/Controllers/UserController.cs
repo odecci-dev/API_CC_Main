@@ -91,13 +91,13 @@ namespace API_PCC.Controllers
                 {
                     return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
                 }
-                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 4).FirstOrDefault();
+                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 3).FirstOrDefault();
 
                 if (registOtpModels != null)
                 {
                     if (registOtpModels.Otp == data.Otp)
                     {
-                        registOtpModels.Status = 3;
+                        registOtpModels.Status = 5;
                         _context.Entry(registOtpModels).State = EntityState.Modified;
 
                         var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
@@ -265,11 +265,11 @@ namespace API_PCC.Controllers
                     db.DB_WithParam(user_insert);
 
 
-                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    const string chars = "0123456789";
                     Random random_OTP = new Random();
                     string otp_res = "";
                     char[] randomArray = new char[8];
-                    for (int i = 0; i < 8; i++)
+                    for (int i = 0; i < 6; i++)
                     {
                         otp_res += chars[random.Next(chars.Length)];
                     }

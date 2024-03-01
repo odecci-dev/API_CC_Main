@@ -385,7 +385,7 @@ namespace API_PCC.Controllers
                 _context.SaveChanges();
 
                 MailSender _mailSender = new MailSender(_emailsettings);
-                _mailSender.sendForgotPasswordMail(forgotPasswordModel.Email, forgotPasswordModel.ForgotPasswordLink);
+                _mailSender.sendForgotPasswordMail(forgotPasswordModel.Email, forgotPasswordModel.ForgotPasswordLink + "?token="+emailBase64);
                 return Ok("Password Reset Email sent successfully!");
             }
             catch (Exception ex)
@@ -417,7 +417,7 @@ namespace API_PCC.Controllers
                 string emailBase64 = System.Convert.ToBase64String(plainTextBytes);
 
                 MailSender _mailSender = new MailSender(_emailsettings);
-                _mailSender.sendForgotPasswordMail(forgotPasswordModel.Email, forgotPasswordModel.ForgotPasswordLink);
+                _mailSender.sendForgotPasswordMail(forgotPasswordModel.Email, forgotPasswordModel.ForgotPasswordLink + "?token=" + emailBase64);
                 return Ok("Password Reset Email resent successfully!");
             }
             catch (Exception ex)

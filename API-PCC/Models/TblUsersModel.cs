@@ -60,4 +60,6 @@ public partial class TblUsersModel
     public int? CenterId { get; set; }
 
     public bool? AgreementStatus { get; set; }
+
+    public string RememberToken { get; set; }
 }

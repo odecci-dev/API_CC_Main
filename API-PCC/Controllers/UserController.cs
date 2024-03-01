@@ -75,6 +75,12 @@ namespace API_PCC.Controllers
             public string Email { get; set; }
             public string ForgotPasswordLink { get; set; }
         }
+        public class ResetPasswordModel
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
+
         [HttpGet]
         public async Task<IActionResult> UserForApprovalList()
         {
@@ -305,11 +311,43 @@ namespace API_PCC.Controllers
         }
 
 
-        // GET: user/rememberPassword
-        [HttpGet("{email}")]
-        public async Task<IActionResult> rememberPassword(String email)
+        // POST: user/rememberPassword
+        [HttpPost]
+        public async Task<IActionResult> rememberPassword(String token)
         {
-            return NoContent();
+            if (_context.TblUsersModels == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null!");
+            }
+
+            var userModel = await _context.TblUsersModels.Where(userModel => userModel.RememberToken == token).FirstAsync();
+            if (userModel == null) 
+            {
+                return NotFound("Token: "+ token + " not found");
+            }
+            return Ok(userModel?.Jwtoken);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> resetPassword(ResetPasswordModel resetPasswordModel)
+        {
+            if (_context.TblUsersModels == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.TblUsersModels'  is null!");
+            }
+
+            var userModel = await _context.TblUsersModels.Where(user => user.Email == resetPasswordModel.Email).FirstAsync();
+            if (userModel == null)
+            {
+                return Conflict("User not Found !!");
+            }
+
+            userModel.Password = Cryptography.Encrypt(resetPasswordModel.Password);
+            _context.Entry(userModel).State = EntityState.Modified;
+            
+            await _context.SaveChangesAsync();
+            
+            return Ok("Password Reset successful for user: " + resetPasswordModel.Email);
         }
 
         [HttpPost]

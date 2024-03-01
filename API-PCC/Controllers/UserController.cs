@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.Configuration;
 using System.Data;
 using System.Text;
@@ -62,6 +63,7 @@ namespace API_PCC.Controllers
             public string? password { get; set; }
             public string? ipaddress { get; set; }
             public string? location { get; set; }
+            public string? rememberToken { get; set; }
         }
         public class StatusReturns
         {
@@ -140,6 +142,15 @@ namespace API_PCC.Controllers
         public async Task<ActionResult<IEnumerable<TblUsersModel>>> login(loginCredentials data)
         {
             var loginstats = dbmet.GetUserLogIn(data.username, data.password, data.ipaddress, data.location);
+            if (!data.rememberToken.IsNullOrEmpty())
+            {
+                var userModel = await _context.TblUsersModels.Where(userModel => userModel.Username == data.username).FirstAsync();
+
+                userModel.RememberToken = data.rememberToken;
+                _context.Entry(userModel).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+            }
             var item = new StatusReturns();
             item.Status = loginstats.Status;
             item.Message = loginstats.Message;

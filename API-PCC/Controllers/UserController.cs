@@ -448,7 +448,12 @@ namespace API_PCC.Controllers
 
             var tokenModel = await _context.TblTokenModels.Where(tokenModel => tokenModel.Token == token).OrderByDescending(tokenModel => tokenModel.Id).FirstOrDefaultAsync();
 
-            return Ok(tokenModel.ExpiryDate.ToString("yyyy-MM-dd"));
+            if(tokenModel == null)
+            {
+                return Conflict("Token does not exists !!");
+            }
+
+            return Ok(tokenModel.ExpiryDate.ToString("yyyy-MM-dd hh:mm:ss tt"));
         }
 
         private bool UserTblExists(int id)

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static API_PCC.Controllers.HerdClassificationController;
-using PaginationModel = API_PCC.Controllers.FeedingSystemsController.PaginationModel;
 
 namespace API_PCC.Controllers
 {
@@ -20,6 +19,17 @@ namespace API_PCC.Controllers
             _context = context;
         }
 
+        public class PaginationModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public List<HBuffHerd> items { get; set; }
+        }
+
         public class BuffHerdSearchFilter
         {
             public string? herdCode { get; set; }
@@ -28,8 +38,8 @@ namespace API_PCC.Controllers
             public int pageSize { get; set; }
         }
 
-        // GET: BuffHerds/list
-        [HttpGet]
+        // POST: BuffHerds/list
+        [HttpPost]
         public async Task<ActionResult<IEnumerable<HBuffHerd>>> list(BuffHerdSearchFilter searchFilter)
         {
           if (_context.HBuffHerds == null)
@@ -102,7 +112,8 @@ namespace API_PCC.Controllers
             {
                 return Conflict("No records found!");
             }
-            return Ok(new HBuffHerd());
+
+            return Ok(hBuffHerd);
 
         }
 
@@ -182,7 +193,7 @@ namespace API_PCC.Controllers
         }
 
         // DELETE: BuffHerds/delete/5
-        [HttpDelete("{id}")]
+        [HttpPost]
         public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
             if (_context.HBuffHerds == null)

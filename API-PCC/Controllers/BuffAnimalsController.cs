@@ -28,8 +28,19 @@ namespace API_PCC.Controllers
             public int pageSize { get; set; }
         }
 
-        // GET: BuffAnimals/list
-        [HttpGet]
+        public class PaginationModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public List<ABuffAnimal> items { get; set; }
+        }
+
+        // POST: BuffAnimals/list
+        [HttpPost]
         public async Task<ActionResult<IEnumerable<ABuffAnimal>>> list(BuffAnimalSearchFilter searchFilter)
         {
           if (_context.ABuffAnimals == null)
@@ -101,7 +112,7 @@ namespace API_PCC.Controllers
             {
                 return Conflict("No records found!");
             }
-            return Ok(new ABuffAnimal());
+            return Ok(aBuffAnimal);
         }
 
         // PUT: BuffAnimals/update/5
@@ -151,7 +162,7 @@ namespace API_PCC.Controllers
         // POST: BuffAnimals/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ABuffAnimal>> save(ABuffAnimal aBuffAnimal)
+        public async Task<ActionResult<ABuffAnimal>> save(IFormFile file, [FromForm] ABuffAnimal aBuffAnimal)
         {
             if (_context.ABuffAnimals == null)
             {
@@ -167,6 +178,16 @@ namespace API_PCC.Controllers
 
             try
             {
+                byte[] fileBytes = new byte[] { };
+                if (file.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        file.CopyTo(ms);
+                        fileBytes = ms.ToArray();
+                    }
+                }
+                aBuffAnimal.Photo = fileBytes;
                 _context.ABuffAnimals.Add(aBuffAnimal);
                 await _context.SaveChangesAsync();
 
@@ -180,7 +201,7 @@ namespace API_PCC.Controllers
         }
 
         // DELETE: BuffAnimals/delete/5
-        [HttpDelete("{id}")]
+        [HttpPost]
         public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
             if (_context.ABuffAnimals == null)
@@ -248,7 +269,7 @@ namespace API_PCC.Controllers
             }
         }
 
-        private bool ABuffAnimalExists(int id)
+            private bool ABuffAnimalExists(int id)
         {
             return (_context.ABuffAnimals?.Any(e => e.Id == id)).GetValueOrDefault();
         }

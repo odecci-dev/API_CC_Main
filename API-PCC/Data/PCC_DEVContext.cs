@@ -70,6 +70,10 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Birth_Type_Desc");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -77,26 +81,26 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
-            entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
             entity.Property(e => e.UpdatedBy)
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
+            entity.Property(e => e.DateUpdated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
         });
 
         modelBuilder.Entity<ABloodComp>(entity =>
@@ -113,6 +117,10 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(6)
                 .IsUnicode(false)
                 .HasColumnName("Blood_Desc");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -120,12 +128,10 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
+            entity.Property(e => e.UpdatedBy)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
@@ -133,13 +139,15 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Updated_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
         });
 
         modelBuilder.Entity<ABreed>(entity =>
@@ -157,6 +165,10 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("Breed_Desc");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -164,26 +176,27 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
+            entity.Property(e => e.UpdatedBy)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
+            entity.Property(e => e.DateUpdated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DeleteFlag)
+                .HasColumnName("Delete_Flag");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
             entity.Property(e => e.DateDeleted)
                 .HasColumnType("date")
                 .HasColumnName("Date_Deleted");
             entity.Property(e => e.DateRestored)
                 .HasColumnType("date")
                 .HasColumnName("Date_Restored");
-            entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Updated_By");
         });
 
         modelBuilder.Entity<ABuffAnimal>(entity =>
@@ -196,132 +209,122 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Animal_ID");
-            entity.Property(e => e.BirthTypeCode)
-                .IsRequired()
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("Birth_Type_Code");
-            entity.Property(e => e.BloodCode)
-                .IsRequired()
-                .HasMaxLength(6)
-                .IsUnicode(false)
-                .HasColumnName("Blood_Code");
-            entity.Property(e => e.BreedCode)
-                .IsRequired()
-                .HasMaxLength(2)
-                .IsUnicode(false)
-                .HasColumnName("Breed_Code");
-            entity.Property(e => e.BuffaloType)
-                .IsUnicode(false)
-                .HasColumnName("Buffalo_type");
-            entity.Property(e => e.CountryBirth)
-                .IsRequired()
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("Country_Birth");
-            entity.Property(e => e.CreatedBy)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Created_By");
-            entity.Property(e => e.DateAcquisition)
-                .HasColumnType("date")
-                .HasColumnName("Date_Acquisition");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateOfBirth)
-                .HasColumnType("date")
-                .HasColumnName("Date_of_Birth");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.HerdCode)
-                .IsRequired()
-                .HasMaxLength(3)
-                .IsUnicode(false)
-                .HasColumnName("Herd_Code");
-            entity.Property(e => e.IdSystem)
-                .IsUnicode(false)
-                .HasColumnName("ID_System");
-            entity.Property(e => e.Marking)
-                .IsRequired()
-                .IsUnicode(false);
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.OriginAcquisition)
-                .IsRequired()
                 .IsUnicode(false)
-                .HasColumnName("Origin_Acquisition");
-            entity.Property(e => e.PedigreeRecords)
-                .IsUnicode(false)
-                .HasColumnName("Pedigree_Records");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
+                .HasColumnName("Name");
             entity.Property(e => e.Rfid)
                 .IsRequired()
                 .HasMaxLength(16)
                 .IsUnicode(false)
                 .HasColumnName("RFID");
+            entity.Property(e => e.HerdCode)
+                .IsRequired()
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .HasColumnName("Herd_Code");
+            entity.Property(e => e.DateOfBirth)
+                .HasColumnType("date")
+                .HasColumnName("Date_of_Birth");
             entity.Property(e => e.Sex)
                 .IsRequired()
                 .HasMaxLength(1)
                 .IsUnicode(false)
                 .IsFixedLength();
+            entity.Property(e => e.BuffaloType)
+                .IsUnicode(false)
+                .HasColumnName("Buffalo_type");
+            entity.Property(e => e.IdSystem)
+                .IsUnicode(false)
+                .HasColumnName("ID_System");
+            entity.Property(e => e.PedigreeRecords)
+                .IsUnicode(false)
+                .HasColumnName("Pedigree_Records");
+            entity.Property(e => e.Photo)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Photo");
+            entity.Property(e => e.CountryBirth)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Country_Birth");
+            entity.Property(e => e.OriginAcquisition)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Origin_Acquisition");
+            entity.Property(e => e.DateAcquisition)
+                .HasColumnType("date")
+                .HasColumnName("Date_Acquisition");
+            entity.Property(e => e.Marking)
+                .IsRequired()
+                .IsUnicode(false);
+            entity.Property(e => e.SireRegNum)
+               .IsRequired()
+               .HasMaxLength(17)
+               .IsUnicode(false)
+               .HasColumnName("Sire_Reg_Num");
             entity.Property(e => e.SireIdNum)
                 .IsRequired()
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Sire_ID_Num");
-            entity.Property(e => e.SireRegNum)
+            entity.Property(e => e.BreedCode)
                 .IsRequired()
-                .HasMaxLength(17)
+                .HasMaxLength(2)
                 .IsUnicode(false)
-                .HasColumnName("Sire_Reg_Num");
+                .HasColumnName("Breed_Code");
+            entity.Property(e => e.BloodCode)
+                .IsRequired()
+                .HasMaxLength(6)
+                .IsUnicode(false)
+                .HasColumnName("Blood_Code");
+            entity.Property(e => e.BirthTypeCode)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Birth_Type_Code");
             entity.Property(e => e.TypeOwnCode)
                 .IsRequired()
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Type_Own_Code");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.CreatedBy)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Created_By");
+            entity.Property(e => e.CreatedDate)
+                .IsRequired()
+                .HasColumnType("date")
+                .HasColumnName("Created_Date");
             entity.Property(e => e.UpdatedBy)
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
+            entity.Property(e => e.UpdateDate)
+                .IsRequired()
+                .HasColumnType("date")
+                .HasColumnName("Update_Date");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
         });
 
         modelBuilder.Entity<ATypeOwnership>(entity =>
         {
             entity.ToTable("A_Type_Ownership");
 
-            entity.Property(e => e.CreatedBy)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Created_By");
-            entity.Property(e => e.DateCreated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
-            entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
             entity.Property(e => e.TypeOwnCode)
                 .IsRequired()
                 .HasMaxLength(12)
@@ -332,10 +335,37 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(12)
                 .IsUnicode(false)
                 .HasColumnName("Type_Own_Desc");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Status");
+            entity.Property(e => e.CreatedBy)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Created_By");
+            entity.Property(e => e.DateCreated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Created");
             entity.Property(e => e.UpdatedBy)
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
+            entity.Property(e => e.DateUpdated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By"); 
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
         });
 
         modelBuilder.Entity<ActionTbl>(entity =>
@@ -350,6 +380,11 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Action_name");
+            entity.Property(e => e.ModuleId)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Module_Id");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -357,12 +392,9 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
+            entity.Property(e => e.UpdatedBy)
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
@@ -370,17 +402,15 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
-            entity.Property(e => e.ModuleId)
-                .IsRequired()
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("Module_Id");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
-                .IsUnicode(false)
-                .HasColumnName("Updated_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
         });
 
         modelBuilder.Entity<HBuffHerd>(entity =>
@@ -388,15 +418,15 @@ public partial class PCC_DEVContext : DbContext
             entity.ToTable("H_Buff_Herd");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.HerdName)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Herd_Name");
             entity.Property(e => e.HerdCode)
                 .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("Herd_Code");
-            entity.Property(e => e.HerdName)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Herd_Name");
             entity.Property(e => e.HerdSize).HasColumnName("Herd_Size");
             entity.Property(e => e.BBuffCode)
                 .IsRequired()
@@ -468,16 +498,13 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateDeleted)
                 .HasColumnType("date")
                 .HasColumnName("Date_Deleted");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
             entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.DateRestored)
                 .HasColumnType("date")
                 .HasColumnName("Date_Restored");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
@@ -505,6 +532,10 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("B_Buff_Desc");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -512,48 +543,10 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
-            entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
             entity.Property(e => e.UpdatedBy)
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
-        });
-
-        modelBuilder.Entity<HFarmerAffiliation>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_H");
-
-            entity.ToTable("H_Farmer_Affiliation");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedBy)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Created_By");
-            entity.Property(e => e.DateCreated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
@@ -561,6 +554,22 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+        });
+
+        modelBuilder.Entity<HFarmerAffiliation>(entity =>
+        {
+            entity.ToTable("H_Farmer_Affiliation");
+
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FCode)
                 .IsRequired()
                 .HasMaxLength(10)
@@ -571,20 +580,10 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("F_Desc");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
+            entity.Property(e => e.Status)
                 .IsRequired()
                 .IsUnicode(false)
-                .HasColumnName("Updated_By");
-        });
-
-        modelBuilder.Entity<HFeedingSystem>(entity =>
-        {
-            entity.ToTable("H_Feeding_System");
-
-            entity.Property(e => e.Id).HasColumnName("id");
+                .HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -592,12 +591,10 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
+            entity.Property(e => e.UpdatedBy)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
@@ -605,6 +602,22 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+        });
+
+        modelBuilder.Entity<HFeedingSystem>(entity =>
+        {
+            entity.ToTable("H_Feeding_System");
+
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FeedCode)
                 .IsRequired()
                 .HasMaxLength(10)
@@ -615,20 +628,10 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("Feed_Desc");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
+            entity.Property(e => e.Status)
                 .IsRequired()
                 .IsUnicode(false)
-                .HasColumnName("Updated_By");
-        });
-
-            modelBuilder.Entity<HHerdClassification>(entity =>
-            {
-                entity.ToTable("H_Herd_Classification");
-
-            entity.Property(e => e.Id).HasColumnName("id");
+                .HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -636,12 +639,10 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
+            entity.Property(e => e.UpdatedBy)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
@@ -649,30 +650,65 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+        });
+
+            modelBuilder.Entity<HHerdClassification>(entity =>
+            {
+                entity.ToTable("H_Herd_Classification");
+
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.HTypeCode)
                 .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("H_Type_Code");
-            entity.Property(e => e.LevelFrom)
-                    .IsUnicode(false)
-                    .HasColumnName("Level_from");
-
-            entity.Property(e => e.LevelTo)
-                .IsUnicode(false)
-                .HasColumnName("Level_to");
-                entity.Property(e => e.HTypeDesc)
+            entity.Property(e => e.HTypeDesc)
                 .IsRequired()
                 .HasMaxLength(17)
                 .IsFixedLength()
                 .HasColumnName("H_Type_Desc");
-            entity.Property(e => e.RestoredBy)
+            entity.Property(e => e.CreatedBy)
+                .IsRequired()
                 .IsUnicode(false)
-                .HasColumnName("Restored_By");
+                .HasColumnName("Created_By");
+            entity.Property(e => e.DateCreated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Created");
             entity.Property(e => e.UpdatedBy)
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
+                entity.Property(e => e.DateUpdated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+            entity.Property(e => e.LevelFrom)
+                .IsUnicode(false)
+                .HasColumnName("Level_from");
+            entity.Property(e => e.LevelTo)
+                .IsUnicode(false)
+                .HasColumnName("Level_to");
         });
 
         modelBuilder.Entity<ModuleTbl>(entity =>
@@ -681,7 +717,12 @@ public partial class PCC_DEVContext : DbContext
 
             entity.ToTable("Module_tbl");
 
-            entity.Property(e => e.ModuleId).HasColumnName("Module_Id");
+            entity.Property(e => e.ModuleId)
+                .HasColumnName("Module_Id");
+            entity.Property(e => e.ModuleName)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Module_Name");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)
@@ -689,12 +730,9 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
+            entity.Property(e => e.UpdatedBy)
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
@@ -702,10 +740,9 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
-            entity.Property(e => e.ModuleName)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Module_Name");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
             entity.Property(e => e.ParentModule)
                 .IsRequired()
                 .IsUnicode(false)
@@ -713,9 +750,9 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
-                .IsUnicode(false)
-                .HasColumnName("Updated_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
         });
 
         modelBuilder.Entity<TblApiTokenModel>(entity =>
@@ -723,8 +760,9 @@ public partial class PCC_DEVContext : DbContext
             entity.ToTable("tbl_ApiTokenModel");
 
             entity.Property(e => e.ApiToken).IsUnicode(false);
-            entity.Property(e => e.Name).IsUnicode(false);
             entity.Property(e => e.Role).IsUnicode(false);
+            entity.Property(e => e.Name).IsUnicode(false);
+            entity.Property(e => e.Status).IsUnicode(false);
         });
 
         modelBuilder.Entity<TblAttempt>(entity =>
@@ -743,153 +781,38 @@ public partial class PCC_DEVContext : DbContext
         modelBuilder.Entity<TblCenterModel>(entity =>
         {
             entity.ToTable("tbl_CenterModel");
-
+            entity.Property(e => e.CenterName)
+                .HasMaxLength(12)
+                .IsUnicode(false);
             entity.Property(e => e.CenterDesc)
                 .HasMaxLength(12)
                 .IsUnicode(false)
                 .HasColumnName("Center_Desc");
-            entity.Property(e => e.CenterName)
-                .HasMaxLength(12)
-                .IsUnicode(false);
             entity.Property(e => e.CreatedBy)
                 .IsUnicode(false)
                 .HasColumnName("Created_By");
             entity.Property(e => e.DateCreated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
-            entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
             entity.Property(e => e.UpdatedBy)
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
-        });
-
-        modelBuilder.Entity<TblRegistrationOtpmodel>(entity =>
-        {
-            entity.ToTable("tbl_RegistrationOTPModel");
-
-            entity.Property(e => e.Email).IsUnicode(false);
-            entity.Property(e => e.Otp)
-                .IsUnicode(false)
-                .HasColumnName("OTP");
-        });
-
-        modelBuilder.Entity<TblStatusModel>(entity =>
-        {
-            entity.ToTable("tbl_StatusModel");
-
-            entity.Property(e => e.Status)
-                .HasMaxLength(250)
-                .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<TblUsersModel>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_UsersModel");
-
-            entity.ToTable("tbl_UsersModel");
-
-
-            entity.Property(e => e.Address).IsUnicode(false);
-            entity.Property(e => e.Cno)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.CreatedBy)
-                .IsUnicode(false)
-                .HasColumnName("Created_By");
-            entity.Property(e => e.DateCreated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
                 .HasColumnName("Deleted_By");
-            entity.Property(e => e.Email)
-                .IsRequired()
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.EmployeeId)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("EmployeeID");
-            entity.Property(e => e.FilePath)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.Fname).IsUnicode(false);
-            entity.Property(e => e.Fullname)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.Gender)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.Jwtoken)
-                .IsUnicode(false)
-                .HasColumnName("JWToken");
-            entity.Property(e => e.Lname).IsUnicode(false);
-            entity.Property(e => e.Mname).IsUnicode(false);
-            entity.Property(e => e.Password)
-                .IsRequired()
-                .IsUnicode(false);
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
-            entity.Property(e => e.UpdatedBy)
-                .IsUnicode(false)
-                .HasColumnName("Updated_By");
-            entity.Property(e => e.Username)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.RememberToken)
-                .IsUnicode(false)
-                .HasMaxLength(255)
-                .HasColumnName("RememberToken");
-        });
-
-
-        modelBuilder.Entity<TblTokenModel>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_tbl_TokenModel");
-
-            entity.ToTable("tbl_TokenModel");
-            entity.Property(e => e.Token)
-                   .IsUnicode(false)
-                   .IsRequired()
-                   .HasColumnName("Token");
-            entity.Property(e => e.ExpiryDate)
-                   .IsUnicode(false)
-                   .IsRequired()
-                   .HasColumnName("ExpiryDate");
-            entity.Property(e => e.Status)
-                   .IsUnicode(false)
-                   .IsRequired()
-                   .HasColumnName("Status");
-            entity.Property(e => e.DateCreated)
-                   .IsUnicode(false)
-                   .IsRequired()
-                   .HasColumnName("Date_Created");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
         });
 
         modelBuilder.Entity<TblMailSenderCredential>(entity =>
@@ -898,6 +821,7 @@ public partial class PCC_DEVContext : DbContext
 
             entity.ToTable("tbl_MailSenderCredential");
 
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Email)
                 .IsRequired()
                 .IsUnicode(false)
@@ -919,7 +843,134 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("ExpiryDate");
         });
-            
+
+        modelBuilder.Entity<TblRegistrationOtpmodel>(entity =>
+        {
+            entity.ToTable("tbl_RegistrationOTPModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.Property(e => e.Email).IsUnicode(false);
+            entity.Property(e => e.Otp)
+                .IsUnicode(false)
+                .HasColumnName("OTP");
+            entity.Property(e => e.Status)
+                .IsUnicode(false)
+                .HasColumnName("Status");
+        });
+
+        modelBuilder.Entity<TblStatusModel>(entity =>
+        {
+            entity.ToTable("tbl_StatusModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<TblTokenModel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_TokenModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.ToTable("tbl_TokenModel");
+            entity.Property(e => e.Token)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Token");
+            entity.Property(e => e.ExpiryDate)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("ExpiryDate");
+            entity.Property(e => e.Status)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Status");
+            entity.Property(e => e.DateCreated)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Date_Created");
+        });
+
+        modelBuilder.Entity<TblUsersModel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_UsersModel");
+
+            entity.ToTable("tbl_UsersModel");
+
+            entity.Property(e => e.Username)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.Password)
+                .IsRequired()
+                .IsUnicode(false);
+            entity.Property(e => e.Fullname)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.Fname).IsUnicode(false);
+            entity.Property(e => e.Lname).IsUnicode(false);
+            entity.Property(e => e.Mname).IsUnicode(false);
+            entity.Property(e => e.Email)
+                .IsRequired()
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.Gender)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.EmployeeId)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("EmployeeID");
+            entity.Property(e => e.Jwtoken)
+                .IsUnicode(false)
+                .HasColumnName("JWToken");
+            entity.Property(e => e.FilePath)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.Active)
+                .IsUnicode(false)
+                .HasColumnName("Active");
+            entity.Property(e => e.Cno)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.Address).IsUnicode(false);
+            entity.Property(e => e.CreatedBy)
+                .IsUnicode(false)
+                .HasColumnName("Created_By");
+            entity.Property(e => e.DateCreated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Created");
+            entity.Property(e => e.UpdatedBy)
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
+            entity.Property(e => e.DateUpdated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+            entity.Property(e => e.CenterId)
+                .IsUnicode(false)
+                .HasColumnName("CenterId");
+            entity.Property(e => e.AgreementStatus)
+                .IsUnicode(false)
+                .HasColumnName("AgreementStatus");
+            entity.Property(e => e.RememberToken)
+                .IsUnicode(false)
+                .HasMaxLength(255)
+                .HasColumnName("RememberToken");
+        });
+
         OnModelCreatingGeneratedProcedures(modelBuilder);
         OnModelCreatingPartial(modelBuilder);
     }

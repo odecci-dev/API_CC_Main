@@ -53,9 +53,11 @@ public partial class ABuffAnimal
     public bool DeleteFlag { get; set; }
 
     public string CreatedBy { get; set; }
-    public string CreatedDate { get; set; }
+    public DateTime? CreatedDate { get; set; }
 
     public string UpdatedBy { get; set; }
+    public DateTime? UpdateDate { get; set; }
+
 
     public DateTime? DateDeleted { get; set; }
 

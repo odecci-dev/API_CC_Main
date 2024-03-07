@@ -125,7 +125,7 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.Center' is null!");
             }
 
             var centerModel = _context.TblCenterModels.AsNoTracking().Where(feedSys => !feedSys.DeleteFlag && feedSys.Id == id).FirstOrDefault();

@@ -233,7 +233,7 @@ namespace API_PCC.Controllers
 
             if (_context.HBuffHerds == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.BuffHerd' is null!");
             }
 
             var hBuffHerd = await _context.HBuffHerds.FindAsync(restorationModel.id);

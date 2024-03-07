@@ -43,10 +43,10 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<ABuffAnimal>>> list(BuffAnimalSearchFilter searchFilter)
         {
-          if (_context.ABuffAnimals == null)
-          {
-                return NotFound();
-          }
+            if (_context.ABuffAnimals == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.BuffAnimal' is null!");
+            }
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
@@ -162,7 +162,7 @@ namespace API_PCC.Controllers
         // POST: BuffAnimals/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ABuffAnimal>> save(IFormFile file, [FromForm] ABuffAnimal aBuffAnimal)
+        public async Task<ActionResult<ABuffAnimal>> save(ABuffAnimal aBuffAnimal)
         {
             if (_context.ABuffAnimals == null)
             {
@@ -178,16 +178,6 @@ namespace API_PCC.Controllers
 
             try
             {
-                byte[] fileBytes = new byte[] { };
-                if (file.Length > 0)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        file.CopyTo(ms);
-                        fileBytes = ms.ToArray();
-                    }
-                }
-                aBuffAnimal.Photo = fileBytes;
                 _context.ABuffAnimals.Add(aBuffAnimal);
                 await _context.SaveChangesAsync();
 
@@ -200,7 +190,7 @@ namespace API_PCC.Controllers
             }
         }
 
-        // DELETE: BuffAnimals/delete/5
+        // POST: BuffAnimals/delete/5
         [HttpPost]
         public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
@@ -233,6 +223,18 @@ namespace API_PCC.Controllers
             }
         }
 
+        // GET: FeedingSystems/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ABuffAnimal>>> view()
+        {
+            if (_context.ABuffAnimals == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.ABuffAnimals' is null.");
+            }
+            return await _context.ABuffAnimals.Where(buffAnimal => !buffAnimal.DeleteFlag).ToListAsync();
+        }
+
+
         // POST: BuffAnimals/restore/
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -241,7 +243,7 @@ namespace API_PCC.Controllers
 
             if (_context.ABuffAnimals == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.BuffAnimal' is null!");
             }
 
             var aBuffAnimal = await _context.ABuffAnimals.FindAsync(restorationModel.id);

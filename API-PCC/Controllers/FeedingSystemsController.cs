@@ -167,33 +167,33 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<HFeedingSystem>> save(HFeedingSystem hFeedingSystem)
         {
-          if (_context.HFeedingSystems == null)
-          {
-              return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
-          }
+            if (_context.HFeedingSystems == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
+            }
 
             bool hasDuplicateOnSave = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc)).GetValueOrDefault();
 
-          if (hasDuplicateOnSave)
-          {
+            if (hasDuplicateOnSave)
+            {
                 return Conflict("Entity already exists");
-          }
+            }
 
-          try
-          {
+            try
+            {
                 _context.HFeedingSystems.Add(hFeedingSystem);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("save", new { id = hFeedingSystem.Id }, hFeedingSystem);
-          }
-          catch (Exception ex)
-          {
+            }
+            catch (Exception ex)
+            {
                 String exception = ex.GetBaseException().ToString();
                 return Problem(exception);
-          }
+            }
         }
 
-        // DELETE: FeedingSystems/delete/5
+        // POST: FeedingSystems/delete/5
         [HttpPost]
         public async Task<IActionResult> delete(DeletionModel deletionModel)
         {

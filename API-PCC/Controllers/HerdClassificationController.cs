@@ -53,7 +53,7 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
             }
 
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
@@ -114,7 +114,7 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
             }
             var HHerdClassification = await _context.HHerdClassifications.FindAsync(id);
 
@@ -133,7 +133,7 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
             }
 
             var herdType = _context.HHerdClassifications.AsNoTracking().Where(herdType => !herdType.DeleteFlag && herdType.Id == id).FirstOrDefault();
@@ -177,7 +177,7 @@ namespace API_PCC.Controllers
         {
           if (_context.HHerdClassifications == null)
           {
-            return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+            return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
           }
 
             bool hasDuplicateOnSave = (_context.HHerdClassifications?.Any(ht => !ht.DeleteFlag && ht.HTypeDesc == HHerdClassification.HTypeDesc && ht.HTypeCode == HHerdClassification.HTypeCode)).GetValueOrDefault();
@@ -206,7 +206,7 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
             }
             var HHerdClassification = await _context.HHerdClassifications.FindAsync(deletionModel.id);
             if (HHerdClassification == null || HHerdClassification.DeleteFlag)
@@ -245,7 +245,7 @@ namespace API_PCC.Controllers
         {
             if (_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
             }
             return await _context.HHerdClassifications.Where(HerdClassification => !HerdClassification.DeleteFlag).ToListAsync();
         }
@@ -258,7 +258,7 @@ namespace API_PCC.Controllers
 
             if(_context.HHerdClassifications == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdTyoe' is null!");
+                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
             }
 
             var HHerdClassification = await _context.HHerdClassifications.FindAsync(restorationModel.id);

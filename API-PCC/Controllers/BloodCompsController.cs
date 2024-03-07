@@ -104,7 +104,7 @@ namespace API_PCC.Controllers
         {
             if (_context.ABloodComps == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.ABloodCOmps' is null!");
             }
             var bloodComp = await _context.ABloodComps.FindAsync(id);
 

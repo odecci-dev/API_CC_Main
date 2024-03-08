@@ -98,7 +98,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)

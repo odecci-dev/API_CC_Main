@@ -89,7 +89,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -122,7 +122,7 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, HFarmerAffiliation hFarmerAffiliation)
         {
-            if (id != hFarmerAffiliation.Id)
+            if (_context.HFarmerAffiliations == null)
             {
                 return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
             }
@@ -202,9 +202,9 @@ namespace API_PCC.Controllers
             }
 
             var farmerAffiliation = await _context.HFarmerAffiliations.FindAsync(deletionModel.id);
-            if (farmerAffiliation == null || !farmerAffiliation.DeleteFlag)
+            if (farmerAffiliation == null || farmerAffiliation.DeleteFlag)
             {
-                return Conflict("No deleted records matched!");
+                return Conflict("No records matched!");
             }
 
             try

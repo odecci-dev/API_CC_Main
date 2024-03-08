@@ -34,7 +34,7 @@ namespace API_PCC.Controllers
         {
             if (_context.TblMailSenderCredentials == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.TblMailSenderCredentials' is null!");
             }
             return await _context.TblMailSenderCredentials.ToListAsync();
         }
@@ -62,7 +62,7 @@ namespace API_PCC.Controllers
         {
             if (_context.TblMailSenderCredentials == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.tblMailSenders' is null");
+                return Problem("Entity set 'PCC_DEVContext.TblMailSenderCredentials' is null");
             }
 
             var mailSenderModel = _context.TblMailSenderCredentials.AsNoTracking().Where(mailSender => mailSender.Id == id).FirstOrDefault();
@@ -117,7 +117,7 @@ namespace API_PCC.Controllers
         {
             if (_context.TblMailSenderCredentials == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.tblMailSender' is null!");
+                return Problem("Entity set 'PCC_DEVContext.TblMailSenderCredentials' is null!");
             }
 
             bool hasDuplicateOnSave = (_context.TblMailSenderCredentials?.Any(mailSender => mailSender.Email == Cryptography.Encrypt(mailSenderCredential.Email))).GetValueOrDefault();
@@ -161,12 +161,12 @@ namespace API_PCC.Controllers
         {
             if (_context.TblMailSenderCredentials == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.TblMailSenderCredentials' is null!");
             }
             var mailSender = await _context.TblMailSenderCredentials.FindAsync(id);
             if (mailSender == null)
             {
-                return NotFound();
+                return Conflict("No records Matched!");
             }
 
             _context.TblMailSenderCredentials.Remove(mailSender);

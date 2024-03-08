@@ -88,7 +88,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -122,9 +122,9 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, HBuffHerd hBuffHerd)
         {
-            if (id != hBuffHerd.Id)
+            if (_context.HBuffHerds == null)
             {
-                return BadRequest();
+                return Problem("Entity set 'PCC_DEVContext.HBuffHerds' is null!");
             }
 
             var buffHerd = _context.HBuffHerds.AsNoTracking().Where(buffHerd => !buffHerd.DeleteFlag && buffHerd.Id == id).FirstOrDefault();

@@ -90,7 +90,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -106,13 +106,13 @@ namespace API_PCC.Controllers
         {
             if (_context.ATypeOwnerships == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.AtypeOwnerships' is null!");
             }
             var aTypeOwnership = await _context.ATypeOwnerships.FindAsync(id);
 
             if (aTypeOwnership == null)
             {
-                return NotFound();
+                return Conflict("No records matched!");
             }
 
             return Ok(aTypeOwnership);
@@ -126,7 +126,7 @@ namespace API_PCC.Controllers
             
             if (id != aTypeOwnership.Id)
             {
-                return Problem("Entity set 'PCC_DEVContext.HtypeOwnerships' is null!");
+                return Problem("Entity set 'PCC_DEVContext.AtypeOwnerships' is null!");
             }
 
             var typeOwnership = _context.ATypeOwnerships.AsNoTracking().Where(typeOwnership => !typeOwnership.DeleteFlag && typeOwnership.Id == id).FirstOrDefault();
@@ -201,13 +201,13 @@ namespace API_PCC.Controllers
         {
             if (_context.ATypeOwnerships == null)
             {
-                return Problem("Entity set 'PCC_DEVContext.HtypeOwnerships' is null!");
+                return Problem("Entity set 'PCC_DEVContext.AtypeOwnerships' is null!");
             }
 
             var typeOwnership = await _context.ATypeOwnerships.FindAsync(deletionModel.id);
-            if (typeOwnership == null || !typeOwnership.DeleteFlag)
+            if (typeOwnership == null || typeOwnership.DeleteFlag)
             {
-                return Conflict("No deleted records matched!");
+                return Conflict("No records matched!");
             }
 
             try

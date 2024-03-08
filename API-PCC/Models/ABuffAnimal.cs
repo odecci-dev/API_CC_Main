@@ -28,7 +28,7 @@ public partial class ABuffAnimal
 
     public string PedigreeRecords { get; set; }
 
-    public byte[] Photo { get; set; }
+    public String Photo { get; set; }
 
     public string CountryBirth { get; set; }
 

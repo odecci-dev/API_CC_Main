@@ -88,9 +88,9 @@ namespace API_PCC.Controllers
                 item.TotalPage = t_records.ToString();
                 item.PageSize = pagesize.ToString();
                 item.TotalRecord = totalItems.ToString();
-                item.items = items;
+                item.items = items;x
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)

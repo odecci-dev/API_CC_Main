@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using static API_PCC.Controllers.HerdClassificationController;
+using API_PCC.ApplicationModels.Common;
+using API_PCC.ApplicationModels;
 
 namespace API_PCC.Controllers
 {
@@ -27,17 +29,6 @@ namespace API_PCC.Controllers
             public string? breedDesc { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
-        }
-
-        public class PaginationModel
-        {
-            public string? CurrentPage { get; set; }
-            public string? NextPage { get; set; }
-            public string? PrevPage { get; set; }
-            public string? TotalPage { get; set; }
-            public string? PageSize { get; set; }
-            public string? TotalRecord { get; set; }
-            public List<ABreed> items { get; set; }
         }
 
         // POST: Breeds/list
@@ -73,8 +64,8 @@ namespace API_PCC.Controllers
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
                 items = breedList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-                var result = new List<PaginationModel>();
-                var item = new PaginationModel();
+                var result = new List<BreedsPagedModel>();
+                var item = new BreedsPagedModel();
 
                 int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
                 item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
@@ -94,8 +85,8 @@ namespace API_PCC.Controllers
 
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -155,8 +146,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -185,8 +176,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -218,8 +209,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -265,8 +256,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 

@@ -1,4 +1,7 @@
-﻿using API_PCC.Data;
+﻿using API_PCC.ApplicationModels;
+using API_PCC.ApplicationModels.Common;
+using API_PCC.Data;
+using API_PCC.DtoModels;
 using API_PCC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,28 +22,9 @@ namespace API_PCC.Controllers
             _context = context;
         }
 
-        public class PaginationModel
-        {
-            public string? CurrentPage { get; set; }
-            public string? NextPage { get; set; }
-            public string? PrevPage { get; set; }
-            public string? TotalPage { get; set; }
-            public string? PageSize { get; set; }
-            public string? TotalRecord { get; set; }
-            public List<HBuffHerd> items { get; set; }
-        }
-
-        public class BuffHerdSearchFilter
-        {
-            public string? herdCode { get; set; }
-            public string? herdName { get; set; }
-            public int page { get; set; }
-            public int pageSize { get; set; }
-        }
-
         // POST: BuffHerds/list
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HBuffHerd>>> list(BuffHerdSearchFilter searchFilter)
+        public async Task<ActionResult<IEnumerable<HBuffHerd>>> list(BuffHerdSearchFilterModel searchFilter)
         {
           if (_context.HBuffHerds == null)
           {
@@ -68,12 +52,22 @@ namespace API_PCC.Controllers
                     hBuffHerdList = hBuffHerdList.Where(buffHerd => buffHerd.HerdName.Contains(searchFilter.herdName));
                 }
 
+                if (searchFilter.ownerName != null && searchFilter.ownerName != "")
+                {
+                    hBuffHerdList = hBuffHerdList.Where(buffHerd => buffHerd.Owner.Contains(searchFilter.ownerName));
+                }
+
+                if (searchFilter.farmManager != null && searchFilter.farmManager != "")
+                {
+                    hBuffHerdList = hBuffHerdList.Where(buffHerd => buffHerd.FarmManager.Contains(searchFilter.farmManager));
+                }
+
                 totalItems = hBuffHerdList.ToList().Count();
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
                 items = hBuffHerdList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-                var result = new List<PaginationModel>();
-                var item = new PaginationModel();
+                var result = new List<HerdPagedModel>();
+                var item = new HerdPagedModel();
 
                 int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
                 item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
@@ -93,8 +87,8 @@ namespace API_PCC.Controllers
 
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -120,7 +114,7 @@ namespace API_PCC.Controllers
         // PUT: BuffHerds/update/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> update(int id, HBuffHerd hBuffHerd)
+        public async Task<IActionResult> update(int id, BuffHerdRegistrationModel registrationModel)
         {
             if (_context.HBuffHerds == null)
             {
@@ -134,12 +128,7 @@ namespace API_PCC.Controllers
                 return Conflict("No records matched!");
             }
 
-            if (id != hBuffHerd.Id)
-            {
-                return Conflict("Ids mismatched!");
-            }
-
-            bool hasDuplicateOnUpdate = (_context.HBuffHerds?.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdName == hBuffHerd.HerdName && buffHerd.HerdCode == hBuffHerd.HerdCode && buffHerd.Id != id)).GetValueOrDefault();
+            bool hasDuplicateOnUpdate = (_context.HBuffHerds?.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdName == registrationModel.HerdName && buffHerd.HerdCode == registrationModel.HerdCode && buffHerd.Id != id)).GetValueOrDefault();
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -156,40 +145,68 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
         // POST: BuffHerds/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<HBuffHerd>> save(HBuffHerd hBuffHerd)
+        public async Task<ActionResult<HBuffHerd>> save(BuffHerdRegistrationModel registrationModel)
         {
           if (_context.HBuffHerds == null)
           {
               return Problem("Entity set 'PCC_DEVContext.HBuffHerds'  is null.");
-            }
-            bool hasDuplicateOnSave = (_context.HBuffHerds?.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdCode == hBuffHerd.HerdCode && buffHerd.HerdName == hBuffHerd.HerdName)).GetValueOrDefault();
+          }
 
+            bool hasDuplicateOnSave = (_context.HBuffHerds?.Any(buffHerd => !buffHerd.DeleteFlag && (buffHerd.HerdCode == registrationModel.HerdCode || buffHerd.HerdName == registrationModel.HerdName))).GetValueOrDefault();
 
             if (hasDuplicateOnSave)
             {
-                return Conflict("Entity already exists");
+                return Conflict("Herd already exists");
             }
 
             try
             {
-                _context.HBuffHerds.Add(hBuffHerd);
+                var BuffHerdModel = buildBuffHerd(registrationModel);
+                BuffHerdModel.DateCreated = DateTime.Now;
+
+                _context.HBuffHerds.Add(BuffHerdModel);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("save", new { id = hBuffHerd.Id }, hBuffHerd);
+                return Ok("Herd successfully registered!");
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
+        }
+
+        private HBuffHerd buildBuffHerd(BuffHerdRegistrationModel registrationModel)
+        {
+            var BuffHerdModel = new HBuffHerd()
+            {
+                HerdName = registrationModel.HerdName,
+                HerdCode = registrationModel.HerdCode,
+                HerdSize = registrationModel.HerdSize,
+                BBuffCode = registrationModel.BBuffCode,
+                FCode = registrationModel.FCode,
+                HTypeCode = registrationModel.HTypeCode,
+                FeedCode = registrationModel.FeedCode,
+                FarmManager = registrationModel.FarmManager,
+                FarmAddress = registrationModel.FarmAddress,
+                Owner = registrationModel.Owner,
+                Address = registrationModel.Address,
+                TelNo = registrationModel.TelNo,
+                MNo = registrationModel.MNo,
+                Email = registrationModel.Email,
+                OrganizationName = registrationModel.OrganizationName,
+                CreatedBy = registrationModel.CreatedBy,
+            };
+
+            return BuffHerdModel;
         }
 
         // DELETE: BuffHerds/delete/5
@@ -220,8 +237,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -256,8 +273,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 

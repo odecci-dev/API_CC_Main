@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using static API_PCC.Controllers.UserController;
 
 namespace API_PCC.Controllers
@@ -74,8 +75,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                string exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -110,7 +111,7 @@ namespace API_PCC.Controllers
                         userModel.Status = 4;
                         return Problem("Incorrect OTP. Please try again!");
                     }
-                    
+
                 }
                 else
                 {
@@ -120,8 +121,8 @@ namespace API_PCC.Controllers
 
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -154,8 +155,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 

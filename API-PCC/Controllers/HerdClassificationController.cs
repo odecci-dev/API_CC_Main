@@ -1,4 +1,6 @@
-﻿using API_PCC.Data;
+﻿using API_PCC.ApplicationModels;
+using API_PCC.ApplicationModels.Common;
+using API_PCC.Data;
 using API_PCC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,35 +13,6 @@ namespace API_PCC.Controllers
     [ApiController]
     public class HerdClassificationController : ControllerBase
     {
-        public class PaginationModel
-        {
-            public string? CurrentPage { get; set; }
-            public string? NextPage { get; set; }
-            public string? PrevPage { get; set; }
-            public string? TotalPage { get; set; }
-            public string? PageSize { get; set; }
-            public string? TotalRecord { get; set; }
-            public List<HHerdClassification> items { get; set; }
-        }
-
-        public class HerdClassificationSearchFilter
-        {
-            public string? typeCode { get; set; }
-            public string? typeDesc { get; set; }
-            public int page { get; set; }
-            public int pageSize { get; set; }
-        }
-
-        public class RestorationModel
-        {
-            public int id { get; set; }
-            public string? restoredBy { get; set; }
-        }
-        public class DeletionModel
-        {
-            public int id { get; set; }
-            public string deletedBy { get; set; }
-        }
 
         private readonly PCC_DEVContext _context;
 
@@ -49,7 +22,7 @@ namespace API_PCC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> List(HerdClassificationSearchFilter searchFilter)
+        public async Task<IActionResult> List(HerdClassificationSearchFilterModel searchFilter)
         {
             if (_context.HHerdClassifications == null)
             {
@@ -81,8 +54,8 @@ namespace API_PCC.Controllers
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
                 items = herdClassificationList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-                var result = new List<PaginationModel>();
-                var item = new PaginationModel();
+                var result = new List<HerdClassificationPagedModel>();
+                var item = new HerdClassificationPagedModel();
 
                 int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
                 item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
@@ -103,8 +76,8 @@ namespace API_PCC.Controllers
 
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -164,8 +137,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
 
         }
@@ -195,8 +168,8 @@ namespace API_PCC.Controllers
           }
           catch (Exception ex) 
           { 
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
           }
         }
 
@@ -234,8 +207,8 @@ namespace API_PCC.Controllers
             }
             catch(Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 
@@ -281,8 +254,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex) 
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.Message);
             }
         }
 

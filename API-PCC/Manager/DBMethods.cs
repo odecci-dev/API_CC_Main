@@ -82,13 +82,13 @@ namespace API_PCC.Manager
                             case "3":
                                 //VERIFIED
                                 Stats = "Error";
-                                Mess = "Your account is under screening. Please contact admin to check the status.";
+                                Mess = "Your account is under screening. Please contact administrator.";
                                 JWT = "";
                                 break;
                             case "4":
                                 //UNVERIFIED
                                 Stats = "Error";
-                                Mess = "Your account is unverified. Please contact your administrator.";
+                                Mess = "Your account is unverified. Please contact administrator.";
                                 JWT = "";
                                 break;
                             case "5":
@@ -179,7 +179,7 @@ namespace API_PCC.Manager
                             case "6":
                                 //REGISTERED
                                 Stats = "Error";
-                                Mess = "Your account is under screening or Your account has been disapproved . Please contact admin to check the status.";
+                                Mess = "Your account is under approval or Your account has been disapproved . Please contact admin to check the status.";
                                 JWT = "";
 
                                 break;

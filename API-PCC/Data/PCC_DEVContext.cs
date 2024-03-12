@@ -482,6 +482,7 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("Status");
             entity.Property(e => e.DateCreated)
+                .IsRequired()
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
             entity.Property(e => e.CreatedBy)
@@ -492,7 +493,6 @@ public partial class PCC_DEVContext : DbContext
                 .HasColumnType("date")
                 .HasColumnName("Date_Updated");
             entity.Property(e => e.UpdatedBy)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
             entity.Property(e => e.DateDeleted)

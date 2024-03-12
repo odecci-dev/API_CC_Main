@@ -88,7 +88,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -147,7 +147,7 @@ namespace API_PCC.Controllers
 
             try
             {
-                _context.Entry(buffAnimal).State = EntityState.Modified;
+                _context.Entry(aBuffAnimal).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 return Ok("Update Successful!");

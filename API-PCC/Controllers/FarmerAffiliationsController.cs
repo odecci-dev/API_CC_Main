@@ -5,6 +5,8 @@ using API_PCC.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
+using NuGet.Protocol.Core.Types;
+using static API_PCC.Controllers.HerdClassificationController;
 
 namespace API_PCC.Controllers
 {
@@ -19,34 +21,100 @@ namespace API_PCC.Controllers
         {
             _context = context;
         }
+        public class PaginationModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public List<HFarmerAffiliation> items { get; set; }
+        }
+        public class farmerAffiliationSearchFilter
+        {
+            public string? fCode { get; set; }
+            public string? fDesc { get; set; }
+            public int page { get; set; }
+            public int pageSize { get; set; }
+        }
 
-        // GET: FarmerAffiliations/list
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<HFarmerAffiliation>>> list()
+        // POST: FarmerAffiliations/list
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<HFarmerAffiliation>>> list(farmerAffiliationSearchFilter searchFilter)
         {
           if (_context.HFarmerAffiliations == null)
           {
-              return NotFound();
-          }
-            return await _context.HFarmerAffiliations.ToListAsync();
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
+            }
+
+            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
+            var items = (dynamic)null;
+            int totalItems = 0;
+            int totalPages = 0;
+
+
+            var farmerAffiliationList = _context.HFarmerAffiliations.AsNoTracking();
+            farmerAffiliationList = farmerAffiliationList.Where(farmerAffiliation => !farmerAffiliation.DeleteFlag);
+            try
+            {
+                if (searchFilter.fCode != null && searchFilter.fCode != "")
+                {
+                    farmerAffiliationList = farmerAffiliationList.Where(farmerAffiliation => farmerAffiliation.FCode.Contains(searchFilter.fCode));
+                }
+
+                if (searchFilter.fDesc != null && searchFilter.fDesc != "")
+                {
+                    farmerAffiliationList = farmerAffiliationList.Where(farmerAffiliation => farmerAffiliation.FDesc.Contains(searchFilter.fDesc));
+                }
+
+                totalItems = farmerAffiliationList.ToList().Count();
+                totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+                items = farmerAffiliationList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
+
+                var result = new List<PaginationModel>();
+                var item = new PaginationModel();
+
+                int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+                item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+                int page_prev = pages - 1;
+
+                double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+                int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+                item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+                item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+                item.TotalPage = t_records.ToString();
+                item.PageSize = pagesize.ToString();
+                item.TotalRecord = totalItems.ToString();
+                item.items = items;
+                result.Add(item);
+                return Ok(result);
+            }
+
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
 
         // GET: FarmerAffiliations/search/5
         [HttpGet("{id}")]
         public async Task<ActionResult<HFarmerAffiliation>> search(int id)
         {
-          if (_context.HFarmerAffiliations == null)
-          {
-              return NotFound();
-          }
-            var hFarmerAffiliation = await _context.HFarmerAffiliations.FindAsync(id);
-
-            if (hFarmerAffiliation == null)
+            if (_context.HFarmerAffiliations == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
+            }
+            var farmerAffiliation = await _context.HFarmerAffiliations.FindAsync(id);
+
+            if (farmerAffiliation == null || farmerAffiliation.DeleteFlag)
+            {
+                return Conflict("No records found!");
             }
 
-            return hFarmerAffiliation;
+            return farmerAffiliation;
         }
 
         // PUT: FarmerAffiliations/update/5
@@ -54,30 +122,43 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, HFarmerAffiliation hFarmerAffiliation)
         {
-            if (id != hFarmerAffiliation.Id)
+            if (_context.HFarmerAffiliations == null)
             {
-                return BadRequest();
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
             }
 
-            _context.Entry(hFarmerAffiliation).State = EntityState.Modified;
+            var farmerAffiliation = _context.HFarmerAffiliations.AsNoTracking().Where(farmerAffiliation => !farmerAffiliation.DeleteFlag && farmerAffiliation.Id == id).FirstOrDefault();
+
+            if (farmerAffiliation == null)
+            {
+                return Conflict("No records matched!");
+            }
+
+            if (id != hFarmerAffiliation.Id)
+            {
+                return Conflict("Ids mismatched!");
+            }
+
+            bool hasDuplicateOnUpdate = (_context.HFarmerAffiliations?.Any(farmerAffiliation => !farmerAffiliation.DeleteFlag && farmerAffiliation.FCode == hFarmerAffiliation.FCode && farmerAffiliation.FDesc == hFarmerAffiliation.FDesc && farmerAffiliation.Id != id)).GetValueOrDefault();
+
+            // check for duplication
+            if (hasDuplicateOnUpdate)
+            {
+                return Conflict("Entity already exists");
+            }
 
             try
             {
+                _context.Entry(hFarmerAffiliation).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!HFarmerAffiliationExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                return Ok("Update Successful!");
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
 
         // POST: FarmerAffiliations/save
@@ -85,34 +166,110 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<HFarmerAffiliation>> save(HFarmerAffiliation hFarmerAffiliation)
         {
-          if (_context.HFarmerAffiliations == null)
-          {
-              return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations'  is null.");
-          }
-            _context.HFarmerAffiliations.Add(hFarmerAffiliation);
-            await _context.SaveChangesAsync();
+            if (_context.HFarmerAffiliations == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
+            }
 
-            return CreatedAtAction("save", new { id = hFarmerAffiliation.Id }, hFarmerAffiliation);
+            bool hasDuplicateOnSave = (_context.HFarmerAffiliations?.Any(farmerAffiliation => !farmerAffiliation.DeleteFlag && farmerAffiliation.FCode == hFarmerAffiliation.FCode && farmerAffiliation.FDesc == hFarmerAffiliation.FDesc)).GetValueOrDefault();
+
+            if (hasDuplicateOnSave)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            try
+            {
+                _context.HFarmerAffiliations.Add(hFarmerAffiliation);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("save", new { id = hFarmerAffiliation.Id }, hFarmerAffiliation);
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
 
-        // DELETE: FarmerAffiliations/delete/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> delete(int id)
+        // POST: FarmerAffiliations/delete/5
+        [HttpPost]
+        public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
             if (_context.HFarmerAffiliations == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
             }
-            var hFarmerAffiliation = await _context.HFarmerAffiliations.FindAsync(id);
-            if (hFarmerAffiliation == null)
+
+            var farmerAffiliation = await _context.HFarmerAffiliations.FindAsync(deletionModel.id);
+            if (farmerAffiliation == null || farmerAffiliation.DeleteFlag)
             {
-                return NotFound();
+                return Conflict("No records matched!");
             }
 
-            _context.HFarmerAffiliations.Remove(hFarmerAffiliation);
-            await _context.SaveChangesAsync();
+            try
+            {
+                farmerAffiliation.DeleteFlag = true;
+                farmerAffiliation.DateDeleted = DateTime.Now;
+                farmerAffiliation.DeletedBy = deletionModel.deletedBy;
+                farmerAffiliation.DateRestored = null;
+                farmerAffiliation.RestoredBy = "";
+                _context.Entry(farmerAffiliation).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Deletion Successful!");
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
+        }
 
-            return NoContent();
+        // GET: farmerAffiliations/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<HFarmerAffiliation>>> view()
+        {
+            if (_context.HFarmerAffiliations == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null.");
+            }
+            return await _context.HFarmerAffiliations.Where(farmerAffiliation => !farmerAffiliation.DeleteFlag).ToListAsync();
+        }
+
+        // POST: farmerAffiliations/restore/
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<IActionResult> restore(RestorationModel restorationModel)
+        {
+
+            if (_context.HFarmerAffiliations == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
+            }
+
+            var farmerAffiliation = await _context.HFarmerAffiliations.FindAsync(restorationModel.id);
+            if (farmerAffiliation == null || !farmerAffiliation.DeleteFlag)
+            {
+                return Conflict("No deleted records matched!");
+            }
+
+            try
+            {
+                farmerAffiliation.DeleteFlag = !farmerAffiliation.DeleteFlag;
+                farmerAffiliation.DateDeleted = null;
+                farmerAffiliation.DeletedBy = "";
+                farmerAffiliation.DateRestored = DateTime.Now;
+                farmerAffiliation.RestoredBy = restorationModel.restoredBy;
+
+                _context.Entry(farmerAffiliation).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Restoration Successful!");
+            }
+            catch (Exception ex)
+            {
+                String exception = ex.GetBaseException().ToString();
+                return Problem(exception);
+            }
         }
 
         private bool HFarmerAffiliationExists(int id)

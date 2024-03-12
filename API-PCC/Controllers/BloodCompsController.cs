@@ -88,7 +88,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -104,7 +104,7 @@ namespace API_PCC.Controllers
         {
             if (_context.ABloodComps == null)
             {
-                return NotFound();
+                return Problem("Entity set 'PCC_DEVContext.ABloodCOmps' is null!");
             }
             var bloodComp = await _context.ABloodComps.FindAsync(id);
 
@@ -203,9 +203,9 @@ namespace API_PCC.Controllers
             }
 
             var bloodComp = await _context.ABloodComps.FindAsync(deletionModel.id);
-            if (bloodComp == null || !bloodComp.DeleteFlag)
+            if (bloodComp == null || bloodComp.DeleteFlag)
             {
-                return Conflict("No deleted records matched!");
+                return Conflict("No records matched!");
             }
 
             try

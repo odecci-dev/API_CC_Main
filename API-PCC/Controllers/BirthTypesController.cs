@@ -89,7 +89,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -121,9 +121,9 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, ABirthType aBirthType)
         {
-            if (id != aBirthType.Id)
+            if (_context.ABirthTypes == null)
             {
-                return BadRequest();
+                return Problem("Entity set 'PCC_DEVContext.BirthTypes' is null!");
             }
 
             var birthType = _context.ABirthTypes.AsNoTracking().Where(birthType => !birthType.DeleteFlag && birthType.Id == id).FirstOrDefault();
@@ -148,7 +148,7 @@ namespace API_PCC.Controllers
 
             try
             {
-                _context.Entry(birthType).State = EntityState.Modified;
+                _context.Entry(aBirthType).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 return Ok("Update Successful!");
@@ -203,9 +203,9 @@ namespace API_PCC.Controllers
             }
 
             var birthType = await _context.ABirthTypes.FindAsync(deletionModel.id);
-            if (birthType == null || !birthType.DeleteFlag)
+            if (birthType == null || birthType.DeleteFlag)
             {
-                return Conflict("No deleted records matched!");
+                return Conflict("No records matched!");
             }
 
             try
@@ -224,6 +224,16 @@ namespace API_PCC.Controllers
                 String exception = ex.GetBaseException().ToString();
                 return Problem(exception);
             }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ABirthType>>> view()
+        {
+            if (_context.ABirthTypes == null)
+            {
+                return Problem("Entity set 'PCC_DEVContext.ABirthTypes' is null.");
+            }
+            return await _context.ABirthTypes.Where(birthType => !birthType.DeleteFlag).ToListAsync();
         }
 
         // POST: BirthTypes/restore/

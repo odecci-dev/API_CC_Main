@@ -89,7 +89,7 @@ namespace API_PCC.Controllers
                 item.TotalRecord = totalItems.ToString();
                 item.items = items;
                 result.Add(item);
-                return Ok(items);
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -148,7 +148,7 @@ namespace API_PCC.Controllers
 
             try
             {
-                _context.Entry(breed).State = EntityState.Modified;
+                _context.Entry(aBreed).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 return Ok("Update Successful!");
@@ -170,7 +170,6 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.ABreed'  is null.");
             }
             bool hasDuplicateOnSave = (_context.ABreeds?.Any(breed => !breed.DeleteFlag && breed.BreedCode == aBreed.BreedCode && breed.BreedDesc == aBreed.BreedDesc)).GetValueOrDefault();
-
 
             if (hasDuplicateOnSave)
             {

@@ -135,11 +135,6 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            if ()
-            {
-
-            }
-
             try
             {
                 _context.Entry(buffHerd).State = EntityState.Modified;

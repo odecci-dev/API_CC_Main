@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using API_PCC.ApplicationModels;
+using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
 using API_PCC.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
-using NuGet.Protocol.Core.Types;
-using static API_PCC.Controllers.HerdClassificationController;
-using API_PCC.ApplicationModels.Common;
-using API_PCC.ApplicationModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_PCC.Controllers
 {

@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using API_PCC.EntityModels;
 using API_PCC.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,6 +54,9 @@ public partial class PCC_DEVContext : DbContext
     public virtual DbSet<TblTokenModel> TblTokenModels { get; set; }
 
     public virtual DbSet<TblMailSenderCredential> TblMailSenderCredentials { get; set; }
+
+    public virtual DbSet<TblFarmOwner> TblFarmOwners { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -969,6 +973,38 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasMaxLength(255)
                 .HasColumnName("RememberToken");
+        });
+
+        modelBuilder.Entity<TblFarmOwner>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_FarmOwner");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.ToTable("tbl_FarmOwner");
+            entity.Property(e => e.Name)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Name");
+            entity.Property(e => e.LastName)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("LastName");
+            entity.Property(e => e.Address)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Address");
+            entity.Property(e => e.TelephoneNumber)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("TelephoneNumber");
+            entity.Property(e => e. MobileNumber)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("MobileNumber");
+            entity.Property(e => e.Email)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Email");
         });
 
         OnModelCreatingGeneratedProcedures(modelBuilder);

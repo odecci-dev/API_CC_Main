@@ -6,7 +6,6 @@ using API_PCC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static API_PCC.Controllers.HerdClassificationController;
 
 namespace API_PCC.Controllers
 {
@@ -134,6 +133,11 @@ namespace API_PCC.Controllers
             if (hasDuplicateOnUpdate)
             {
                 return Conflict("Entity already exists");
+            }
+
+            if ()
+            {
+
             }
 
             try

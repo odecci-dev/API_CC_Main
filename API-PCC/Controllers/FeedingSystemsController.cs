@@ -86,7 +86,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -148,7 +148,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
 
         }
@@ -180,7 +180,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -220,7 +220,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
         
@@ -269,7 +269,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 

@@ -6,6 +6,8 @@ using API_PCC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static API_PCC.Manager.DBMethods;
+using System;
 
 namespace API_PCC.Controllers
 {
@@ -87,7 +89,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -113,7 +115,7 @@ namespace API_PCC.Controllers
         // PUT: BuffHerds/update/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> update(int id, BuffHerdRegistrationModel registrationModel)
+        public async Task<IActionResult> update(int id, BuffHerdUpdateModel registrationModel)
         {
             if (_context.HBuffHerds == null)
             {
@@ -137,6 +139,11 @@ namespace API_PCC.Controllers
 
             try
             {
+                buffHerd = populateBuffHerd(buffHerd, registrationModel);
+                buffHerd.HerdSize = registrationModel.HerdSize;
+                buffHerd.DateUpdated = DateTime.Now;
+                buffHerd.UpdatedBy = registrationModel.UpdatedBy;
+
                 _context.Entry(buffHerd).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
@@ -145,10 +152,72 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
+        private HBuffHerd populateBuffHerd(HBuffHerd buffHerd, BuffHerdUpdateModel updateModel)
+        {
+
+            if (updateModel.HerdName != null && updateModel.HerdName != "")
+            {
+                buffHerd.HerdName = updateModel.HerdName;
+            }
+            if (updateModel.HerdCode != null && updateModel.HerdCode != "")
+            {
+                buffHerd.HerdCode = updateModel.HerdCode;
+            }
+            if (updateModel.BBuffCode != null && updateModel.BBuffCode != "")
+            {
+                buffHerd.BBuffCode = updateModel.BBuffCode;
+            }
+            if (updateModel.FCode != null && updateModel.FCode != "")
+            {
+                buffHerd.FCode = updateModel.FCode;
+            }
+            if (updateModel.HTypeCode != null && updateModel.HTypeCode != "")
+            {
+                buffHerd.HTypeCode = updateModel.HTypeCode;
+            }
+            if (updateModel.FeedCode != null && updateModel.FeedCode != "")
+            {
+                buffHerd.FeedCode = updateModel.FeedCode;
+            }
+            if (updateModel.FarmManager != null && updateModel.FarmManager != "")
+            {
+                buffHerd.FarmManager = updateModel.FarmManager;
+            }
+            if (updateModel.FarmAddress != null && updateModel.FarmAddress != "")
+            {
+                buffHerd.FarmAddress = updateModel.FarmAddress;
+            }
+            if (updateModel.Owner != null && updateModel.Owner != "")
+            {
+                buffHerd.Owner = updateModel.Owner;
+            }
+            if (updateModel.Address != null && updateModel.Address != "")
+            {
+                buffHerd.Address = updateModel.Address;
+            }
+            if (updateModel.TelNo != null && updateModel.TelNo != "")
+            {
+                buffHerd.TelNo = updateModel.TelNo;
+            }
+            if (updateModel.MNo != null && updateModel.MNo != "")
+            {
+                buffHerd.MNo = updateModel.MNo;
+            }
+            if (updateModel.Email != null && updateModel.Email != "")
+            {
+                buffHerd.Email = updateModel.Email;
+            }
+            if (updateModel.OrganizationName != null && updateModel.OrganizationName != "")
+            {
+                buffHerd.OrganizationName = updateModel.OrganizationName;
+            }
+            return buffHerd;
+
+        }
         // POST: BuffHerds/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -179,7 +248,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -237,7 +306,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -273,7 +342,7 @@ namespace API_PCC.Controllers
             catch (Exception ex)
             {
                 
-                return Problem(ex.Message);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 

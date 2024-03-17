@@ -2,10 +2,8 @@
 {
     public class BuffHerdSearchFilterModel
     {
-        public string? herdCode { get; set; }
-        public string? herdName { get; set; }
-        public string? ownerName { get; set; }
-        public string? farmManager { get; set; }
+        public string? searchValue { get; set; }
+        public FilterByModel? filterBy { get; set; }
         public int page { get; set; }
         public int pageSize { get; set; }
     }

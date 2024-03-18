@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Configuration;
 using System.Data;
 using System.Text;
 using static API_PCC.Manager.DBMethods;
@@ -113,6 +112,9 @@ namespace API_PCC.Controllers
                         userModel.Status = 5;
 
                         await _context.SaveChangesAsync();
+
+                        MailSender email = new MailSender(_emailsettings);
+                        email.sendApprovalMail(data.Email);
                         return Ok("OTP verification successful!");
                     }
                     else
@@ -120,6 +122,8 @@ namespace API_PCC.Controllers
                         var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
                         _context.Entry(userModel).State = EntityState.Modified;
                         userModel.Status = 4;
+                        await _context.SaveChangesAsync();
+
                         return Problem("Incorrect OTP. Please try again!");
                     }
 
@@ -132,8 +136,7 @@ namespace API_PCC.Controllers
 
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
         // POST: user/login
@@ -401,8 +404,7 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return BadRequest(exception);
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -433,8 +435,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return BadRequest(exception);
+                
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 

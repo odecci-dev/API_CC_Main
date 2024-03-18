@@ -150,5 +150,73 @@ namespace API_PCC.Utils
                 throw;
             }
         }
+
+        public async void sendApprovalMail(string email)
+        {
+            try
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_appSettings.Title.OTP, Cryptography.Decrypt(_appSettings.username)));
+                message.To.Add(new MailboxAddress("PCC-Administrator", email));
+                message.Subject = "Registration Approved";
+
+                var bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = @"<!DOCTYPE html>
+                <html lang=""en"">
+                <head>
+                    <meta charset=""UTF-8"">
+                    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                    <meta http-equiv=""X-UA-Compatible"" content=""ie=edge"">
+                    <title></title>
+                </head>
+                <style>
+                    @font-face {
+                    font-family: 'Montserrat-Reg';
+                    src: 
+                    url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-Regular.ttf');
+                    }
+                    @font-face {
+                        font-family: 'Montserrat-SemiBold';
+                        src: url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-SemiBold.ttf');
+                    }
+                    body{
+                        display: flex;
+                        flex-direction: column;
+                        font-family: 'Montserrat-Reg';
+                    }
+                    h3{
+                        width: 400px;
+                        text-align: center;
+                        margin:20px auto;
+                    }
+                    h2{
+                        width: 400px;
+                        text-align: center;
+                        margin:20px auto;
+                    }
+                    p{
+                        width: 400px;
+                        margin:10px auto;
+                    }
+                </style>
+                <body>
+                    <h3>Approved!</h3>
+                    <p>This is to inform you that your registration was approved!</p>
+                </body> 
+                </html>";
+                message.Body = bodyBuilder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync(_appSettings.Host, 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(Cryptography.Decrypt(_appSettings.username), Cryptography.Decrypt(_appSettings.password));
+                    await client.SendAsync(message);
+                    client.Disconnect(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

@@ -41,13 +41,13 @@ public partial class HBuffHerd
 
     public DateTime DateCreated { get; set; }
 
-    public DateTime DateUpdated { get; set; }
+    public DateTime? DateUpdated { get; set; }
 
     public bool DeleteFlag { get; set; }
 
     public string CreatedBy { get; set; }
 
-    public string UpdatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
 
     public DateTime? DateDeleted { get; set; }
 

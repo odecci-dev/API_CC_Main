@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using API_PCC.ApplicationModels;
+using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
 using API_PCC.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
-using NuGet.Protocol.Core.Types;
-using static API_PCC.Controllers.HerdClassificationController;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_PCC.Controllers
 {
@@ -22,16 +20,6 @@ namespace API_PCC.Controllers
             _context = context;
         }
 
-        public class PaginationModel
-        {
-            public string? CurrentPage { get; set; }
-            public string? NextPage { get; set; }
-            public string? PrevPage { get; set; }
-            public string? TotalPage { get; set; }
-            public string? PageSize { get; set; }
-            public string? TotalRecord { get; set; }
-            public List<HBuffaloType> items { get; set; }
-        }
         public class BuffaloTypeSearchFilter
         {
             public string? bBuffCode { get; set; }
@@ -74,8 +62,8 @@ namespace API_PCC.Controllers
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
                 items = buffaloTypeList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-                var result = new List<PaginationModel>();
-                var item = new PaginationModel();
+                var result = new List<BuffaloTypePagedModel>();
+                var item = new BuffaloTypePagedModel();
 
                 int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
                 item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
@@ -88,15 +76,15 @@ namespace API_PCC.Controllers
                 item.TotalPage = t_records.ToString();
                 item.PageSize = pagesize.ToString();
                 item.TotalRecord = totalItems.ToString();
-                item.items = items;x
+                item.items = items;
                 result.Add(item);
                 return Ok(result);
             }
 
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -157,8 +145,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -188,8 +176,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -228,8 +216,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 
@@ -277,8 +265,8 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                String exception = ex.GetBaseException().ToString();
-                return Problem(exception);
+                
+                return Problem(ex.GetBaseException().ToString());
             }
         }
 

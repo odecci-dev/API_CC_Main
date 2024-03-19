@@ -15,11 +15,11 @@ public partial class HBuffHerd
 
     public int HerdSize { get; set; }
 
-    public string BBuffCode { get; set; }
+    public string BreedTypeCode { get; set; }
 
-    public string FCode { get; set; }
+    public string FarmAffilCode { get; set; }
 
-    public string HTypeCode { get; set; }
+    public string HerdClassCode { get; set; }
 
     public string FeedCode { get; set; }
 
@@ -27,15 +27,7 @@ public partial class HBuffHerd
 
     public string FarmAddress { get; set; }
 
-    public string Owner { get; set; }
-
-    public string Address { get; set; }
-
-    public string TelNo { get; set; }
-
-    public string MNo { get; set; }
-
-    public string Email { get; set; }
+    public int Owner { get; set; }
 
     public int Status { get; set; }
 
@@ -51,11 +43,11 @@ public partial class HBuffHerd
 
     public DateTime? DateDeleted { get; set; }
 
-    public string DeletedBy { get; set; }
+    public string? DeletedBy { get; set; }
 
     public DateTime? DateRestored { get; set; }
 
-    public string RestoredBy { get; set; }
+    public string? RestoredBy { get; set; }
     public string? OrganizationName { get; set; }
     public string? Center { get; set; }
 }

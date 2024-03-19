@@ -9,9 +9,9 @@ public partial class HBuffaloType
 {
     public int Id { get; set; }
 
-    public string BBuffCode { get; set; }
+    public string BreedTypeCode { get; set; }
 
-    public string BBuffDesc { get; set; }
+    public string BreedTypeDesc { get; set; }
 
     public int Status { get; set; }
 

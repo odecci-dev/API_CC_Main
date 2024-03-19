@@ -20,9 +20,14 @@
         {
             return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 1 AND id = " + id;
         }
-        public static String buildHerdCheckDuplicateForRestoreQuery(String herdName, String herdCode)
+        public static String buildHerdCheckDuplicateQuery(String herdName, String herdCode)
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND (HERD_NAME = '" + herdName + "' OR HERD_CODE = '" + herdCode + ")";
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND (HERD_NAME = '" + herdName + "' OR HERD_CODE = '" + herdCode + "')";
+        }
+
+        public static String buildFarmOwnerSearchQueryByFirstNameAndLastName(String firstName, String lastName)
+        {
+            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = '" + firstName + "' OR LastName = '" + lastName + "'";
         }
     }
 }

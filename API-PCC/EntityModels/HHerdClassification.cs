@@ -9,9 +9,9 @@ public partial class HHerdClassification
 {
     public int Id { get; set; }
 
-    public string HTypeCode { get; set; }
+    public string HerdClassCode { get; set; }
 
-    public string HTypeDesc { get; set; }
+    public string HerdClassDesc { get; set; }
 
     public int Status { get; set; }
 

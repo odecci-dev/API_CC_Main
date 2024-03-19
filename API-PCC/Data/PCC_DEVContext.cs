@@ -432,21 +432,21 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("Herd_Code");
             entity.Property(e => e.HerdSize).HasColumnName("Herd_Size");
-            entity.Property(e => e.BBuffCode)
+            entity.Property(e => e.BreedTypeCode)
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("B_Buff_Code");
-            entity.Property(e => e.FCode)
+                .HasColumnName("Breed_Type_COde");
+            entity.Property(e => e.FarmAffilCode)
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("F_Code");
-            entity.Property(e => e.HTypeCode)
+                .HasColumnName("Farm_Affil_Code");
+            entity.Property(e => e.HerdClassCode)
                 .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
-                .HasColumnName("H_Type_Code");
+                .HasColumnName("Herd_Class_Code");
             entity.Property(e => e.FeedCode)
                 .IsRequired()
                 .HasMaxLength(10)
@@ -464,23 +464,6 @@ public partial class PCC_DEVContext : DbContext
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Owner");
-            entity.Property(e => e.Address)
-                .IsRequired()
-                .IsUnicode(false);
-            entity.Property(e => e.TelNo)
-                .IsRequired()
-                .HasMaxLength(13)
-                .IsUnicode(false)
-                .HasColumnName("Tel_No");
-            entity.Property(e => e.MNo)
-                .IsRequired()
-                .HasMaxLength(13)
-                .IsUnicode(false)
-                .HasColumnName("M_No");
-            entity.Property(e => e.Email)
-                .IsRequired()
-                .IsUnicode(false)
-                .HasColumnName("Email");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .IsUnicode(false)
@@ -526,16 +509,16 @@ public partial class PCC_DEVContext : DbContext
             entity.ToTable("H_Buffalo_Type");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.BBuffCode)
+            entity.Property(e => e.BreedTypeCode)
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("B_Buff_Code");
-            entity.Property(e => e.BBuffDesc)
+                .HasColumnName("Breed_Type_Code");
+            entity.Property(e => e.BreedTypeDesc)
                 .IsRequired()
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .HasColumnName("B_Buff_Desc");
+                .HasColumnName("Breed_Type_Desc");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .IsUnicode(false)
@@ -670,16 +653,16 @@ public partial class PCC_DEVContext : DbContext
                 entity.ToTable("H_Herd_Classification");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.HTypeCode)
+            entity.Property(e => e.HerdClassCode)
                 .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
-                .HasColumnName("H_Type_Code");
-            entity.Property(e => e.HTypeDesc)
+                .HasColumnName("Herd_Class_Code");
+            entity.Property(e => e.HerdClassDesc)
                 .IsRequired()
                 .HasMaxLength(17)
                 .IsFixedLength()
-                .HasColumnName("H_Type_Desc");
+                .HasColumnName("Herd_Class_Desc");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()
                 .IsUnicode(false)

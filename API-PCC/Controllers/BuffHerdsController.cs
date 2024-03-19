@@ -47,7 +47,7 @@ namespace API_PCC.Controllers
         }
 
         // GET: BuffHerds/view/5
-        [HttpGet("{id}")]
+        [HttpGet("{herdCode}")]
         public async Task<ActionResult<HBuffHerd>> view(String herdCode)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildHerdSearchQuery(herdCode)).Tables[0];
@@ -154,7 +154,11 @@ namespace API_PCC.Controllers
 
                     DataTable farmOwnerRecord = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryByFirstNameAndLastName(registrationModel.Owner.FirstName, registrationModel.Owner.LastName)).Tables[0];
 
-                    var farmOwner = DataRowToObject.ToObject<TblFarmOwner>(farmOwnerRecord.Rows[0]);
+                    var farmOwner = convertDataTableToFarmOwnerEntity(farmOwnerRecord);
+                    BuffHerdModel.Owner = farmOwner.Id;
+                } else
+                {
+                    var farmOwner = convertDataTableToFarmOwnerEntity(farmOwnerRecordsCheck);
                     BuffHerdModel.Owner = farmOwner.Id;
                 }
 
@@ -172,6 +176,13 @@ namespace API_PCC.Controllers
 
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+
+        private TblFarmOwner convertDataTableToFarmOwnerEntity(DataTable dataTable)
+        {
+            var farmOwner = DataRowToObject.ToObject<TblFarmOwner>(dataTable.Rows[0]);
+
+            return farmOwner;
         }
 
         // DELETE: BuffHerds/delete/5

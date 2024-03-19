@@ -55,15 +55,15 @@ public partial class ABuffAnimal
     public string CreatedBy { get; set; }
     public DateTime? CreatedDate { get; set; }
 
-    public string UpdatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
     public DateTime? UpdateDate { get; set; }
 
 
     public DateTime? DateDeleted { get; set; }
 
-    public string DeletedBy { get; set; }
+    public string? DeletedBy { get; set; }
 
     public DateTime? DateRestored { get; set; }
 
-    public string RestoredBy { get; set; }
+    public string? RestoredBy { get; set; }
 }

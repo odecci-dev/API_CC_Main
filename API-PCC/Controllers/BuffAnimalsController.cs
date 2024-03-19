@@ -5,6 +5,10 @@ using API_PCC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static API_PCC.Manager.DBMethods;
+using System.Data;
+using API_PCC.Manager;
+using API_PCC.Utils;
 
 namespace API_PCC.Controllers
 {
@@ -14,6 +18,7 @@ namespace API_PCC.Controllers
     public class BuffAnimalsController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
+        DbManager db = new DbManager();
 
         public BuffAnimalsController(PCC_DEVContext context)
         {
@@ -150,26 +155,23 @@ namespace API_PCC.Controllers
         // POST: BuffAnimals/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ABuffAnimal>> save(ABuffAnimal aBuffAnimal)
+        public async Task<ActionResult<ABuffAnimal>> save(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
         {
-            if (_context.ABuffAnimals == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.ABuffAnimals'  is null.");
-            }
-            bool hasDuplicateOnSave = (_context.ABuffAnimals?.Any(buffAnimal => !buffAnimal.DeleteFlag && buffAnimal.AnimalId == aBuffAnimal.AnimalId && buffAnimal.Name == aBuffAnimal.Name)).GetValueOrDefault();
-
-
-            if (hasDuplicateOnSave)
-            {
-                return Conflict("Entity already exists");
-            }
-
             try
             {
-                _context.ABuffAnimals.Add(aBuffAnimal);
+                DataTable duplicateCheck = db.SelectDb(QueryBuilder.buildBuffAnimalSearch(buffAnimalRegistrationModel.AnimalId, buffAnimalRegistrationModel.Name)).Tables[0];
+
+                if (duplicateCheck.Rows.Count > 0)
+                {
+                    return Conflict("Buff Animal already exists");
+                }
+
+                var buffAnimal = buildBuffAnimal(buffAnimalRegistrationModel);
+
+                _context.ABuffAnimals.Add(buffAnimal);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("save", new { id = aBuffAnimal.Id }, aBuffAnimal);
+                return CreatedAtAction("save", new { id = buffAnimal.AnimalId }, buffAnimal);
             }
             catch (Exception ex)
             {
@@ -178,6 +180,33 @@ namespace API_PCC.Controllers
             }
         }
 
+        private ABuffAnimal buildBuffAnimal(BuffAnimalRegistrationModel registrationModel)
+        {
+            var buffAnimal = new ABuffAnimal()
+            {
+                AnimalId = registrationModel.AnimalId,
+                Name = registrationModel.Name,
+                Rfid = registrationModel.Rfid,
+                HerdCode = registrationModel.HerdCode,
+                DateOfBirth = registrationModel.DateOfBirth,
+                Sex = registrationModel.Sex,
+                BuffaloType = registrationModel.BuffaloType,
+                IdSystem = registrationModel.IdSystem,
+                PedigreeRecords = registrationModel.PedigreeRecords,
+                Photo = registrationModel.Photo,
+                CountryBirth = registrationModel.CountryBirth,
+                OriginAcquisition = registrationModel.OriginAcquisition,
+                DateAcquisition = registrationModel.DateAcquisition,
+                Marking = registrationModel.Marking,
+                SireIdNum = registrationModel.Sire.SireRegNum,
+                BreedCode = registrationModel.BreedCode,
+                BloodCode = registrationModel.BloodCode,
+                BirthTypeCode = registrationModel.BirthTypeCode,
+                TypeOwnCode = registrationModel.TypeOwnCode,
+                CreatedBy = registrationModel.CreatedBy
+            };
+            return buffAnimal;
+        }
         // POST: BuffAnimals/delete/5
         [HttpPost]
         public async Task<IActionResult> delete(DeletionModel deletionModel)

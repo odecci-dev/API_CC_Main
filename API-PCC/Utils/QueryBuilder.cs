@@ -29,5 +29,19 @@
         {
             return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = '" + firstName + "' OR LastName = '" + lastName + "'";
         }
+
+        public static String buildBuffAnimalSearch(String animalId, String name)
+        {
+            String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0";
+            if (animalId != null && animalId != "")
+            {
+                buffAnimalSelect = buffAnimalSelect + " AND ANIMAL_ID = '" + animalId + "'";
+            }
+            if (name != null && name != "")
+            {
+                buffAnimalSelect = buffAnimalSelect + " AND Name = '" + name + "' ";
+            }
+            return buffAnimalSelect;
+        }
     }
 }

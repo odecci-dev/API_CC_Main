@@ -25,9 +25,18 @@
             return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND (HERD_NAME = '" + herdName + "' OR HERD_CODE = '" + herdCode + "')";
         }
 
+        public static String buildHerdSelectQueryById(int id)
+        {
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND id = " + id;
+        }
+        public static String buildHerdSelectDuplicateQueryByIdHerdNameHerdCode(int id, String herdName, String herdCode)
+        {
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND NOT id = " + id + "  AND (HERD_NAME = '" + herdName + "' OR HERD_CODE = '" + herdCode + "')";
+        }
+
         public static String buildFarmOwnerSearchQueryByFirstNameAndLastName(String firstName, String lastName)
         {
-            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = '" + firstName + "' OR LastName = '" + lastName + "'";
+            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = '" + firstName + "' AND LastName = '" + lastName + "'";
         }
 
         public static String buildBuffAnimalSearch(String animalId, String name)

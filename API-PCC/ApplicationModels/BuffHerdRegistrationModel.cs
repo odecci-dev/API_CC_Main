@@ -1,21 +1,9 @@
-﻿using API_PCC.ApplicationModels;
+﻿using API_PCC.DtoModels;
 
-namespace API_PCC.DtoModels
+namespace API_PCC.ApplicationModels
 {
-    public class BuffHerdRegistrationModel
+    public class BuffHerdRegistrationModel : BuffHerdBaseModel
     {
-        public string HerdName { get; set; }
-        public string HerdCode { get; set; }
-        public int HerdSize { get; set; }
-        public string BreedTypeCode { get; set; }
-        public string FarmAffilCode { get; set; }
-        public string HerdClassCode { get; set; }
-        public string FeedCode { get; set; }
-        public string FarmManager { get; set; }
-        public string FarmAddress { get; set; }
-        public Owner Owner { get; set; }
-        public string OrganizationName { get; set; }
-        public string Center { get; set; }
         public string CreatedBy { get; set; }
 
     }

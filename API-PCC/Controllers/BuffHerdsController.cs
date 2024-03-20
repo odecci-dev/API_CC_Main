@@ -75,30 +75,37 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, BuffHerdUpdateModel registrationModel)
         {
-            if (_context.HBuffHerds == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HBuffHerds' is null!");
-            }
 
-            var buffHerd = _context.HBuffHerds.AsNoTracking().Where(buffHerd => !buffHerd.DeleteFlag && buffHerd.Id == id).FirstOrDefault();
+            DataTable buffHerdDataTable = db.SelectDb(QueryBuilder.buildHerdSelectQueryById(id)).Tables[0];
 
-            if (buffHerd == null)
+            if (buffHerdDataTable.Rows.Count == 0)
             {
                 return Conflict("No records matched!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.HBuffHerds?.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdName == registrationModel.HerdName && buffHerd.HerdCode == registrationModel.HerdCode && buffHerd.Id != id)).GetValueOrDefault();
+            DataTable buffHerdDuplicateCheck = db.SelectDb(QueryBuilder.buildHerdSelectDuplicateQueryByIdHerdNameHerdCode(id, registrationModel.HerdName, registrationModel.HerdCode)).Tables[0];
 
             // check for duplication
-            if (hasDuplicateOnUpdate)
+            if (buffHerdDuplicateCheck.Rows.Count > 0)
             {
                 return Conflict("Entity already exists");
             }
 
+            DataTable farmOwnerRecordsCheck = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryByFirstNameAndLastName(registrationModel.Owner.FirstName, registrationModel.Owner.LastName)).Tables[0];
+
+            if (farmOwnerRecordsCheck.Rows.Count == 0)
+            {
+                // Should we create a new farmer here as well?
+                return Conflict("Farm owner does not exists");
+            }
+
+            var farmOwner = convertDataRowToFarmOwnerEntity(farmOwnerRecordsCheck.Rows[0]);
+            var buffHerd = populateHerdModel(buffHerdDataTable.Rows[0]);
+
             try
             {
                 buffHerd = populateBuffHerd(buffHerd, registrationModel);
-                buffHerd.HerdSize = registrationModel.HerdSize;
+                buffHerd.Owner = farmOwner.Id;
                 buffHerd.DateUpdated = DateTime.Now;
                 buffHerd.UpdatedBy = registrationModel.UpdatedBy;
 
@@ -154,16 +161,15 @@ namespace API_PCC.Controllers
 
                     DataTable farmOwnerRecord = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryByFirstNameAndLastName(registrationModel.Owner.FirstName, registrationModel.Owner.LastName)).Tables[0];
 
-                    var farmOwner = convertDataTableToFarmOwnerEntity(farmOwnerRecord);
+                    var farmOwner = convertDataRowToFarmOwnerEntity(farmOwnerRecord.Rows[0]);
                     BuffHerdModel.Owner = farmOwner.Id;
                 } else
                 {
-                    var farmOwner = convertDataTableToFarmOwnerEntity(farmOwnerRecordsCheck);
+                    var farmOwner = convertDataRowToFarmOwnerEntity(farmOwnerRecordsCheck.Rows[0]);
                     BuffHerdModel.Owner = farmOwner.Id;
                 }
 
-
-
+                BuffHerdModel.CreatedBy = registrationModel.CreatedBy;
                 BuffHerdModel.DateCreated = DateTime.Now;
 
                 _context.HBuffHerds.Add(BuffHerdModel);
@@ -178,9 +184,9 @@ namespace API_PCC.Controllers
             }
         }
 
-        private TblFarmOwner convertDataTableToFarmOwnerEntity(DataTable dataTable)
+        private TblFarmOwner convertDataRowToFarmOwnerEntity(DataRow dataRow)
         {
-            var farmOwner = DataRowToObject.ToObject<TblFarmOwner>(dataTable.Rows[0]);
+            var farmOwner = DataRowToObject.ToObject<TblFarmOwner>(dataRow);
 
             return farmOwner;
         }
@@ -353,7 +359,7 @@ namespace API_PCC.Controllers
         }
 
 
-        private HBuffHerd buildBuffHerd(BuffHerdRegistrationModel registrationModel)
+        private HBuffHerd buildBuffHerd(BuffHerdBaseModel registrationModel)
         {
             var BuffHerdModel = new HBuffHerd()
             {
@@ -367,7 +373,6 @@ namespace API_PCC.Controllers
                 FarmManager = registrationModel.FarmManager,
                 FarmAddress = registrationModel.FarmAddress,
                 OrganizationName = registrationModel.OrganizationName,
-                CreatedBy = registrationModel.CreatedBy,
                 Center = registrationModel.Center
             };
 

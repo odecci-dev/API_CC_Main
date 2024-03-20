@@ -39,14 +39,14 @@ namespace API_PCC.Controllers
             herdClassificationList = herdClassificationList.Where(herdClassification => !herdClassification.DeleteFlag);
             try
             {
-                if (searchFilter.typeCode != null && searchFilter.typeCode != "")
+                if (searchFilter.HerdClassCode != null && searchFilter.HerdClassCode != "")
                 {
-                    herdClassificationList = herdClassificationList.Where(herdClassification => herdClassification.HTypeCode.Contains(searchFilter.typeCode));
+                    herdClassificationList = herdClassificationList.Where(herdClassification => herdClassification.HerdClassCode.Contains(searchFilter.HerdClassCode));
                 }
 
-                if (searchFilter.typeDesc != null && searchFilter.typeDesc != "")
+                if (searchFilter.HerdClassDesc != null && searchFilter.HerdClassDesc != "")
                 {
-                    herdClassificationList = herdClassificationList.Where(herdClassification => herdClassification.HTypeDesc.Contains(searchFilter.typeDesc));
+                    herdClassificationList = herdClassificationList.Where(herdClassification => herdClassification.HerdClassDesc.Contains(searchFilter.HerdClassDesc));
 
                 }
 
@@ -121,7 +121,7 @@ namespace API_PCC.Controllers
                 return Conflict("Ids mismatched!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.HHerdClassifications.Any(ht => !ht.DeleteFlag && ht.HTypeDesc == HHerdClassification.HTypeDesc && ht.HTypeCode == HHerdClassification.HTypeCode && ht.Id != id));
+            bool hasDuplicateOnUpdate = (_context.HHerdClassifications.Any(hs => !hs.DeleteFlag && hs.HerdClassCode == HHerdClassification.HerdClassCode && hs.HerdClassDesc == HHerdClassification.HerdClassDesc && hs.Id != id));
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -153,7 +153,8 @@ namespace API_PCC.Controllers
             return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
           }
 
-            bool hasDuplicateOnSave = (_context.HHerdClassifications?.Any(ht => !ht.DeleteFlag && ht.HTypeDesc == HHerdClassification.HTypeDesc && ht.HTypeCode == HHerdClassification.HTypeCode)).GetValueOrDefault();
+            bool hasDuplicateOnSave = (_context.HHerdClassifications?.Any(hs => !hs.DeleteFlag && hs.HerdClassCode == hs.HerdClassCode 
+                                        && hs.HerdClassDesc == hs.HerdClassDesc)).GetValueOrDefault();
 
             // check for duplication
           if (hasDuplicateOnSave)
@@ -187,7 +188,7 @@ namespace API_PCC.Controllers
                 return Conflict("No records found!");
             }
 
-            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HTypeCode == HHerdClassification.HTypeCode);
+            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdClassCode == HHerdClassification.HerdClassCode);
 
             if (typeCodeExistsInBuffHerd)
             {

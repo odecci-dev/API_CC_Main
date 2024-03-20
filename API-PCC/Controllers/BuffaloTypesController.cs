@@ -22,8 +22,8 @@ namespace API_PCC.Controllers
 
         public class BuffaloTypeSearchFilter
         {
-            public string? bBuffCode { get; set; }
-            public string? bBuffDesc { get; set; }
+            public string? BreedTypeCode { get; set; }
+            public string? BreedTypeDesc { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
         }
@@ -48,14 +48,14 @@ namespace API_PCC.Controllers
             buffaloTypeList = buffaloTypeList.Where(buffaloType => !buffaloType.DeleteFlag);
             try
             {
-                if (searchFilter.bBuffCode != null && searchFilter.bBuffCode != "")
+                if (searchFilter.BreedTypeCode != null && searchFilter.BreedTypeCode != "")
                 {
-                    buffaloTypeList = buffaloTypeList.Where(buffaloType => buffaloType.BBuffCode.Contains(searchFilter.bBuffCode));
+                    buffaloTypeList = buffaloTypeList.Where(buffaloType => buffaloType.BreedTypeCode.Contains(searchFilter.BreedTypeCode));
                 }
 
-                if (searchFilter.bBuffDesc != null && searchFilter.bBuffDesc != "")
+                if (searchFilter.BreedTypeDesc != null && searchFilter.BreedTypeDesc != "")
                 {
-                    buffaloTypeList = buffaloTypeList.Where(buffaloType => buffaloType.BBuffDesc.Contains(searchFilter.bBuffDesc));
+                    buffaloTypeList = buffaloTypeList.Where(buffaloType => buffaloType.BreedTypeDesc.Contains(searchFilter.BreedTypeDesc));
                 }
 
                 totalItems = buffaloTypeList.ToList().Count();
@@ -128,7 +128,7 @@ namespace API_PCC.Controllers
                 return Conflict("Ids mismatched!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.HBuffaloTypes?.Any(buffaloType => !buffaloType.DeleteFlag && buffaloType.BBuffCode == hBuffaloType.BBuffCode && buffaloType.BBuffDesc == hBuffaloType.BBuffDesc && buffaloType.Id != id)).GetValueOrDefault();
+            bool hasDuplicateOnUpdate = (_context.HBuffaloTypes?.Any(buffaloType => !buffaloType.DeleteFlag && buffaloType.BreedTypeCode == hBuffaloType.BreedTypeCode && buffaloType.BreedTypeDesc == hBuffaloType.BreedTypeDesc && buffaloType.Id != id)).GetValueOrDefault();
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -160,7 +160,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.HBuffaloTypes' is null!");
             }
 
-            bool hasDuplicateOnSave = (_context.HBuffaloTypes?.Any(buffaloType => !buffaloType.DeleteFlag && buffaloType.BBuffCode == hBuffaloType.BBuffCode && buffaloType.BBuffDesc == hBuffaloType.BBuffDesc)).GetValueOrDefault();
+            bool hasDuplicateOnSave = (_context.HBuffaloTypes?.Any(buffaloType => !buffaloType.DeleteFlag && buffaloType.BreedTypeCode == hBuffaloType.BreedTypeCode && buffaloType.BreedTypeDesc == hBuffaloType.BreedTypeDesc)).GetValueOrDefault();
 
             if (hasDuplicateOnSave)
             {
@@ -195,7 +195,7 @@ namespace API_PCC.Controllers
                 return Conflict("No records matched!");
             }
 
-            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.BBuffCode == hbuffaloType.BBuffCode);
+            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.BreedTypeCode == hbuffaloType.BreedTypeCode);
 
             if (feedCodeExistsInBuffHerd)
             {

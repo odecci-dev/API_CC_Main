@@ -9,13 +9,14 @@ namespace API_PCC.DtoModels
         public int HerdSize { get; set; }
         public string BreedTypeCode { get; set; }
         public string FarmAffilCode { get; set; }
-        public string HerdClassCode { get; set; }
-        public string FeedCode { get; set; }
+        public string HerdClassDesc { get; set; }
+        public string FeedingSystemCode { get; set; }
         public string FarmManager { get; set; }
         public string FarmAddress { get; set; }
         public Owner Owner { get; set; }
         public string OrganizationName { get; set; }
         public string Center { get; set; }
+        public string Photo { get; set; }
 
     }
 }

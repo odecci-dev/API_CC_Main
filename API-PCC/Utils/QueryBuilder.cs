@@ -1,15 +1,48 @@
-﻿namespace API_PCC.Utils
+﻿using API_PCC.ApplicationModels;
+
+namespace API_PCC.Utils
 {
     public class QueryBuilder
     {
 
-        public static String buildHerdSearchQuery(String searchValue)
+        public static String buildHerdSearchQuery(BuffHerdSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchValue != null && searchFilterModel.searchValue != "")
+            {
+                herdSelect = herdSelect + "AND (HERD_CODE LIKE '%" + searchFilterModel.searchValue + "%' OR HERD_NAME = '%" + searchFilterModel.searchValue + "%') ";
+            }
+
+            if (searchFilterModel.filterBy != null)
+            {
+                if (searchFilterModel.filterBy.BreedTypeCode != null && searchFilterModel.filterBy.BreedTypeCode != "")
+                {
+                    herdSelect = herdSelect + "AND BREED_TYPE_CODE = '" + searchFilterModel.filterBy.BreedTypeCode + "' ";
+                }
+
+                if (searchFilterModel.filterBy.HerdClassDesc != null && searchFilterModel.filterBy.HerdClassDesc != "")
+                {
+                    herdSelect = herdSelect + "AND HERD_CLASS_DESC = '" + searchFilterModel.filterBy.HerdClassDesc + "' ";
+                }
+
+                if (searchFilterModel.filterBy.feedingSystemCode != null && searchFilterModel.filterBy.feedingSystemCode != "")
+                {
+                    herdSelect = herdSelect + "AND FEEDING_SYSTEM_CODE = '" + searchFilterModel.filterBy.feedingSystemCode + "' ";
+                }
+            }
+
+            return herdSelect;
+        }
+
+        public static String buildHerdViewQuery(String herdCode)
         {
             String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0";
-            if (searchValue != null && searchValue != "")
+            if (herdCode!= null && herdCode != "")
             {
-                herdSelect = herdSelect + " AND (HERD_CODE = '" + searchValue + "' OR HERD_NAME = '" + searchValue + "')";
+                herdSelect = herdSelect + " AND (HERD_CODE LIKE '%" + herdCode + "%' OR HERD_NAME = '%" + herdCode + "%')";
             }
+
+
             return herdSelect;
         }
         public static String buildHerdArchiveQuery()

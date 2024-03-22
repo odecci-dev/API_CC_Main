@@ -195,9 +195,9 @@ namespace API_PCC.Controllers
                 return Conflict("No records matched!");
             }
 
-            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.BreedTypeCode == hbuffaloType.BreedTypeCode);
+            bool breedTypeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.BreedTypeCode == hbuffaloType.BreedTypeCode);
 
-            if (feedCodeExistsInBuffHerd)
+            if (breedTypeCodeExistsInBuffHerd)
             {
                 return Conflict("Used by other table!");
             }

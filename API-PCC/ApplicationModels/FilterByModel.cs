@@ -2,7 +2,8 @@
 {
     public class FilterByModel
     {
-        public string? BuffType { get; set; }
-        public string? HerdClass { get; set; }
+        public string? BreedTypeCode { get; set; }
+        public string? HerdClassDesc { get; set; }
+        public string? feedingSystemCode { get; set; }
     }
 }

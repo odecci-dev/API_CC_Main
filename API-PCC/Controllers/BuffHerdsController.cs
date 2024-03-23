@@ -34,7 +34,7 @@ namespace API_PCC.Controllers
         {
             try
             {
-                DataTable dt = db.SelectDb(QueryBuilder.buildHerdSearchQuery(searchFilter.searchValue)).Tables[0];
+                DataTable dt = db.SelectDb(QueryBuilder.buildHerdSearchQuery(searchFilter)).Tables[0];
                 var result = buildHerdPagedModel(searchFilter, dt);
                 return Ok(result);
             }
@@ -50,7 +50,7 @@ namespace API_PCC.Controllers
         [HttpGet("{herdCode}")]
         public async Task<ActionResult<HBuffHerd>> view(String herdCode)
         {
-            DataTable dt = db.SelectDb(QueryBuilder.buildHerdSearchQuery(herdCode)).Tables[0];
+            DataTable dt = db.SelectDb(QueryBuilder.buildHerdViewQuery(herdCode)).Tables[0];
 
             if (dt.Rows.Count == 0)
             {
@@ -335,13 +335,13 @@ namespace API_PCC.Controllers
             {
                 buffHerd.FarmAffilCode = updateModel.FarmAffilCode;
             }
-            if (updateModel.HerdClassCode != null && updateModel.HerdClassCode != "")
+            if (updateModel.HerdClassDesc != null && updateModel.HerdClassDesc != "")
             {
-                buffHerd.HerdClassCode = updateModel.HerdClassCode;
+                buffHerd.HerdClassDesc = updateModel.HerdClassDesc;
             }
-            if (updateModel.FeedCode != null && updateModel.FeedCode != "")
+            if (updateModel.FeedingSystemCode != null && updateModel.FeedingSystemCode != "")
             {
-                buffHerd.FeedCode = updateModel.FeedCode;
+                buffHerd.FeedingSystemCode = updateModel.FeedingSystemCode;
             }
             if (updateModel.FarmManager != null && updateModel.FarmManager != "")
             {
@@ -368,12 +368,13 @@ namespace API_PCC.Controllers
                 HerdSize = registrationModel.HerdSize,
                 BreedTypeCode = registrationModel.BreedTypeCode,
                 FarmAffilCode = registrationModel.FarmAffilCode,
-                HerdClassCode = registrationModel.HerdClassCode,
-                FeedCode = registrationModel.FeedCode,
+                HerdClassDesc = registrationModel.HerdClassDesc,
+                FeedingSystemCode = registrationModel.FeedingSystemCode,
                 FarmManager = registrationModel.FarmManager,
                 FarmAddress = registrationModel.FarmAddress,
                 OrganizationName = registrationModel.OrganizationName,
-                Center = registrationModel.Center
+                Center = registrationModel.Center,
+                Photo = registrationModel.Photo
             };
 
             return BuffHerdModel;

@@ -188,7 +188,7 @@ namespace API_PCC.Controllers
                 return Conflict("No records found!");
             }
 
-            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdClassCode == HHerdClassification.HerdClassCode);
+            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdClassDesc == HHerdClassification.HerdClassCode);
 
             if (typeCodeExistsInBuffHerd)
             {

@@ -9,9 +9,9 @@ public partial class HFeedingSystem
 {
     public int Id { get; set; }
 
-    public string FeedCode { get; set; }
+    public string FeedingSystemCode { get; set; }
 
-    public string FeedDesc { get; set; }
+    public string FeedingSystemDesc { get; set; }
 
     public int Status { get; set; }
 

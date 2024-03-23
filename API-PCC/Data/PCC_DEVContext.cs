@@ -442,16 +442,16 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("Farm_Affil_Code");
-            entity.Property(e => e.HerdClassCode)
+            entity.Property(e => e.HerdClassDesc)
                 .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
-                .HasColumnName("Herd_Class_Code");
-            entity.Property(e => e.FeedCode)
+                .HasColumnName("Herd_Class_Desc");
+            entity.Property(e => e.FeedingSystemCode)
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("Feed_Code");
+                .HasColumnName("Feeding_System_Code");
             entity.Property(e => e.FarmManager)
                 .IsRequired()
                 .IsUnicode(false)
@@ -501,6 +501,9 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.Center)
                 .IsUnicode(false)
                 .HasColumnName("Center");
+            entity.Property(e => e.Photo)
+                .IsUnicode(false)
+                .HasColumnName("Photo");
 
         });
 
@@ -605,16 +608,16 @@ public partial class PCC_DEVContext : DbContext
             entity.ToTable("H_Feeding_System");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.FeedCode)
+            entity.Property(e => e.FeedingSystemCode)
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("Feed_Code");
-            entity.Property(e => e.FeedDesc)
+                .HasColumnName("Feeding_System_Code");
+            entity.Property(e => e.FeedingSystemDesc)
                 .IsRequired()
                 .HasMaxLength(15)
                 .IsUnicode(false)
-                .HasColumnName("Feed_Desc");
+                .HasColumnName("Feeding_System_Desc");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .IsUnicode(false)

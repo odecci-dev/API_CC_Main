@@ -19,8 +19,8 @@ namespace API_PCC.Controllers
 
         public class FeedingSystemSearchFilter
         {
-            public string? feedCode {  get; set; }
-            public string? feedDesc { get; set; }
+            public string? FeedingSystemCode {  get; set; }
+            public string? FeedingSystemDesc { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
         }
@@ -49,14 +49,14 @@ namespace API_PCC.Controllers
             feedingSystemList = feedingSystemList.Where(feedingSystem => !feedingSystem.DeleteFlag);
             try
             {
-                if (searchFilter.feedCode != null && searchFilter.feedCode != "")
+                if (searchFilter.FeedingSystemCode != null && searchFilter.FeedingSystemCode != "")
                 {
-                    feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.FeedCode.Contains(searchFilter.feedCode));
+                    feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.FeedingSystemCode.Contains(searchFilter.FeedingSystemCode));
                 }
 
-                if (searchFilter.feedDesc != null && searchFilter.feedDesc != "")
+                if (searchFilter.FeedingSystemDesc != null && searchFilter.FeedingSystemDesc != "")
                 {
-                    feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.FeedDesc.Contains(searchFilter.feedDesc));
+                    feedingSystemList = feedingSystemList.Where(feedingSystem => feedingSystem.FeedingSystemDesc.Contains(searchFilter.FeedingSystemDesc));
                 }
                 
                 totalItems = feedingSystemList.ToList().Count();
@@ -130,7 +130,7 @@ namespace API_PCC.Controllers
                 return Conflict("Ids mismatched!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc && fs.Id != id)).GetValueOrDefault();
+            bool hasDuplicateOnUpdate = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedingSystemCode == hFeedingSystem.FeedingSystemCode && fs.FeedingSystemDesc == hFeedingSystem.FeedingSystemDesc && fs.Id != id)).GetValueOrDefault();
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -163,7 +163,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.Feeding Sytem' is null!");
             }
 
-            bool hasDuplicateOnSave = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedCode == hFeedingSystem.FeedCode && fs.FeedDesc == hFeedingSystem.FeedDesc)).GetValueOrDefault();
+            bool hasDuplicateOnSave = (_context.HFeedingSystems?.Any(fs => !fs.DeleteFlag && fs.FeedingSystemCode == hFeedingSystem.FeedingSystemCode && fs.FeedingSystemDesc == hFeedingSystem.FeedingSystemDesc)).GetValueOrDefault();
 
             if (hasDuplicateOnSave)
             {
@@ -198,9 +198,9 @@ namespace API_PCC.Controllers
                 return Conflict("No records matched!");
             }
 
-            bool feedCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.FeedCode == hFeedingSystem.FeedCode);
+            bool FeedingSystemDescExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.FeedingSystemCode == hFeedingSystem.FeedingSystemCode);
 
-            if(feedCodeExistsInBuffHerd)
+            if(FeedingSystemDescExistsInBuffHerd)
             {
                 return Conflict("Used by other table!");
             }

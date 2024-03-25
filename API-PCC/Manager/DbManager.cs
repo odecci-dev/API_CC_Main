@@ -13,14 +13,14 @@ namespace API_PCC.Manager
         string cnnstr = "";
         DBConn db = new DBConn();
 
-      
+
         public void ConnectioStr()
         {
-            // cnnstr = "Data Source=LERJUN-PC;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!";// local
+            //cnnstr = "Data Source=LEARI-PC\\MSSQLSERVER01;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev12345!";// local
             cnnstr = "Data Source=EC2AMAZ-V52FJK1;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server
 
             conn = new SqlConnection(cnnstr);
-        } 
+        }
         public DataSet SelectDb(string value)
         {
             DataSet ds = new DataSet();
@@ -36,10 +36,12 @@ namespace API_PCC.Manager
             }
             catch (Exception e)
             {
-                DataTable dt = new DataTable();
+                /*DataTable dt = new DataTable();
                 dt.Columns.Add("Error");
                 dt.Rows.Add(new object[] { e.Message });
-                ds.Tables.Add(dt);
+                ds.Tables.Add(dt);*/
+                
+                throw e;
             }
 
             conn.Close();
@@ -58,7 +60,7 @@ namespace API_PCC.Manager
             cmd.CommandType = CommandType.Text;
         }
 
-        
+
         public DataSet SelectDb_SP(string strSql, params IDataParameter[] sqlParams)
         {
             DataSet ds = new DataSet();
@@ -97,10 +99,11 @@ namespace API_PCC.Manager
                     goto retry;
                 }
 
-                DataTable dt = new DataTable();
+                /*DataTable dt = new DataTable();
                 dt.Columns.Add("Error");
                 dt.Rows.Add(new object[] { ex.Message });
-                ds.Tables.Add(dt);
+                ds.Tables.Add(dt);*/
+                throw ex;
             }
 
             conn.Close();
@@ -131,7 +134,7 @@ namespace API_PCC.Manager
                 string filePath = @"C:\data\SQL_Error.json"; // Replace with your desired file path
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(rowsaffected + " Successfully"));
                 return rowsaffected + " Successfully";
-          
+
             }
             catch (SqlException ex)
             {

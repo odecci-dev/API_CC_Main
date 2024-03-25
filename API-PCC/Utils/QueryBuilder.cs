@@ -31,6 +31,28 @@ namespace API_PCC.Utils
                 }
             }
 
+            if (searchFilterModel.dateFrom != null)
+            {
+                herdSelect = herdSelect + "AND DATE_CREATED >= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd HH:mm:ss") + "' ";
+            }
+
+            if (searchFilterModel.dateTo != null)
+            {
+                herdSelect = herdSelect + "AND DATE_CREATED <= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd HH:mm:ss") + "' ";
+            }
+
+            if (searchFilterModel.sortBy != null)
+            {
+                if (searchFilterModel.sortBy.Field != null && searchFilterModel.sortBy.Field != "")
+                {
+                    herdSelect = herdSelect + "ORDER BY " + searchFilterModel.sortBy.Field + " ";
+                }
+                if (searchFilterModel.sortBy.Sort != null && searchFilterModel.sortBy.Sort != "")
+                {
+                    herdSelect = herdSelect + searchFilterModel.sortBy.Sort;
+                }
+            }
+
             return herdSelect;
         }
 

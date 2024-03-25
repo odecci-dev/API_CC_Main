@@ -1,6 +1,6 @@
 ﻿namespace API_PCC.ApplicationModels
 {
-    public class BuffHerdFilterByModel
+    public class FilterByModel
     {
         public string? BreedTypeCode { get; set; }
         public string? HerdClassDesc { get; set; }

@@ -208,92 +208,68 @@ public partial class PCC_DEVContext : DbContext
             entity.ToTable("A_Buff_Animal");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.AnimalId)
+            entity.Property(e => e.AnimalIdNumber)
                 .IsRequired()
-                .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("Animal_ID");
-            entity.Property(e => e.Name)
+                .HasColumnName("Animal_ID_Number");
+            entity.Property(e => e.AnimalName)
                 .IsRequired()
-                .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("Name");
-            entity.Property(e => e.Rfid)
+                .HasColumnName("Animal_Name");
+            entity.Property(e => e.Photo)
                 .IsRequired()
-                .HasMaxLength(16)
                 .IsUnicode(false)
-                .HasColumnName("RFID");
+                .HasColumnName("Photo");
             entity.Property(e => e.HerdCode)
                 .IsRequired()
-                .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("Herd_Code");
+            entity.Property(e => e.RfidNumber)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("RFID_Number");
             entity.Property(e => e.DateOfBirth)
                 .HasColumnType("date")
                 .HasColumnName("Date_of_Birth");
             entity.Property(e => e.Sex)
                 .IsRequired()
-                .HasMaxLength(1)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.BuffaloType)
-                .IsUnicode(false)
-                .HasColumnName("Buffalo_type");
-            entity.Property(e => e.IdSystem)
-                .IsUnicode(false)
-                .HasColumnName("ID_System");
-            entity.Property(e => e.PedigreeRecords)
-                .IsUnicode(false)
-                .HasColumnName("Pedigree_Records");
-            entity.Property(e => e.Photo)
+            entity.Property(e => e.BreedCode)
                 .IsRequired()
                 .IsUnicode(false)
-                .HasColumnName("Photo");
-            entity.Property(e => e.CountryBirth)
-                .IsRequired()
-                .HasMaxLength(50)
+                .HasColumnName("Breed_Code");
+            entity.Property(e => e.BirthType)
                 .IsUnicode(false)
-                .HasColumnName("Country_Birth");
-            entity.Property(e => e.OriginAcquisition)
+                .HasColumnName("Birth_Type");
+            entity.Property(e => e.CountryOfBirth)
                 .IsRequired()
                 .IsUnicode(false)
-                .HasColumnName("Origin_Acquisition");
-            entity.Property(e => e.DateAcquisition)
+                .HasColumnName("Country_Of_Birth");
+            entity.Property(e => e.OriginOfAcquisition)
+                .IsRequired()
+                .IsUnicode(false)
+                .HasColumnName("Origin_Of_Acquisition");
+            entity.Property(e => e.DateOfAcquisition)
                 .HasColumnType("date")
-                .HasColumnName("Date_Acquisition");
+                .HasColumnName("Date_Of_Acquisition");
             entity.Property(e => e.Marking)
                 .IsRequired()
                 .IsUnicode(false);
-            entity.Property(e => e.SireRegNum)
-               .IsRequired()
-               .HasMaxLength(17)
-               .IsUnicode(false)
-               .HasColumnName("Sire_Reg_Num");
-            entity.Property(e => e.SireIdNum)
+            entity.Property(e => e.TypeOfOwnership)
                 .IsRequired()
-                .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("Sire_ID_Num");
-            entity.Property(e => e.BreedCode)
-                .IsRequired()
-                .HasMaxLength(2)
-                .IsUnicode(false)
-                .HasColumnName("Breed_Code");
+                .HasColumnName("Type_Of_Ownership");
             entity.Property(e => e.BloodCode)
                 .IsRequired()
-                .HasMaxLength(6)
                 .IsUnicode(false)
                 .HasColumnName("Blood_Code");
-            entity.Property(e => e.BirthTypeCode)
-                .IsRequired()
-                .HasMaxLength(50)
+            entity.Property(e => e.SireId)
                 .IsUnicode(false)
-                .HasColumnName("Birth_Type_Code");
-            entity.Property(e => e.TypeOwnCode)
-                .IsRequired()
-                .HasMaxLength(50)
+                .HasColumnName("Sire_ID");
+            entity.Property(e => e.DamId)
                 .IsUnicode(false)
-                .HasColumnName("Type_Own_Code");
+                .HasColumnName("Dam_Id");
             entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.CreatedBy)
                 .IsRequired()

@@ -21,5 +21,9 @@
 
         public static readonly String ACTION_TABLE_SELECT = $@"SELECT * FROM ACTION_TBL ";
         public static readonly String MODULE_TABLE_SELECT = $@"SELECT * FROM MODULE_TBL ";
+
+        public static readonly String SIRE_TABLE_SELECT = $@"SELECT * FROM TBL_SIREMODEL ";
+        public static readonly String DAM_TABLE_SELECT = $@"SELECT * FROM TBL_DAMMODEL ";
+
     }
 }

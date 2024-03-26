@@ -57,6 +57,9 @@ public partial class PCC_DEVContext : DbContext
 
     public virtual DbSet<TblFarmOwner> TblFarmOwners { get; set; }
 
+    public virtual DbSet<SireModel> tblSireModels { get; set; }
+
+    public virtual DbSet<DamModel> tblDamModels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -209,59 +212,47 @@ public partial class PCC_DEVContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AnimalIdNumber)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Animal_ID_Number");
             entity.Property(e => e.AnimalName)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Animal_Name");
             entity.Property(e => e.Photo)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Photo");
             entity.Property(e => e.HerdCode)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Herd_Code");
             entity.Property(e => e.RfidNumber)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("RFID_Number");
             entity.Property(e => e.DateOfBirth)
                 .HasColumnType("date")
                 .HasColumnName("Date_of_Birth");
             entity.Property(e => e.Sex)
-                .IsRequired()
                 .IsUnicode(false)
                 .IsFixedLength();
             entity.Property(e => e.BreedCode)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Breed_Code");
             entity.Property(e => e.BirthType)
                 .IsUnicode(false)
                 .HasColumnName("Birth_Type");
             entity.Property(e => e.CountryOfBirth)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Country_Of_Birth");
             entity.Property(e => e.OriginOfAcquisition)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Origin_Of_Acquisition");
             entity.Property(e => e.DateOfAcquisition)
                 .HasColumnType("date")
                 .HasColumnName("Date_Of_Acquisition");
             entity.Property(e => e.Marking)
-                .IsRequired()
                 .IsUnicode(false);
             entity.Property(e => e.TypeOfOwnership)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Type_Of_Ownership");
             entity.Property(e => e.BloodCode)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Blood_Code");
             entity.Property(e => e.SireId)
@@ -272,19 +263,15 @@ public partial class PCC_DEVContext : DbContext
                 .HasColumnName("Dam_Id");
             entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.CreatedBy)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Created_By");
             entity.Property(e => e.CreatedDate)
-                .IsRequired()
                 .HasColumnType("date")
                 .HasColumnName("Created_Date");
             entity.Property(e => e.UpdatedBy)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
             entity.Property(e => e.UpdateDate)
-                .IsRequired()
                 .HasColumnType("date")
                 .HasColumnName("Update_Date");
             entity.Property(e => e.DeletedBy)
@@ -967,6 +954,58 @@ public partial class PCC_DEVContext : DbContext
                    .IsUnicode(false)
                    .IsRequired()
                    .HasColumnName("Email");
+        });
+
+        modelBuilder.Entity<SireModel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_SireModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.ToTable("tbl_SireModel");
+            entity.Property(e => e.SireRegistrationNumber)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Sire_Registration_Number");
+            entity.Property(e => e.SireIdNumber)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Sire_Id_Number");
+            entity.Property(e => e.SireName)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Sire_Name");
+            entity.Property(e => e.BloodCode)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Blood_Code");
+        });
+
+        modelBuilder.Entity<DamModel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_DamModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.ToTable("tbl_DamModel");
+            entity.Property(e => e.DamRegistrationNumber)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Dam_Registration_Number");
+            entity.Property(e => e.DamIdNumber)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Dam_Id_Number");
+            entity.Property(e => e.DamName)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Dam_Name");
+            entity.Property(e => e.BreedCode)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Breed_Code");
+            entity.Property(e => e.BloodCode)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Blood_Code");
         });
 
         OnModelCreatingGeneratedProcedures(modelBuilder);

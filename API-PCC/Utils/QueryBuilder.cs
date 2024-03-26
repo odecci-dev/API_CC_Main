@@ -109,12 +109,12 @@ namespace API_PCC.Utils
 
             if (searchFilterModel.sex != null && searchFilterModel.sex != "")
             {
-                buffAnimalSelect = buffAnimalSelect + "AND (SEX = '" + searchFilterModel.sex + "' ";
+                buffAnimalSelect = buffAnimalSelect + "AND SEX = '" + searchFilterModel.sex + "' ";
             }
 
             if (searchFilterModel.status != null && searchFilterModel.status != "")
             {
-                buffAnimalSelect = buffAnimalSelect + "AND (STATUS = '" + searchFilterModel.status + "' ";
+                buffAnimalSelect = buffAnimalSelect + "AND STATUS = '" + searchFilterModel.status + "' ";
             }
 
             if (searchFilterModel.filterBy != null)
@@ -152,13 +152,13 @@ namespace API_PCC.Utils
 
         public static String buildBuffAnimalSearchByReferenceNumber(String referencenUmber)
         {
-            String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 AND ( DAM_REGISTRATION_NUMBER = '" + referencenUmber + "' OR RFID_NUMBER = '" + referencenUmber + "')";
+            String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "INNER JOIN TBL_DAMMODEL AS DM ON BA.Dam_ID = DM.ID WHERE DELETE_FLAG = 0 AND ( DM.DAM_REGISTRATION_NUMBER = '" + referencenUmber + "' OR BA.RFID_NUMBER = '" + referencenUmber + "')";
             return buffAnimalSelect;
         }
 
         public static String buildBuffAnimalDuplicateQuery(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
         {
-            String buffAnimalDuplicateQuery = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 AND ( HERD_CODE = '" + buffAnimalRegistrationModel.HerdCode + "' AND ANIMAL_ID_Number = '" + buffAnimalRegistrationModel.AnimalIdNumber;
+            String buffAnimalDuplicateQuery = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 AND ( HERD_CODE = '" + buffAnimalRegistrationModel.HerdCode + "' AND ANIMAL_ID_Number = '" + buffAnimalRegistrationModel.AnimalIdNumber + "')";
             return buffAnimalDuplicateQuery;
         }
 
@@ -170,7 +170,7 @@ namespace API_PCC.Utils
 
         public static String buildBuffAnimalSelectDuplicateQueryByIdAnimalIdNumberName(int id, String animalIdNumber, String animalName)
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND NOT id = " + id + "  AND ANIMAL_ID_NUMBER = '" + animalIdNumber + "' AND ANIMAL_NAME = '" + animalName + "'";
+            return Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 AND NOT id = " + id + "  AND ANIMAL_ID_NUMBER = '" + animalIdNumber + "' AND ANIMAL_NAME = '" + animalName + "'";
         }
 
         public static String buildSireSearchQueryById(int id)
@@ -178,9 +178,19 @@ namespace API_PCC.Utils
             return Constants.DBQuery.SIRE_TABLE_SELECT + "WHERE id = " + id;
         }
 
+        public static String buildSireSearchQueryByRegNumIdNumName(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
+        {
+            return Constants.DBQuery.SIRE_TABLE_SELECT + "WHERE SIRE_REGISTRATION_NUMBER = '" + buffAnimalRegistrationModel.Sire.SireRegistrationNumber + "' AND SIRE_ID_NUMBER = '" + buffAnimalRegistrationModel.Sire.SireIdNumber + "' AND SIRE_NAME = '" + buffAnimalRegistrationModel.Sire.SireName + "'";
+        }
+
         public static String buildDamSearchQueryById(int id)
         {
             return Constants.DBQuery.DAM_TABLE_SELECT + "WHERE id = " + id;
+        }
+
+        public static String buildDamSearchQueryByRegNumIdNumName(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
+        {
+            return Constants.DBQuery.DAM_TABLE_SELECT + "WHERE DAM_REGISTRATION_NUMBER = '" + buffAnimalRegistrationModel.Dam.DamRegistrationNumber + "' AND DAM_ID_NUMBER = '" + buffAnimalRegistrationModel.Dam.DamIdNumber + "' AND DAM_NAME = '" + buffAnimalRegistrationModel.Dam.DamName + "'";
         }
 
     }

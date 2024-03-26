@@ -2,7 +2,6 @@
 {
     public class BuffAnimalBaseModel
     {
-        public int Id { get; set; }
         public string AnimalIdNumber { get; set; }
         public string AnimalName { get; set; }
         public String Photo { get; set; }

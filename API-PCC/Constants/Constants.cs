@@ -5,7 +5,7 @@
         public static readonly String BIRTH_TYPE_SELECT = $@"SELECT * FROM A_BIRTH_TYPE ";
         public static readonly String BLOOD_COMPOSITION_SELECT = @"SELECT * FROM A_BLOOD_COMP ";
         public static readonly String BREED_SELECT = $@"SELECT * FROM A_BREED ";
-        public static readonly String BUFF_ANIMAL_SELECT = $@"SELECT * FROM A_BUFF_ANIMAL ";
+        public static readonly String BUFF_ANIMAL_SELECT = $@"SELECT BA.* FROM A_BUFF_ANIMAL AS BA ";
         public static readonly String TYPE_OWNERSHIP_SELECT = $@"SELECT * FROM A_TYPE_OWNERSHIP ";
         public static readonly String HERD_SELECT = $@"SELECT * FROM H_BUFF_HERD ";
         public static readonly String BUFFALO_TYPE_SELECT = $@"SELECT * FROM H_BUFFALO_TYPE ";

@@ -78,7 +78,9 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            DataTable sireRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryById(updateModel.Sire.id)).Tables[0];
+            var buffAnimal = convertDataRowToBuffAnimalModel(buffAnimalDataTable.Rows[0]);
+
+            DataTable sireRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryById(buffAnimal.SireId)).Tables[0];
 
             if (sireRecordsCheck.Rows.Count == 0)
             {
@@ -91,10 +93,10 @@ namespace API_PCC.Controllers
                                             ",[Sire_Name] = '" + updateModel.Sire.SireName + "'" +
                                             ",[Breed_Code] = '" + updateModel.Sire.BreedCode + "'" +
                                             ",[Blood_Code] = '" + updateModel.Sire.BloodCode + "'" +
-                                            " WHERE id = " + updateModel.Sire.id;
+                                            " WHERE id = " + buffAnimal.SireId;
             string sireUpdateResult = db.DB_WithParam(sire_update);
 
-            DataTable damRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryById(updateModel.Dam.id)).Tables[0];
+            DataTable damRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryById(buffAnimal.DamId)).Tables[0];
 
             if (damRecordsCheck.Rows.Count == 0)
             {
@@ -107,10 +109,8 @@ namespace API_PCC.Controllers
                                             ",[Dam_Name] = '" + updateModel.Dam.DamName + "'" +
                                             ",[Breed_Code] = '" + updateModel.Dam.BreedCode + "'" +
                                             ",[Blood_Code] = '" + updateModel.Dam.BloodCode + "'" +
-                                            " WHERE id = " + updateModel.Dam.id;
+                                            " WHERE id = " + buffAnimal.DamId;
             string damUpdateResult = db.DB_WithParam(dam_update);
-
-            var buffAnimal = convertDataRowToBuffAnimalModel(buffAnimalDataTable.Rows[0]);
 
             try
             {
@@ -146,6 +146,58 @@ namespace API_PCC.Controllers
                 }
 
                 var buffAnimal = buildBuffAnimal(buffAnimalRegistrationModel);
+
+                DataTable sireRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
+
+                if (sireRecordsCheck.Rows.Count == 0)
+                {
+                    string sire_insert = $@"INSERT INTO [dbo].[tbl_SireModel] 
+                                            ([Sire_Registration_Number]
+                                           ,[Sire_Id_Number]
+                                           ,[Sire_Name]
+                                           ,[Breed_Code]
+                                           ,[Blood_Code])
+                                      VALUES
+                                            ('" + buffAnimalRegistrationModel.Sire.SireRegistrationNumber + "'," +
+                                                "'" + buffAnimalRegistrationModel.Sire.SireIdNumber + "'," +
+                                                "'" + buffAnimalRegistrationModel.Sire.SireName + "'," +
+                                                "'" + buffAnimalRegistrationModel.Sire.BreedCode + "'," +
+                                                "'" + buffAnimalRegistrationModel.Sire.BloodCode + "')";
+                    string sireInsertResult = db.DB_WithParam(sire_insert);
+
+                }
+
+
+
+                DataTable damRecordsCheck = db.SelectDb(QueryBuilder.buildDamSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
+
+                if (damRecordsCheck.Rows.Count == 0)
+                {
+                    string dam_insert = $@"INSERT INTO [dbo].[tbl_DamModel] 
+                                            ([Dam_Registration_Number]
+                                           ,[Dam_Id_Number]
+                                           ,[Dam_Name]
+                                           ,[Breed_Code]
+                                           ,[Blood_Code])
+                                      VALUES
+                                            ('" + buffAnimalRegistrationModel.Dam.DamRegistrationNumber + "'," +
+                                                "'" + buffAnimalRegistrationModel.Dam.DamIdNumber + "'," +
+                                                "'" + buffAnimalRegistrationModel.Dam.DamName + "'," +
+                                                "'" + buffAnimalRegistrationModel.Dam.BreedCode + "'," +
+                                                "'" + buffAnimalRegistrationModel.Dam.BloodCode + "')";
+                    string damInsertResult = db.DB_WithParam(dam_insert);
+
+                }
+                DataTable sireRecords = db.SelectDb(QueryBuilder.buildSireSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
+                DataTable damRecords = db.SelectDb(QueryBuilder.buildDamSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
+
+                var sireRecord = convertDataRowToBuffAnimalModel(sireRecords.Rows[0]);
+                var damRecord = convertDataRowToBuffAnimalModel(damRecords.Rows[0]);
+
+                buffAnimal.SireId = sireRecord.Id;
+                buffAnimal.DamId = damRecord.Id;
+                buffAnimal.CreatedBy = buffAnimalRegistrationModel.CreatedBy;
+                buffAnimal.CreatedDate = DateTime.Now;
 
                 _context.ABuffAnimals.Add(buffAnimal);
                 await _context.SaveChangesAsync();
@@ -191,18 +243,6 @@ namespace API_PCC.Controllers
                 return Problem(ex.GetBaseException().ToString());
             }
         }
-
-        // GET: FeedingSystems/view
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ABuffAnimal>>> view()
-        {
-            if (_context.ABuffAnimals == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.ABuffAnimals' is null.");
-            }
-            return await _context.ABuffAnimals.Where(buffAnimal => !buffAnimal.DeleteFlag).ToListAsync();
-        }
-
 
         // POST: BuffAnimals/restore/
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -380,8 +420,8 @@ namespace API_PCC.Controllers
                 OriginOfAcquisition = registrationModel.OriginOfAcquisition,
                 DateOfAcquisition = registrationModel.DateOfAcquisition,
                 Marking = registrationModel.Marking,
-                SireId = registrationModel.Sire.id,
-                DamId = registrationModel.Dam.id
+                TypeOfOwnership = registrationModel.TypeOfOwnership,
+                BloodCode = registrationModel.BloodCode
             };
             return buffAnimal;
         }

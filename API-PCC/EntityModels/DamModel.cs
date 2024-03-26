@@ -1,7 +1,8 @@
-﻿namespace API_PCC.ApplicationModels
+﻿namespace API_PCC.EntityModels
 {
-    public class Dam
+    public partial class DamModel
     {
+        public int Id { get; set; }
         public string DamRegistrationNumber { get; set; }
         public string DamIdNumber { get; set; }
         public string DamName { get; set; }

@@ -2,7 +2,6 @@
 {
     public class Sire
     {
-        public int id { get; set; }
         public string SireRegistrationNumber { get; set; }
         public string SireIdNumber { get; set; }
         public string SireName { get; set; }

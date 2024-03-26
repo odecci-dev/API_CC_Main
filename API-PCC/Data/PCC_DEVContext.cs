@@ -930,10 +930,10 @@ public partial class PCC_DEVContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("Id");
             entity.ToTable("tbl_FarmOwner");
-            entity.Property(e => e.Name)
+            entity.Property(e => e.FirstName)
                    .IsUnicode(false)
                    .IsRequired()
-                   .HasColumnName("Name");
+                   .HasColumnName("FirstName");
             entity.Property(e => e.LastName)
                    .IsUnicode(false)
                    .IsRequired()

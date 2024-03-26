@@ -40,7 +40,7 @@ namespace API_PCC.Controllers
             {
                 if (searchFilter.Name != null && searchFilter.Name != "")
                 {
-                    farmOwnerList = farmOwnerList.Where(farmOwner => farmOwner.Name.Contains(searchFilter.Name));
+                    farmOwnerList = farmOwnerList.Where(farmOwner => farmOwner.FirstName.Contains(searchFilter.Name));
                 }
 
                 if (searchFilter.LastName != null && searchFilter.LastName != "")
@@ -118,7 +118,7 @@ namespace API_PCC.Controllers
                 return Conflict("Ids mismatched!");
             }
 
-            bool hasDuplicateOnUpdate = (_context.TblFarmOwners?.Any(farmOwner => farmOwner.Name == TblFarmOwner.Name && farmOwner.LastName == TblFarmOwner.LastName && farmOwner.Id != id)).GetValueOrDefault();
+            bool hasDuplicateOnUpdate = (_context.TblFarmOwners?.Any(farmOwner => farmOwner.FirstName == TblFarmOwner.FirstName && farmOwner.LastName == TblFarmOwner.LastName && farmOwner.Id != id)).GetValueOrDefault();
 
             // check for duplication
             if (hasDuplicateOnUpdate)
@@ -150,7 +150,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.TblFarmOwners' is null!");
             }
 
-            bool hasDuplicateOnSave = (_context.TblFarmOwners?.Any(farmOwner => farmOwner.Name == TblFarmOwner.Name && farmOwner.LastName == TblFarmOwner.LastName)).GetValueOrDefault();
+            bool hasDuplicateOnSave = (_context.TblFarmOwners?.Any(farmOwner => farmOwner.FirstName == TblFarmOwner.FirstName && farmOwner.LastName == TblFarmOwner.LastName)).GetValueOrDefault();
 
             if (hasDuplicateOnSave)
             {

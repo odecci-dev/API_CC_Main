@@ -11,10 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    [Authorize("ApiKey")]
+    //[Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class HBuffHerdsController : ControllerBase
@@ -83,6 +84,7 @@ namespace API_PCC.Controllers
                 return Conflict("No records matched!");
             }
 
+            var buffHerd = convertDataRowToHerdModel(buffHerdDataTable.Rows[0]);
             DataTable buffHerdDuplicateCheck = db.SelectDb(QueryBuilder.buildHerdSelectDuplicateQueryByIdHerdNameHerdCode(id, registrationModel.HerdName, registrationModel.HerdCode)).Tables[0];
 
             // check for duplication
@@ -91,16 +93,24 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            DataTable farmOwnerRecordsCheck = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryByFirstNameAndLastName(registrationModel.Owner.FirstName, registrationModel.Owner.LastName)).Tables[0];
+            DataTable farmOwnerRecordsCheck = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryById(buffHerd.Owner)).Tables[0];
 
             if (farmOwnerRecordsCheck.Rows.Count == 0)
             {
-                // Should we create a new farmer here as well?
                 return Conflict("Farm owner does not exists");
             }
 
+            string farmOwner_update = $@"UPDATE [dbo].[tbl_FarmOwner] SET 
+                                             [FirstName] = '" + registrationModel.Owner.FirstName + "'" +
+                                            ",[LastName] = '" + registrationModel.Owner.LastName + "'" +
+                                            ",[Address] = '" + registrationModel.Owner.Address + "'" +
+                                            ",[TelephoneNumber] = '" + registrationModel.Owner.TelNo + "'" +
+                                            ",[MobileNumber] = '" + registrationModel.Owner.MNo + "'" +
+                                            ",[Email] = '" + registrationModel.Owner.Email + "'" +
+                                            " WHERE id = " + buffHerd.Owner;
+            string result = db.DB_WithParam(farmOwner_update);
+
             var farmOwner = convertDataRowToFarmOwnerEntity(farmOwnerRecordsCheck.Rows[0]);
-            var buffHerd = populateHerdModel(buffHerdDataTable.Rows[0]);
 
             try
             {
@@ -236,7 +246,7 @@ namespace API_PCC.Controllers
                 return Conflict("No deleted records matched!");
             }
             
-            var herdModel = populateHerdModel(dt.Rows[0]);
+            var herdModel = convertDataRowToHerdModel(dt.Rows[0]);
 
             DataTable dtForDuplicateCheck = db.SelectDb(QueryBuilder.buildHerdCheckDuplicateQuery(herdModel.HerdName, herdModel.HerdCode)).Tables[0];
 
@@ -275,7 +285,7 @@ namespace API_PCC.Controllers
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
             items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var herdModel = populateHerdModel(items);
+            var herdModel = convertDateRowListToHerdModelList(items);
 
             var result = new List<HerdPagedModel>();
             var item = new HerdPagedModel();
@@ -298,7 +308,7 @@ namespace API_PCC.Controllers
         }
 
 
-        private List<HBuffHerd> populateHerdModel(List<DataRow> dataRowList)
+        private List<HBuffHerd> convertDateRowListToHerdModelList(List<DataRow> dataRowList)
         {
             var herdModelList = new List<HBuffHerd>();
 
@@ -311,7 +321,7 @@ namespace API_PCC.Controllers
             return herdModelList;
         }
 
-        private HBuffHerd populateHerdModel(DataRow dataRow)
+        private HBuffHerd convertDataRowToHerdModel(DataRow dataRow)
         {
             return DataRowToObject.ToObject<HBuffHerd>(dataRow);
         }

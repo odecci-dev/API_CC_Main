@@ -15,7 +15,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    //[Authorize("ApiKey")]
+    [Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class HBuffHerdsController : ControllerBase
@@ -285,7 +285,8 @@ namespace API_PCC.Controllers
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
             items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var herdModel = convertDateRowListToHerdModelList(items);
+            var herdModels = convertDateRowListToHerdModelList(items);
+            List<BuffHerdBaseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(herdModels);
 
             var result = new List<HerdPagedModel>();
             var item = new HerdPagedModel();
@@ -301,7 +302,7 @@ namespace API_PCC.Controllers
             item.TotalPage = t_records.ToString();
             item.PageSize = pagesize.ToString();
             item.TotalRecord = totalItems.ToString();
-            item.items = herdModel;
+            item.items = buffHerdBaseModels;
             result.Add(item);
 
             return result;
@@ -388,6 +389,52 @@ namespace API_PCC.Controllers
             };
 
             return BuffHerdModel;
+        }
+
+        private List<BuffHerdBaseModel> convertBuffHerdToResponseModelList(List<HBuffHerd> buffHerdList)
+        {
+            var buffHerdBaseModels = new List<BuffHerdBaseModel>();
+            foreach (HBuffHerd buffHerd in buffHerdList)
+            {
+                var buffHerdBaseModel = new BuffHerdBaseModel()
+                {
+                    HerdName = buffHerd.HerdName,
+                    HerdCode = buffHerd.HerdCode,
+                    HerdSize = buffHerd.HerdSize,
+                    BreedTypeCode = buffHerd.BreedTypeCode,
+                    FarmAffilCode = buffHerd.FarmAffilCode,
+                    HerdClassDesc = buffHerd.HerdClassDesc,
+                    FeedingSystemCode = buffHerd.FeedingSystemCode,
+                    FarmManager = buffHerd.FarmManager,
+                    FarmAddress = buffHerd.FarmAddress,
+                    Owner = populateOwner(buffHerd),
+                    Center = buffHerd.Center,
+                    OrganizationName = buffHerd.OrganizationName,
+                    Photo = buffHerd.Photo
+                };
+                buffHerdBaseModels.Add(buffHerdBaseModel);
+            }
+           
+            return buffHerdBaseModels;
+        }
+
+        private Owner populateOwner(HBuffHerd buffHerd)
+        {
+            DataTable dt = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryById(buffHerd.Owner)).Tables[0];
+            var farmOwnerEntity = convertDataRowToFarmOwnerEntity(dt.Rows[0]);
+
+            var owner = new Owner()
+            {
+                FirstName = farmOwnerEntity.FirstName,
+                LastName = farmOwnerEntity.LastName,
+                Address = farmOwnerEntity.Address,
+                Email = farmOwnerEntity.Email,
+                MNo = farmOwnerEntity.MobileNumber,
+                TelNo = farmOwnerEntity.TelephoneNumber
+            };
+
+
+            return owner;
         }
 
     }

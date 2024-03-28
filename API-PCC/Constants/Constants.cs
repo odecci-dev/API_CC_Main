@@ -25,5 +25,7 @@
         public static readonly String SIRE_TABLE_SELECT = $@"SELECT * FROM TBL_SIREMODEL ";
         public static readonly String DAM_TABLE_SELECT = $@"SELECT * FROM TBL_DAMMODEL ";
 
+        public static readonly String ORIGIN_ACQUISITION_SELECT = $@"SELECT OA.* FROM TBL_ORIGINOFACQUISITIONMODEL OA ";
+
     }
 }

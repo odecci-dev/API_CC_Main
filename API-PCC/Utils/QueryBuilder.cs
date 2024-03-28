@@ -178,9 +178,14 @@ namespace API_PCC.Utils
             return Constants.DBQuery.SIRE_TABLE_SELECT + "WHERE id = " + id;
         }
 
-        public static String buildSireSearchQueryByRegNumIdNumName(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
+        public static String buildSireSearchQueryBySire(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
         {
-            return Constants.DBQuery.SIRE_TABLE_SELECT + "WHERE SIRE_REGISTRATION_NUMBER = '" + buffAnimalRegistrationModel.Sire.SireRegistrationNumber + "' AND SIRE_ID_NUMBER = '" + buffAnimalRegistrationModel.Sire.SireIdNumber + "' AND SIRE_NAME = '" + buffAnimalRegistrationModel.Sire.SireName + "'";
+            return Constants.DBQuery.SIRE_TABLE_SELECT + "WHERE " +
+                "SIRE_REGISTRATION_NUMBER = '" + buffAnimalRegistrationModel.Sire.SireRegistrationNumber + "' " +
+                "AND SIRE_ID_NUMBER = '" + buffAnimalRegistrationModel.Sire.SireIdNumber + "' " +
+                "AND SIRE_NAME = '" + buffAnimalRegistrationModel.Sire.SireName + "' " +
+                "AND BREED_CODE = '" + buffAnimalRegistrationModel.Sire.BreedCode + "' " +
+                "AND BLOOD_CODE = '" + buffAnimalRegistrationModel.Sire.BloodCode + "'";
         }
 
         public static String buildDamSearchQueryById(int id)
@@ -190,9 +195,27 @@ namespace API_PCC.Utils
 
         public static String buildDamSearchQueryByRegNumIdNumName(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
         {
-            return Constants.DBQuery.DAM_TABLE_SELECT + "WHERE DAM_REGISTRATION_NUMBER = '" + buffAnimalRegistrationModel.Dam.DamRegistrationNumber + "' AND DAM_ID_NUMBER = '" + buffAnimalRegistrationModel.Dam.DamIdNumber + "' AND DAM_NAME = '" + buffAnimalRegistrationModel.Dam.DamName + "'";
+            return Constants.DBQuery.DAM_TABLE_SELECT + "WHERE " +
+                "DAM_REGISTRATION_NUMBER = '" + buffAnimalRegistrationModel.Dam.DamRegistrationNumber + "' " +
+                "AND DAM_ID_NUMBER = '" + buffAnimalRegistrationModel.Dam.DamIdNumber + "' " +
+                "AND DAM_NAME = '" + buffAnimalRegistrationModel.Dam.DamName + "'" +
+                "AND BREED_CODE = '" + buffAnimalRegistrationModel.Dam.BreedCode + "' " +
+                "AND BLOOD_CODE = '" + buffAnimalRegistrationModel.Dam.BloodCode + "'";
         }
 
+        public static String buildOriginAcquisitionSearchQueryById(int id)
+        {
+            return Constants.DBQuery.ORIGIN_ACQUISITION_SELECT + "WHERE ID = " + id;
+        }
+
+        public static String buildOriginAcquisitionSearchQueryByOriginAcquistion(BuffAnimalRegistrationModel buffAnimalRegistrationModel)
+        {
+            return Constants.DBQuery.ORIGIN_ACQUISITION_SELECT + "WHERE " +
+                            "OA.CITY = '" + buffAnimalRegistrationModel.OriginOfAcquisition.City + "' " +
+                            "AND OA.PROVINCE = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Province+ "' " +
+                            "AND OA.BARANGAY = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Barangay + "' " +
+                            "AND OA.REGION = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Region + "'" ;
+        }
     }
 
 }

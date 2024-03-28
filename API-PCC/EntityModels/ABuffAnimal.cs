@@ -19,7 +19,7 @@ public partial class ABuffAnimal
     public string BreedCode { get; set; }
     public string BirthType { get; set; }
     public string CountryOfBirth { get; set; }
-    public string OriginOfAcquisition { get; set; }
+    public int OriginOfAcquisition { get; set; }
     public DateTime? DateOfAcquisition { get; set; }
     public string Marking { get; set; }
     public string TypeOfOwnership { get; set; }
@@ -27,6 +27,7 @@ public partial class ABuffAnimal
     public int SireId { get; set; }
     public int DamId { get; set; }
     public bool DeleteFlag { get; set; }
+    public string Status { get; set; }
     public string CreatedBy { get; set; }
     public DateTime? CreatedDate { get; set; }
     public string? UpdatedBy { get; set; }

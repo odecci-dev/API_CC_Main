@@ -262,6 +262,7 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("Dam_Id");
             entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.Status).HasColumnName("Status");
             entity.Property(e => e.CreatedBy)
                 .IsUnicode(false)
                 .HasColumnName("Created_By");
@@ -1006,6 +1007,29 @@ public partial class PCC_DEVContext : DbContext
                    .IsUnicode(false)
                    .IsRequired()
                    .HasColumnName("Blood_Code");
+        });
+
+        modelBuilder.Entity<TblOriginOfAcquisitionModel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_OriginOfAcquisitionModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.ToTable("tbl_OriginOfAcquisitionModel");
+            entity.Property(e => e.City)
+                   .IsUnicode(false)
+                   .HasColumnName("City");
+            entity.Property(e => e.Province)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Province");
+            entity.Property(e => e.Barangay)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Barangay");
+            entity.Property(e => e.Region)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Region");
         });
 
         OnModelCreatingGeneratedProcedures(modelBuilder);

@@ -12,7 +12,7 @@
         public string BreedCode { get; set; }
         public string BirthType { get; set; }
         public string CountryOfBirth { get; set; }
-        public string OriginOfAcquisition { get; set; }
+        public OriginOfAcquisitionModel OriginOfAcquisition { get; set; }
         public DateTime? DateOfAcquisition { get; set; }
         public string Marking { get; set; }
         public string TypeOfOwnership { get; set; }

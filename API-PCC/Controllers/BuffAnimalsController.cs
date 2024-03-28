@@ -11,6 +11,7 @@ using API_PCC.Manager;
 using API_PCC.Utils;
 using NuGet.Protocol.Core.Types;
 using System;
+using API_PCC.EntityModels;
 
 namespace API_PCC.Controllers
 {
@@ -29,7 +30,7 @@ namespace API_PCC.Controllers
 
         // POST: BuffAnimals/list
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<ABuffAnimal>>> list(BuffAnimalSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<BuffAnimalBaseModel>>> list(BuffAnimalSearchFilterModel searchFilter)
         {
             try
             {
@@ -46,7 +47,7 @@ namespace API_PCC.Controllers
         // GET: BuffAnimals/search/5
         // search by registrationNumber and RFID number
         [HttpGet("{referenceNumber}")]
-        public async Task<ActionResult<ABuffAnimal>> view(String referenceNumber)
+        public async Task<ActionResult<BuffAnimalBaseModel>> view(String referenceNumber)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildBuffAnimalSearchByReferenceNumber(referenceNumber)).Tables[0];
 
@@ -55,7 +56,9 @@ namespace API_PCC.Controllers
                 return Conflict("No records found!");
             }
 
-            return Ok(DataRowToObject.ToObject<ABuffAnimal>(dt.Rows[0]));
+            var animalModel= convertDataRowToBuffAnimalModel(dt.Rows[0]);
+
+            return Ok(animalModel);
         }
 
         // PUT: BuffAnimals/update/5
@@ -78,8 +81,8 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            var buffAnimal = convertDataRowToBuffAnimalModel(buffAnimalDataTable.Rows[0]);
-
+            var buffAnimal = convertDataRowToBuffAnimalEntityModel(buffAnimalDataTable.Rows[0]);
+            
             DataTable sireRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryById(buffAnimal.SireId)).Tables[0];
 
             if (sireRecordsCheck.Rows.Count == 0)
@@ -111,6 +114,23 @@ namespace API_PCC.Controllers
                                             ",[Blood_Code] = '" + updateModel.Dam.BloodCode + "'" +
                                             " WHERE id = " + buffAnimal.DamId;
             string damUpdateResult = db.DB_WithParam(dam_update);
+
+
+            DataTable originOfAcquisition = db.SelectDb(QueryBuilder.buildOriginAcquisitionSearchQueryById(buffAnimal.OriginOfAcquisition)).Tables[0];
+
+            if (originOfAcquisition.Rows.Count == 0)
+            {
+                return Conflict("Origin of Acquisition does not exists");
+            }
+
+            string origin_of_acquisition_update = $@"UPDATE [dbo].[tbl_OriginOfAcquisitionModel] SET
+                                            [City] = '" + updateModel.OriginOfAcquisition.City + "'," +
+                                            "[Province] = '" + updateModel.OriginOfAcquisition.Province + "'," +
+                                            "[Barangay] = '" + updateModel.OriginOfAcquisition.Barangay + "'," +
+                                            "[Region] = '" + updateModel.OriginOfAcquisition.Region + "' " +
+                                            "WHERE id = " + buffAnimal.OriginOfAcquisition;
+
+            string originOfAcquistionResult = db.DB_WithParam(origin_of_acquisition_update);
 
             try
             {
@@ -147,7 +167,7 @@ namespace API_PCC.Controllers
 
                 var buffAnimal = buildBuffAnimal(buffAnimalRegistrationModel);
 
-                DataTable sireRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
+                DataTable sireRecordsCheck = db.SelectDb(QueryBuilder.buildSireSearchQueryBySire(buffAnimalRegistrationModel)).Tables[0];
 
                 if (sireRecordsCheck.Rows.Count == 0)
                 {
@@ -167,8 +187,6 @@ namespace API_PCC.Controllers
 
                 }
 
-
-
                 DataTable damRecordsCheck = db.SelectDb(QueryBuilder.buildDamSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
 
                 if (damRecordsCheck.Rows.Count == 0)
@@ -186,16 +204,36 @@ namespace API_PCC.Controllers
                                                 "'" + buffAnimalRegistrationModel.Dam.BreedCode + "'," +
                                                 "'" + buffAnimalRegistrationModel.Dam.BloodCode + "')";
                     string damInsertResult = db.DB_WithParam(dam_insert);
-
                 }
-                DataTable sireRecords = db.SelectDb(QueryBuilder.buildSireSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
-                DataTable damRecords = db.SelectDb(QueryBuilder.buildDamSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
 
-                var sireRecord = convertDataRowToBuffAnimalModel(sireRecords.Rows[0]);
-                var damRecord = convertDataRowToBuffAnimalModel(damRecords.Rows[0]);
+                DataTable originOfAcquisition = db.SelectDb(QueryBuilder.buildOriginAcquisitionSearchQueryByOriginAcquistion(buffAnimalRegistrationModel)).Tables[0];
+
+                if (originOfAcquisition.Rows.Count == 0)
+                {
+                    string origin_of_acquisition_insert = $@"INSERT INTO [dbo].[tbl_OriginOfAcquisitionModel] 
+                                            ([City]
+                                           ,[Province]
+                                           ,[Barangay]
+                                           ,[Region])
+                                      VALUES
+                                            ('" + buffAnimalRegistrationModel.OriginOfAcquisition.City + "'," +
+                                                "'" + buffAnimalRegistrationModel.OriginOfAcquisition.Province + "'," +
+                                                "'" + buffAnimalRegistrationModel.OriginOfAcquisition.Barangay + "'," +
+                                                "'" + buffAnimalRegistrationModel.OriginOfAcquisition.Region + "')";
+                    string originOfAcquistionResult = db.DB_WithParam(origin_of_acquisition_insert);
+                }
+
+                DataTable sireRecords = db.SelectDb(QueryBuilder.buildSireSearchQueryBySire(buffAnimalRegistrationModel)).Tables[0];
+                DataTable damRecords = db.SelectDb(QueryBuilder.buildDamSearchQueryByRegNumIdNumName(buffAnimalRegistrationModel)).Tables[0];
+                DataTable originOfAcquistionRecords = db.SelectDb(QueryBuilder.buildOriginAcquisitionSearchQueryByOriginAcquistion(buffAnimalRegistrationModel)).Tables[0];
+
+                var sireRecord = convertDataRowToSireModel(sireRecords.Rows[0]);
+                var damRecord = convertDataRowToDamModel(damRecords.Rows[0]);
+                var originOfAcquistionRecord = convertDataRowToOriginAcquistionModel(originOfAcquistionRecords.Rows[0]);
 
                 buffAnimal.SireId = sireRecord.Id;
                 buffAnimal.DamId = damRecord.Id;
+                buffAnimal.OriginOfAcquisition = originOfAcquistionRecord.Id;
                 buffAnimal.CreatedBy = buffAnimalRegistrationModel.CreatedBy;
                 buffAnimal.CreatedDate = DateTime.Now;
 
@@ -318,23 +356,109 @@ namespace API_PCC.Controllers
             return result;
         }
 
-        private List<ABuffAnimal> convertDataRowListToBuffAnimalModelList(List<DataRow> dataRowList)
+        private List<BuffAnimalBaseModel> convertDataRowListToBuffAnimalModelList(List<DataRow> dataRowList)
         {
-            var buffAnimalList = new List<ABuffAnimal>();
+            var buffAnimalResponseModelList = new List<BuffAnimalBaseModel>();
 
             foreach (DataRow row in dataRowList)
             {
-                var buuffAnimalModel = DataRowToObject.ToObject<ABuffAnimal>(row);
-                buffAnimalList.Add(buuffAnimalModel);
+                buffAnimalResponseModelList.Add(convertDataRowToBuffAnimalModel(row));
             }
 
-            return buffAnimalList;
+            return buffAnimalResponseModelList;
         }
 
-        private ABuffAnimal convertDataRowToBuffAnimalModel(DataRow dataRow)
+        private BuffAnimalBaseModel convertDataRowToBuffAnimalModel(DataRow datarow)
         {
-            var buuffAnimalModel = DataRowToObject.ToObject<ABuffAnimal>(dataRow);
-            return buuffAnimalModel;
+            var buffAnimalEntityModel = DataRowToObject.ToObject<ABuffAnimal>(datarow);
+            var buffAnimalResponseModel = new BuffAnimalBaseModel()
+            {
+                AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
+                AnimalName = buffAnimalEntityModel.AnimalName,
+                Photo = buffAnimalEntityModel.Photo,
+                HerdCode = buffAnimalEntityModel.HerdCode,
+                RfidNumber = buffAnimalEntityModel.RfidNumber,
+                DateOfBirth = buffAnimalEntityModel?.DateOfBirth,
+                Sex = buffAnimalEntityModel.Sex,
+                BreedCode = buffAnimalEntityModel.BreedCode,
+                BirthType = buffAnimalEntityModel.BirthType,
+                CountryOfBirth = buffAnimalEntityModel.CountryOfBirth,
+                OriginOfAcquisition = populateOriginOfAcquistionModel(buffAnimalEntityModel),
+                DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition,
+                Marking = buffAnimalEntityModel.Marking,
+                TypeOfOwnership = buffAnimalEntityModel.TypeOfOwnership,
+                BloodCode = buffAnimalEntityModel.BloodCode,
+                Sire = populateSireModel(buffAnimalEntityModel),
+                Dam = populateDamModel(buffAnimalEntityModel)
+            };
+
+            return buffAnimalResponseModel;
+        }
+
+        private OriginOfAcquisitionModel populateOriginOfAcquistionModel(ABuffAnimal buffAnimal)
+        {
+            DataTable dt = db.SelectDb(QueryBuilder.buildOriginAcquisitionSearchQueryById(buffAnimal.OriginOfAcquisition)).Tables[0];
+            var originOfAcquistionEntity = convertDataRowToOriginAcquistionModel(dt.Rows[0]);
+            var originOfAcquisitionModel = new OriginOfAcquisitionModel()
+            {
+                City = originOfAcquistionEntity.City,
+                Barangay = originOfAcquistionEntity.Barangay,
+                Province = originOfAcquistionEntity.Province,
+                Region = originOfAcquistionEntity.Region
+            };
+            return originOfAcquisitionModel;
+
+        }
+
+        private Sire populateSireModel(ABuffAnimal buffAnimal)
+        {
+            DataTable dt = db.SelectDb(QueryBuilder.buildSireSearchQueryById(buffAnimal.SireId)).Tables[0];
+            var sireEntity = convertDataRowToSireModel(dt.Rows[0]);
+            var sireModel = new Sire()
+            {
+                SireRegistrationNumber = sireEntity.SireRegistrationNumber,
+                SireIdNumber = sireEntity.SireIdNumber,
+                SireName = sireEntity.SireName,
+                BreedCode = sireEntity.BreedCode,
+                BloodCode = sireEntity.BloodCode
+            };
+            return sireModel;
+        }
+
+        private Dam populateDamModel(ABuffAnimal buffAnimal)
+        {
+            DataTable dt = db.SelectDb(QueryBuilder.buildDamSearchQueryById(buffAnimal.DamId)).Tables[0];
+            var damEntity = convertDataRowToDamModel(dt.Rows[0]);
+            var damModel = new Dam()
+            {
+                DamRegistrationNumber = damEntity.DamRegistrationNumber,
+                DamIdNumber = damEntity.DamIdNumber,
+                DamName = damEntity.DamName,
+                BreedCode = damEntity.BreedCode,
+                BloodCode = damEntity.BloodCode
+            };
+            return damModel;
+        }
+
+        private TblOriginOfAcquisitionModel convertDataRowToOriginAcquistionModel(DataRow dataRow) 
+        {
+            return DataRowToObject.ToObject<TblOriginOfAcquisitionModel>(dataRow);
+        }
+
+        private SireModel convertDataRowToSireModel(DataRow dataRow)
+        {
+            return DataRowToObject.ToObject<SireModel>(dataRow);
+        }
+
+        private DamModel convertDataRowToDamModel(DataRow dataRow)
+        {
+            return DataRowToObject.ToObject<DamModel>(dataRow);
+        }
+
+        private ABuffAnimal convertDataRowToBuffAnimalEntityModel(DataRow dataRow)
+        {
+            var buuffAnimalEntityModel = DataRowToObject.ToObject<ABuffAnimal>(dataRow);
+            return buuffAnimalEntityModel;
         }
 
         private ABuffAnimal populateBuffAnimal(ABuffAnimal buffAnimal, BuffAnimalUpdateModel updateModel)
@@ -379,10 +503,6 @@ namespace API_PCC.Controllers
             {
                 buffAnimal.CountryOfBirth = updateModel.CountryOfBirth;
             }
-            if (updateModel.OriginOfAcquisition != null && updateModel.OriginOfAcquisition != "")
-            {
-                buffAnimal.OriginOfAcquisition = updateModel.OriginOfAcquisition;
-            }
             if (updateModel.DateOfAcquisition != null)
             {
                 buffAnimal.DateOfAcquisition = updateModel.DateOfAcquisition;
@@ -417,7 +537,6 @@ namespace API_PCC.Controllers
                 BreedCode = registrationModel.BreedCode,
                 BirthType = registrationModel.BirthType,
                 CountryOfBirth = registrationModel.CountryOfBirth,
-                OriginOfAcquisition = registrationModel.OriginOfAcquisition,
                 DateOfAcquisition = registrationModel.DateOfAcquisition,
                 Marking = registrationModel.Marking,
                 TypeOfOwnership = registrationModel.TypeOfOwnership,

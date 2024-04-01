@@ -11,7 +11,7 @@ namespace API_PCC.Utils
             String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchValue != null && searchFilterModel.searchValue != "")
             {
-                herdSelect = herdSelect + "AND (HERD_CODE LIKE '%" + searchFilterModel.searchValue + "%' OR HERD_NAME = '%" + searchFilterModel.searchValue + "%') ";
+                herdSelect = herdSelect + "AND (HERD_CODE LIKE '%" + searchFilterModel.searchValue + "%' OR HERD_NAME LIKE '%" + searchFilterModel.searchValue + "%') ";
             }
 
             if (searchFilterModel.filterBy != null)
@@ -34,12 +34,12 @@ namespace API_PCC.Utils
 
             if (searchFilterModel.dateFrom != null)
             {
-                herdSelect = herdSelect + "AND DATE_CREATED >= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd HH:mm:ss") + "' ";
+                herdSelect = herdSelect + "AND DATE_CREATED >= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd") + "' ";
             }
 
             if (searchFilterModel.dateTo != null)
             {
-                herdSelect = herdSelect + "AND DATE_CREATED <= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd HH:mm:ss") + "' ";
+                herdSelect = herdSelect + "AND DATE_CREATED <= '" + Convert.ToDateTime(searchFilterModel.dateTo).ToString("yyyy-MM-dd") + "' ";
             }
 
             if (searchFilterModel.sortBy != null)

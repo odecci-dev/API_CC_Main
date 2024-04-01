@@ -236,6 +236,7 @@ namespace API_PCC.Controllers
                 buffAnimal.OriginOfAcquisition = originOfAcquistionRecord.Id;
                 buffAnimal.CreatedBy = buffAnimalRegistrationModel.CreatedBy;
                 buffAnimal.CreatedDate = DateTime.Now;
+                buffAnimal.Status = "1";
 
                 _context.ABuffAnimals.Add(buffAnimal);
                 await _context.SaveChangesAsync();

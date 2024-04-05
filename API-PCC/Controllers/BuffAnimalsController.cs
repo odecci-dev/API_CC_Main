@@ -32,6 +32,7 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<BuffAnimalBaseModel>>> list(BuffAnimalSearchFilterModel searchFilter)
         {
+            sanitizeInput(searchFilter);
             try
             {
                 DataTable dt = db.SelectDb(QueryBuilder.buildBuffAnimalSearch(searchFilter)).Tables[0];
@@ -42,6 +43,18 @@ namespace API_PCC.Controllers
             {
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+
+        private void sanitizeInput(BuffAnimalSearchFilterModel searchFilter)
+        {
+            searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
+            searchFilter.sex = StringSanitizer.sanitizeString(searchFilter.sex);
+            searchFilter.status = StringSanitizer.sanitizeString(searchFilter.status);
+            searchFilter.filterBy.BloodCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BloodCode);
+            searchFilter.filterBy.BreedCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BreedCode);
+            searchFilter.filterBy.TypeOfOwnership = StringSanitizer.sanitizeString(searchFilter.filterBy.TypeOfOwnership);
+            searchFilter.sortBy.Field = StringSanitizer.sanitizeString(searchFilter.sortBy.Field);
+            searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
         }
 
         // GET: BuffAnimals/search/5

@@ -57,6 +57,10 @@ namespace API_PCC.Utils
             return herdSelect;
         }
 
+        public static String buildHerdOwnerJoinQuery(String herdCode)
+        {
+            return "SELECT FA.* FROM H_BUFF_HERD BH INNER JOIN TBL_FARMOWNER FA ON BH.OWNER = FA.ID where BH.HERD_CODE = '" + herdCode + "'";
+        }
         public static String buildHerdViewQuery(String herdCode)
         {
             String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0";

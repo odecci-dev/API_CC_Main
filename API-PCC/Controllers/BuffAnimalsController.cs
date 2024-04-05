@@ -30,7 +30,7 @@ namespace API_PCC.Controllers
 
         // POST: BuffAnimals/list
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<BuffAnimalBaseModel>>> list(BuffAnimalSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<BuffAnimalPagedModel>>> list(BuffAnimalSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
             try
@@ -348,7 +348,7 @@ namespace API_PCC.Controllers
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
             items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var buffAnimal = convertDataRowListToBuffAnimalModelList(items);
+            var buffAnimal = convertDataRowListToBuffAnimalResponseModelList(items);
 
             var result = new List<BuffAnimalPagedModel>();
             var item = new BuffAnimalPagedModel();
@@ -370,45 +370,45 @@ namespace API_PCC.Controllers
             return result;
         }
 
-        private List<BuffAnimalBaseModel> convertDataRowListToBuffAnimalModelList(List<DataRow> dataRowList)
+        private List<BuffAnimalListResponseModel> convertDataRowListToBuffAnimalResponseModelList(List<DataRow> dataRowList)
         {
-            var buffAnimalResponseModelList = new List<BuffAnimalBaseModel>();
+            var buffAnimalResponseModelList = new List<BuffAnimalListResponseModel>();
 
             foreach (DataRow row in dataRowList)
             {
-                buffAnimalResponseModelList.Add(convertDataRowToBuffAnimalModel(row));
+                buffAnimalResponseModelList.Add(convertDataRowToBuffAnimalResponseModel(row));
             }
 
             return buffAnimalResponseModelList;
         }
 
-        private BuffAnimalBaseModel convertDataRowToBuffAnimalModel(DataRow datarow)
+        private BuffAnimalListResponseModel convertDataRowToBuffAnimalResponseModel(DataRow datarow)
         {
             var buffAnimalEntityModel = DataRowToObject.ToObject<ABuffAnimal>(datarow);
-            var buffAnimalResponseModel = new BuffAnimalBaseModel()
+            var OriginOfAcquisition = populateOriginOfAcquistionModel(buffAnimalEntityModel);
+            var Sire = populateSireModel(buffAnimalEntityModel);
+            var Dam = populateDamModel(buffAnimalEntityModel);
+            var farmOwner = populateOwnerModel(buffAnimalEntityModel.HerdCode);
+
+            var buffAnimalResponseModel = new BuffAnimalListResponseModel()
             {
-                AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
-                AnimalName = buffAnimalEntityModel.AnimalName,
-                Photo = buffAnimalEntityModel.Photo,
+                BreedRegNo = Dam.DamRegistrationNumber,
                 HerdCode = buffAnimalEntityModel.HerdCode,
-                RfidNumber = buffAnimalEntityModel.RfidNumber,
-                DateOfBirth = buffAnimalEntityModel?.DateOfBirth,
-                Sex = buffAnimalEntityModel.Sex,
-                BreedCode = buffAnimalEntityModel.BreedCode,
-                BirthType = buffAnimalEntityModel.BirthType,
-                CountryOfBirth = buffAnimalEntityModel.CountryOfBirth,
-                OriginOfAcquisition = populateOriginOfAcquistionModel(buffAnimalEntityModel),
-                DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition,
-                Marking = buffAnimalEntityModel.Marking,
-                TypeOfOwnership = buffAnimalEntityModel.TypeOfOwnership,
-                BloodCode = buffAnimalEntityModel.BloodCode,
-                Sire = populateSireModel(buffAnimalEntityModel),
-                Dam = populateDamModel(buffAnimalEntityModel)
+                AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
+                Owner = farmOwner.FirstName + " " + farmOwner.LastName,
+                DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition?.ToString("yyyy-MM-dd")
             };
 
             return buffAnimalResponseModel;
         }
 
+        private TblFarmOwner populateOwnerModel(string herdCode)
+        {
+            DataTable dt = db.SelectDb(QueryBuilder.buildHerdOwnerJoinQuery(herdCode)).Tables[0];
+            var farmOwnerModel = convertDataRowToFarmOwnerModel(dt.Rows[0]);
+            return farmOwnerModel;
+
+        }
         private OriginOfAcquisitionModel populateOriginOfAcquistionModel(ABuffAnimal buffAnimal)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildOriginAcquisitionSearchQueryById(buffAnimal.OriginOfAcquisition)).Tables[0];
@@ -474,6 +474,39 @@ namespace API_PCC.Controllers
             var buuffAnimalEntityModel = DataRowToObject.ToObject<ABuffAnimal>(dataRow);
             return buuffAnimalEntityModel;
         }
+
+        private BuffAnimalBaseModel convertDataRowToBuffAnimalModel(DataRow datarow)
+        {
+            var buffAnimalEntityModel = DataRowToObject.ToObject<ABuffAnimal>(datarow);
+            var buffAnimalResponseModel = new BuffAnimalBaseModel()
+            {
+                AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
+                AnimalName = buffAnimalEntityModel.AnimalName,
+                Photo = buffAnimalEntityModel.Photo,
+                HerdCode = buffAnimalEntityModel.HerdCode,
+                RfidNumber = buffAnimalEntityModel.RfidNumber,
+                DateOfBirth = buffAnimalEntityModel?.DateOfBirth,
+                Sex = buffAnimalEntityModel.Sex,
+                BreedCode = buffAnimalEntityModel.BreedCode,
+                BirthType = buffAnimalEntityModel.BirthType,
+                CountryOfBirth = buffAnimalEntityModel.CountryOfBirth,
+                OriginOfAcquisition = populateOriginOfAcquistionModel(buffAnimalEntityModel),
+                DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition,
+                Marking = buffAnimalEntityModel.Marking,
+                TypeOfOwnership = buffAnimalEntityModel.TypeOfOwnership,
+                BloodCode = buffAnimalEntityModel.BloodCode,
+                Sire = populateSireModel(buffAnimalEntityModel),
+                Dam = populateDamModel(buffAnimalEntityModel)
+            };
+
+            return buffAnimalResponseModel;
+        }
+
+        private TblFarmOwner convertDataRowToFarmOwnerModel(DataRow dataRow)
+        {
+            return DataRowToObject.ToObject<TblFarmOwner>(dataRow);
+        }
+
 
         private ABuffAnimal populateBuffAnimal(ABuffAnimal buffAnimal, BuffAnimalUpdateModel updateModel)
         {

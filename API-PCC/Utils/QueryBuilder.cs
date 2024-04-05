@@ -1,5 +1,4 @@
 ﻿using API_PCC.ApplicationModels;
-using static API_PCC.Controllers.BuffAnimalsController;
 
 namespace API_PCC.Utils
 {
@@ -32,14 +31,14 @@ namespace API_PCC.Utils
                 }
             }
 
-            if (searchFilterModel.dateFrom != null)
+            if (searchFilterModel.dateFrom != null && searchFilterModel.dateFrom.Trim() != "")
             {
-                herdSelect = herdSelect + "AND DATE_CREATED >= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd") + "' ";
+                herdSelect = herdSelect + "AND DATE_CREATED >= '" + Convert.ToDateTime(searchFilterModel.dateFrom.Trim()).ToString("yyyy-MM-dd") + "' ";
             }
 
-            if (searchFilterModel.dateTo != null)
+            if (searchFilterModel.dateTo != null && searchFilterModel.dateTo.Trim() != "")
             {
-                herdSelect = herdSelect + "AND DATE_CREATED <= '" + Convert.ToDateTime(searchFilterModel.dateTo).ToString("yyyy-MM-dd") + "' ";
+                herdSelect = herdSelect + "AND DATE_CREATED <= '" + Convert.ToDateTime(searchFilterModel.dateTo.Trim()).ToString("yyyy-MM-dd") + "' ";
             }
 
             if (searchFilterModel.sortBy != null)

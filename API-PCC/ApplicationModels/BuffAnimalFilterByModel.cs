@@ -4,6 +4,6 @@
     {
         public string? BloodCode { get; set; }
         public string? BreedCode { get; set; }
-        public string? TypeOfOwnership { get;}
+        public string? TypeOfOwnership { get; set; }
     }
 }

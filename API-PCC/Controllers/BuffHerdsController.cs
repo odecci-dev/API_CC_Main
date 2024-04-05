@@ -33,6 +33,7 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<HBuffHerd>>> search(BuffHerdSearchFilterModel searchFilter)
         {
+            sanitizeInput(searchFilter);
             try
             {
                 DataTable dt = db.SelectDb(QueryBuilder.buildHerdSearchQuery(searchFilter)).Tables[0];
@@ -45,6 +46,18 @@ namespace API_PCC.Controllers
 
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+
+        private void sanitizeInput(BuffHerdSearchFilterModel searchFilter)
+        {
+            searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
+            searchFilter.dateFrom = StringSanitizer.sanitizeString(searchFilter.dateFrom);
+            searchFilter.dateTo = StringSanitizer.sanitizeString(searchFilter.dateTo);
+            searchFilter.filterBy.feedingSystemCode = StringSanitizer.sanitizeString(searchFilter.filterBy.feedingSystemCode);
+            searchFilter.filterBy.BreedTypeCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BreedTypeCode);
+            searchFilter.filterBy.HerdClassDesc = StringSanitizer.sanitizeString(searchFilter.filterBy.HerdClassDesc);
+            searchFilter.sortBy.Field = StringSanitizer.sanitizeString(searchFilter.sortBy.Field);
+            searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
         }
 
         // GET: BuffHerds/view/5

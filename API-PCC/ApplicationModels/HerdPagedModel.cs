@@ -6,6 +6,6 @@ namespace API_PCC.ApplicationModels
 {
     public class HerdPagedModel : PaginationModel
     {
-        public List<BuffHerdBaseModel> items { get; set; }
+        public List<BuffHerdListResponseModel> items { get; set; }
     }
 }

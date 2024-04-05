@@ -5,7 +5,7 @@ namespace API_PCC.ApplicationModels
 {
     public class BuffAnimalPagedModel : PaginationModel
     {
-        public List<BuffAnimalBaseModel> items { get; set; }
+        public List<BuffAnimalListResponseModel> items { get; set; }
 
     }
 }

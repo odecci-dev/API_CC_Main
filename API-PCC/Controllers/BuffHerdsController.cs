@@ -31,7 +31,7 @@ namespace API_PCC.Controllers
 
         // POST: BuffHerds/search
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HBuffHerd>>> search(BuffHerdSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> search(BuffHerdSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
             try
@@ -299,7 +299,7 @@ namespace API_PCC.Controllers
             items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
             var herdModels = convertDateRowListToHerdModelList(items);
-            List<BuffHerdBaseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(herdModels);
+            List<BuffHerdListResponseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(herdModels);
 
             var result = new List<HerdPagedModel>();
             var item = new HerdPagedModel();
@@ -404,31 +404,23 @@ namespace API_PCC.Controllers
             return BuffHerdModel;
         }
 
-        private List<BuffHerdBaseModel> convertBuffHerdToResponseModelList(List<HBuffHerd> buffHerdList)
+        private List<BuffHerdListResponseModel> convertBuffHerdToResponseModelList(List<HBuffHerd> buffHerdList)
         {
-            var buffHerdBaseModels = new List<BuffHerdBaseModel>();
+            var buffHerdResponseModels = new List<BuffHerdListResponseModel>();
             foreach (HBuffHerd buffHerd in buffHerdList)
             {
-                var buffHerdBaseModel = new BuffHerdBaseModel()
+                var buffHerdResponseModel = new BuffHerdListResponseModel()
                 {
                     HerdName = buffHerd.HerdName,
-                    HerdCode = buffHerd.HerdCode,
-                    HerdSize = buffHerd.HerdSize,
-                    BreedTypeCode = buffHerd.BreedTypeCode,
-                    FarmAffilCode = buffHerd.FarmAffilCode,
-                    HerdClassDesc = buffHerd.HerdClassDesc,
-                    FeedingSystemCode = buffHerd.FeedingSystemCode,
+                    HerdClassification = buffHerd.HerdClassDesc,
+                    CowLevel = buffHerd.HerdSize.ToString(),
                     FarmManager = buffHerd.FarmManager,
-                    FarmAddress = buffHerd.FarmAddress,
-                    Owner = populateOwner(buffHerd),
-                    Center = buffHerd.Center,
-                    OrganizationName = buffHerd.OrganizationName,
-                    Photo = buffHerd.Photo
+                    DateOfApplication = buffHerd.DateCreated.ToString("yyyy-MM-dd")
                 };
-                buffHerdBaseModels.Add(buffHerdBaseModel);
+                buffHerdResponseModels.Add(buffHerdResponseModel);
             }
            
-            return buffHerdBaseModels;
+            return buffHerdResponseModels;
         }
 
         private Owner populateOwner(HBuffHerd buffHerd)

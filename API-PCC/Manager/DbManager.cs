@@ -1,4 +1,7 @@
-﻿using System.Data;
+﻿using API_PCC.ApplicationModels;
+using Microsoft.IdentityModel.Tokens;
+using NuGet.Protocol.Core.Types;
+using System.Data;
 using System.Data.SqlClient;
 using System.Text.Json;
 
@@ -49,7 +52,55 @@ namespace API_PCC.Manager
             return ds;
         }
 
+        public DataTable SelectDb_WithParamAndSorting(string strSql, SortByModel sortByModel, params SqlParameter[] sqlParams)
+        {
+            DataTable result = new DataTable();
+            DataSet ds = new DataSet();
+            try
+            {
+                ConnectioStr();
+                SQLConnOpen();
+                cmd.CommandTimeout = 0;
+                cmd.CommandText = strSql;
 
+                foreach (SqlParameter sqlParameter in sqlParams)
+                {
+                    cmd.Parameters.Add(sqlParameter);
+                }
+
+                da.SelectCommand = cmd;
+                da.Fill(ds);
+
+                result = ds.Tables[0];
+
+                // Sorting of results 
+                // Moved sorting here for us to gain a understandable exception in case of sorting error
+
+                result.DefaultView.Sort = "ID DESC";
+
+                if (sortByModel != null && !sortByModel.Field.IsNullOrEmpty())
+                {
+                    result.DefaultView.Sort = sortByModel.Field + " " + sortByModel.Sort;
+                }
+
+                result = result.DefaultView.ToTable();
+
+            }
+            catch (Exception e)
+            {
+                /*DataTable dt = new DataTable();
+                dt.Columns.Add("Error");
+                dt.Rows.Add(new object[] { e.Message });
+                ds.Tables.Add(dt);*/
+
+                throw e;
+            }
+
+            conn.Close();
+            conn = null;
+
+            return result;
+        }
 
         public void SQLConnOpen()
         {

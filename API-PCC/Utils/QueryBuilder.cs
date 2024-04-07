@@ -1,4 +1,5 @@
 ﻿using API_PCC.ApplicationModels;
+using API_PCC.Models;
 using static API_PCC.Controllers.BuffAnimalsController;
 
 namespace API_PCC.Utils
@@ -11,47 +12,35 @@ namespace API_PCC.Utils
             String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchValue != null && searchFilterModel.searchValue != "")
             {
-                herdSelect = herdSelect + "AND (HERD_CODE LIKE '%" + searchFilterModel.searchValue + "%' OR HERD_NAME LIKE '%" + searchFilterModel.searchValue + "%') ";
+                herdSelect = herdSelect + "AND (HERD_CODE LIKE '%' + @SearchParam + '%' OR HERD_NAME LIKE '%' + @SearchParam +'%') ";
             }
 
             if (searchFilterModel.filterBy != null)
             {
                 if (searchFilterModel.filterBy.BreedTypeCode != null && searchFilterModel.filterBy.BreedTypeCode != "")
                 {
-                    herdSelect = herdSelect + "AND BREED_TYPE_CODE = '" + searchFilterModel.filterBy.BreedTypeCode + "' ";
+                    herdSelect = herdSelect + "AND BREED_TYPE_CODE = @BreedTypeCode ";
                 }
 
                 if (searchFilterModel.filterBy.HerdClassDesc != null && searchFilterModel.filterBy.HerdClassDesc != "")
                 {
-                    herdSelect = herdSelect + "AND HERD_CLASS_DESC = '" + searchFilterModel.filterBy.HerdClassDesc + "' ";
+                    herdSelect = herdSelect + "AND HERD_CLASS_DESC = @HerdClassDesc ";
                 }
 
                 if (searchFilterModel.filterBy.feedingSystemCode != null && searchFilterModel.filterBy.feedingSystemCode != "")
                 {
-                    herdSelect = herdSelect + "AND FEEDING_SYSTEM_CODE = '" + searchFilterModel.filterBy.feedingSystemCode + "' ";
+                    herdSelect = herdSelect + "AND FEEDING_SYSTEM_CODE = @FeedingSystemCode  ";
                 }
             }
 
             if (searchFilterModel.dateFrom != null && searchFilterModel.dateFrom != "")
             {
-                herdSelect = herdSelect + "AND DATE_CREATED >= '" + Convert.ToDateTime(searchFilterModel.dateFrom).ToString("yyyy-MM-dd") + "' ";
+                herdSelect = herdSelect + "Date_Created >= @DateFrom ";
             }
 
             if (searchFilterModel.dateTo != null && searchFilterModel.dateTo != "")
             {
-                herdSelect = herdSelect + "AND DATE_CREATED <= '" + Convert.ToDateTime(searchFilterModel.dateTo).ToString("yyyy-MM-dd") + "' ";
-            }
-
-            if (searchFilterModel.sortBy != null)
-            {
-                if (searchFilterModel.sortBy.Field != null && searchFilterModel.sortBy.Field != "")
-                {
-                    herdSelect = herdSelect + "ORDER BY " + searchFilterModel.sortBy.Field + " ";
-                }
-                if (searchFilterModel.sortBy.Sort != null && searchFilterModel.sortBy.Sort != "")
-                {
-                    herdSelect = herdSelect + searchFilterModel.sortBy.Sort;
-                }
+                herdSelect = herdSelect + "Date_Created >= @DateFrom ";
             }
 
             return herdSelect;
@@ -108,46 +97,34 @@ namespace API_PCC.Utils
             String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchValue != null && searchFilterModel.searchValue != "")
             {
-                buffAnimalSelect = buffAnimalSelect + "AND (ANIMAL_ID_NUMBER LIKE '%" + searchFilterModel.searchValue + "%' OR ANIMAL_NAME = '%" + searchFilterModel.searchValue + "%') ";
+                buffAnimalSelect = buffAnimalSelect + "AND (ANIMAL_ID_NUMBER LIKE '%' + @SearchParam + '%' OR ANIMAL_NAME LIKE '%' + @SearchParam + '%') ";
             }
 
             if (searchFilterModel.sex != null && searchFilterModel.sex != "")
             {
-                buffAnimalSelect = buffAnimalSelect + "AND SEX = '" + searchFilterModel.sex + "' ";
+                buffAnimalSelect = buffAnimalSelect + "AND SEX = @Sex ";
             }
 
             if (searchFilterModel.status != null && searchFilterModel.status != "")
             {
-                buffAnimalSelect = buffAnimalSelect + "AND STATUS = '" + searchFilterModel.status + "' ";
+                buffAnimalSelect = buffAnimalSelect + "AND STATUS = @Status ";
             }
 
             if (searchFilterModel.filterBy != null)
             {
                 if (searchFilterModel.filterBy.BloodCode != null && searchFilterModel.filterBy.BloodCode != "")
                 {
-                    buffAnimalSelect = buffAnimalSelect + "AND BLOOD_CODE = '" + searchFilterModel.filterBy.BloodCode + "' ";
+                    buffAnimalSelect = buffAnimalSelect + "AND BLOOD_CODE = @BloodCode ";
                 }
 
                 if (searchFilterModel.filterBy.BreedCode != null && searchFilterModel.filterBy.BreedCode != "")
                 {
-                    buffAnimalSelect = buffAnimalSelect + "AND BREED_CODE = '" + searchFilterModel.filterBy.BreedCode + "' ";
+                    buffAnimalSelect = buffAnimalSelect + "AND BREED_CODE = @BreedCode ";
                 }
 
                 if (searchFilterModel.filterBy.TypeOfOwnership != null && searchFilterModel.filterBy.TypeOfOwnership != "")
                 {
-                    buffAnimalSelect = buffAnimalSelect + "AND TYPE_OF_OWNERSHIP = '" + searchFilterModel.filterBy.TypeOfOwnership + "' ";
-                }
-            }
-
-            if (searchFilterModel.sortBy != null)
-            {
-                if (searchFilterModel.sortBy.Field != null && searchFilterModel.sortBy.Field != "")
-                {
-                    buffAnimalSelect = buffAnimalSelect + "ORDER BY " + searchFilterModel.sortBy.Field + " ";
-                }
-                if (searchFilterModel.sortBy.Sort != null && searchFilterModel.sortBy.Sort != "")
-                {
-                    buffAnimalSelect = buffAnimalSelect + searchFilterModel.sortBy.Sort;
+                    buffAnimalSelect = buffAnimalSelect + "AND TYPE_OF_OWNERSHIP = @TypeOfOwnership ";
                 }
             }
 
@@ -219,6 +196,19 @@ namespace API_PCC.Utils
                             "AND OA.PROVINCE = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Province+ "' " +
                             "AND OA.BARANGAY = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Barangay + "' " +
                             "AND OA.REGION = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Region + "'" ;
+        }
+
+
+        public static String buildFarmerAffiliationSelectQuery(FarmerAffiliationSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                herdSelect = herdSelect + "AND (F_Code LIKE '%' + @SearchParam + '%' OR F_DESC LIKE '%' + @SearchParam +'%') ";
+            }
+
+
+            return herdSelect;
         }
     }
 

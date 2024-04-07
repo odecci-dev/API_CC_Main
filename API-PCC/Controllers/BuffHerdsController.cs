@@ -34,30 +34,17 @@ namespace API_PCC.Controllers
         public async Task<ActionResult<IEnumerable<HerdPagedModel>>> search(BuffHerdSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
+            validateDate(searchFilter);
             try
             {
-                DataTable dt = db.SelectDb(QueryBuilder.buildHerdSearchQuery(searchFilter)).Tables[0];
-                var result = buildHerdPagedModel(searchFilter, dt);
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchQuery(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
+                var result = buildHerdPagedModel(searchFilter, queryResult);
                 return Ok(result);
             }
-
             catch (Exception ex)
             {
-
                 return Problem(ex.GetBaseException().ToString());
             }
-        }
-
-        private void sanitizeInput(BuffHerdSearchFilterModel searchFilter)
-        {
-            searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
-            searchFilter.dateFrom = StringSanitizer.sanitizeString(searchFilter.dateFrom);
-            searchFilter.dateTo = StringSanitizer.sanitizeString(searchFilter.dateTo);
-            searchFilter.filterBy.feedingSystemCode = StringSanitizer.sanitizeString(searchFilter.filterBy.feedingSystemCode);
-            searchFilter.filterBy.BreedTypeCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BreedTypeCode);
-            searchFilter.filterBy.HerdClassDesc = StringSanitizer.sanitizeString(searchFilter.filterBy.HerdClassDesc);
-            searchFilter.sortBy.Field = StringSanitizer.sanitizeString(searchFilter.sortBy.Field);
-            searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
         }
 
         // GET: BuffHerds/view/5
@@ -298,7 +285,7 @@ namespace API_PCC.Controllers
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
             items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var herdModels = convertDateRowListToHerdModelList(items);
+            var herdModels = convertDataRowListToHerdModelList(items);
             List<BuffHerdListResponseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(herdModels);
 
             var result = new List<HerdPagedModel>();
@@ -321,8 +308,7 @@ namespace API_PCC.Controllers
             return result;
         }
 
-
-        private List<HBuffHerd> convertDateRowListToHerdModelList(List<DataRow> dataRowList)
+        private List<HBuffHerd> convertDataRowListToHerdModelList(List<DataRow> dataRowList)
         {
             var herdModelList = new List<HBuffHerd>();
 
@@ -426,6 +412,10 @@ namespace API_PCC.Controllers
         private Owner populateOwner(HBuffHerd buffHerd)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildFarmOwnerSearchQueryById(buffHerd.Owner)).Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                throw new Exception("Owner Record Not Found!");
+            }
             var farmOwnerEntity = convertDataRowToFarmOwnerEntity(dt.Rows[0]);
 
             var owner = new Owner()
@@ -440,6 +430,97 @@ namespace API_PCC.Controllers
 
 
             return owner;
+        }
+
+        private SqlParameter[] populateSqlParameters(BuffHerdSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchValue != null && searchFilter.searchValue != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchValue ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy != null)
+            {
+                if (searchFilter.filterBy.BreedTypeCode != null && searchFilter.filterBy.BreedTypeCode != "")
+                {
+                    sqlParameters.Add(new SqlParameter
+                    {
+                        ParameterName = "BreedTypeCode",
+                        Value = searchFilter.filterBy.BreedTypeCode ?? Convert.DBNull,
+                        SqlDbType = System.Data.SqlDbType.VarChar,
+                    });
+                }
+
+                if (searchFilter.filterBy.HerdClassDesc != null && searchFilter.filterBy.HerdClassDesc != "")
+                {
+                    sqlParameters.Add(new SqlParameter
+                    {
+                        ParameterName = "HerdClassDesc",
+                        Value = searchFilter.filterBy.HerdClassDesc ?? Convert.DBNull,
+                        SqlDbType = System.Data.SqlDbType.VarChar,
+                    });
+                }
+
+                if (searchFilter.filterBy.feedingSystemCode != null && searchFilter.filterBy.feedingSystemCode != "")
+                {
+                    sqlParameters.Add(new SqlParameter
+                    {
+                        ParameterName = "FeedingSystemCode",
+                        Value = searchFilter.filterBy.feedingSystemCode ?? Convert.DBNull,
+                        SqlDbType = System.Data.SqlDbType.VarChar,
+                    });
+                }
+            }
+
+            if (searchFilter.dateFrom != null && searchFilter.dateFrom != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "DateFrom",
+                    Value = searchFilter.dateFrom == "" ? Convert.DBNull : searchFilter.dateFrom,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.dateTo != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "DateTo",
+                    Value = searchFilter.dateTo == "" ? Convert.DBNull : searchFilter.dateTo,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
+        }
+
+        private void sanitizeInput(BuffHerdSearchFilterModel searchFilter)
+        {
+            searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
+            searchFilter.dateFrom = StringSanitizer.sanitizeString(searchFilter.dateFrom);
+            searchFilter.dateTo = StringSanitizer.sanitizeString(searchFilter.dateTo);
+            searchFilter.filterBy.feedingSystemCode = StringSanitizer.sanitizeString(searchFilter.filterBy.feedingSystemCode);
+            searchFilter.filterBy.BreedTypeCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BreedTypeCode);
+            searchFilter.filterBy.HerdClassDesc = StringSanitizer.sanitizeString(searchFilter.filterBy.HerdClassDesc);
+            searchFilter.sortBy.Field = StringSanitizer.sanitizeString(searchFilter.sortBy.Field);
+            searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
+        }
+
+        private void validateDate(BuffHerdSearchFilterModel searchFilter)
+        {
+            if (!DateTime.TryParse(searchFilter.dateFrom, out DateTime dateTimeFrom) || !DateTime.TryParse(searchFilter.dateTo, out DateTime dateTimeTo))
+            {
+                throw new System.FormatException("Input is not a valid Date!");
+            }
         }
 
     }

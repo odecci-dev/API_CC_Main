@@ -5,7 +5,7 @@ namespace API_PCC.ApplicationModels
 {
     public class FarmerAffiliationPagedModel : PaginationModel
     {
-        public List<HFarmerAffiliation> items { get; set; }
+        public List<FarmerAffiliationResponseModel> items { get; set; }
 
     }
 }

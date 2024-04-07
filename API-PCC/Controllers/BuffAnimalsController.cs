@@ -12,6 +12,7 @@ using API_PCC.Utils;
 using NuGet.Protocol.Core.Types;
 using System;
 using API_PCC.EntityModels;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
@@ -35,14 +36,83 @@ namespace API_PCC.Controllers
             sanitizeInput(searchFilter);
             try
             {
-                DataTable dt = db.SelectDb(QueryBuilder.buildBuffAnimalSearch(searchFilter)).Tables[0];
-                var result = buildBuffAnimalPagedModel(searchFilter, dt);
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffAnimalSearch(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
+
+                var result = buildBuffAnimalPagedModel(searchFilter, queryResult);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+
+        private SqlParameter[] populateSqlParameters(BuffAnimalSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchValue != null && searchFilter.searchValue != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchValue ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.sex != null && searchFilter.sex != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "Sex",
+                    Value = searchFilter.sex ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.status != null && searchFilter.status != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "Status",
+                    Value = searchFilter.status ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy.BloodCode != null && searchFilter.filterBy.BloodCode != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "BloodCode",
+                    Value = searchFilter.filterBy.BloodCode ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy.BreedCode != null && searchFilter.filterBy.BreedCode != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "BreedCode",
+                    Value = searchFilter.filterBy.BreedCode ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy.TypeOfOwnership != null && searchFilter.filterBy.TypeOfOwnership != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "TypeOfOwnership",
+                    Value = searchFilter.filterBy.TypeOfOwnership ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
         }
 
         private void sanitizeInput(BuffAnimalSearchFilterModel searchFilter)
@@ -412,6 +482,10 @@ namespace API_PCC.Controllers
         private OriginOfAcquisitionModel populateOriginOfAcquistionModel(ABuffAnimal buffAnimal)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildOriginAcquisitionSearchQueryById(buffAnimal.OriginOfAcquisition)).Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                throw new Exception("Acquisition Record not found!");
+            }
             var originOfAcquistionEntity = convertDataRowToOriginAcquistionModel(dt.Rows[0]);
             var originOfAcquisitionModel = new OriginOfAcquisitionModel()
             {
@@ -427,6 +501,10 @@ namespace API_PCC.Controllers
         private Sire populateSireModel(ABuffAnimal buffAnimal)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildSireSearchQueryById(buffAnimal.SireId)).Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                throw new Exception("Sire Record not found!");
+            }
             var sireEntity = convertDataRowToSireModel(dt.Rows[0]);
             var sireModel = new Sire()
             {
@@ -442,6 +520,10 @@ namespace API_PCC.Controllers
         private Dam populateDamModel(ABuffAnimal buffAnimal)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildDamSearchQueryById(buffAnimal.DamId)).Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                throw new Exception("Dam Record not found!");
+            }
             var damEntity = convertDataRowToDamModel(dt.Rows[0]);
             var damModel = new Dam()
             {

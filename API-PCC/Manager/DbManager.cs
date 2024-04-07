@@ -75,15 +75,14 @@ namespace API_PCC.Manager
 
                 // Sorting of results 
                 // Moved sorting here for us to gain a understandable exception in case of sorting error
-                
-                if (!sortByModel.Field.IsNullOrEmpty())
+
+                result.DefaultView.Sort = "ID DESC";
+
+                if (sortByModel != null && !sortByModel.Field.IsNullOrEmpty())
                 {
                     result.DefaultView.Sort = sortByModel.Field + " " + sortByModel.Sort;
                 }
-                else
-                {
-                    result.DefaultView.Sort = "ID DESC";
-                }
+
                 result = result.DefaultView.ToTable();
 
             }

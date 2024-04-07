@@ -285,7 +285,7 @@ namespace API_PCC.Controllers
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
             items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var herdModels = convertDateRowListToHerdModelList(items);
+            var herdModels = convertDataRowListToHerdModelList(items);
             List<BuffHerdListResponseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(herdModels);
 
             var result = new List<HerdPagedModel>();
@@ -308,7 +308,7 @@ namespace API_PCC.Controllers
             return result;
         }
 
-        private List<HBuffHerd> convertDateRowListToHerdModelList(List<DataRow> dataRowList)
+        private List<HBuffHerd> convertDataRowListToHerdModelList(List<DataRow> dataRowList)
         {
             var herdModelList = new List<HBuffHerd>();
 

@@ -197,6 +197,19 @@ namespace API_PCC.Utils
                             "AND OA.BARANGAY = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Barangay + "' " +
                             "AND OA.REGION = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Region + "'" ;
         }
+
+
+        public static String buildFarmerAffiliationSelectQuery(FarmerAffiliationSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                herdSelect = herdSelect + "AND (F_Code LIKE '%' + @SearchParam + '%' OR F_DESC LIKE '%' + @SearchParam +'%') ";
+            }
+
+
+            return herdSelect;
+        }
     }
 
 }

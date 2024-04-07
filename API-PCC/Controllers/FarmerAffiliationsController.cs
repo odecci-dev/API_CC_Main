@@ -1,10 +1,15 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
+using API_PCC.Manager;
 using API_PCC.Models;
+using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.SqlClient;
+
 
 namespace API_PCC.Controllers
 {
@@ -14,78 +19,116 @@ namespace API_PCC.Controllers
     public class FarmerAffiliationsController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
+        DbManager db = new DbManager();
 
         public FarmerAffiliationsController(PCC_DEVContext context)
         {
             _context = context;
         }
 
-        public class farmerAffiliationSearchFilter
-        {
-            public string? fCode { get; set; }
-            public string? fDesc { get; set; }
-            public int page { get; set; }
-            public int pageSize { get; set; }
-        }
-
         // POST: FarmerAffiliations/list
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HFarmerAffiliation>>> list(farmerAffiliationSearchFilter searchFilter)
+        public async Task<ActionResult<IEnumerable<HFarmerAffiliation>>> list(FarmerAffiliationSearchFilterModel searchFilter)
         {
-          if (_context.HFarmerAffiliations == null)
-          {
-                return Problem("Entity set 'PCC_DEVContext.HFarmerAffiliations' is null!");
+            sanitizeInput(searchFilter);
+            try
+            {
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmerAffiliationSelectQuery(searchFilter), null, populateSqlParameters(searchFilter));
+                var result = buildFarmerAffiliationPagedModel(searchFilter, queryResult);
+                return Ok(result);
             }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        private SqlParameter[] populateSqlParameters(FarmerAffiliationSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchParam ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
+        }
+
+        private void sanitizeInput(FarmerAffiliationSearchFilterModel searchFilter)
+        {
+            searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
+        }
+
+        private List<FarmerAffiliationPagedModel> buildFarmerAffiliationPagedModel(FarmerAffiliationSearchFilterModel searchFilter, DataTable dt)
+        {
 
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
-            int totalItems = 0;
-            int totalPages = 0;
 
+            int totalItems = dt.Rows.Count;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var farmerAffiliationList = _context.HFarmerAffiliations.AsNoTracking();
-            farmerAffiliationList = farmerAffiliationList.Where(farmerAffiliation => !farmerAffiliation.DeleteFlag);
-            try
+            var farmerAffiliationModels = convertDataRowListToFarmerAffiliationlist(items);
+            List<FarmerAffiliationResponseModel> famerAffiliationResponseModels = convertFarmerAffiliationToResponseModelList(farmerAffiliationModels);
+
+            var result = new List<FarmerAffiliationPagedModel>();
+            var item = new FarmerAffiliationPagedModel();
+
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
+
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.items = famerAffiliationResponseModels;
+            result.Add(item);
+
+            return result;
+        }
+
+        private List<HFarmerAffiliation> convertDataRowListToFarmerAffiliationlist(List<DataRow> dataRowList)
+        {
+            var farmerAffiliationList = new List<HFarmerAffiliation>();
+
+            foreach (DataRow dataRow in dataRowList)
             {
-                if (searchFilter.fCode != null && searchFilter.fCode != "")
-                {
-                    farmerAffiliationList = farmerAffiliationList.Where(farmerAffiliation => farmerAffiliation.FCode.Contains(searchFilter.fCode));
-                }
-
-                if (searchFilter.fDesc != null && searchFilter.fDesc != "")
-                {
-                    farmerAffiliationList = farmerAffiliationList.Where(farmerAffiliation => farmerAffiliation.FDesc.Contains(searchFilter.fDesc));
-                }
-
-                totalItems = farmerAffiliationList.ToList().Count();
-                totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-                items = farmerAffiliationList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
-
-                var result = new List<FarmerAffiliationPagedModel>();
-                var item = new FarmerAffiliationPagedModel();
-
-                int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
-                item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
-                int page_prev = pages - 1;
-
-                double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
-                int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
-                item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
-                item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
-                item.TotalPage = t_records.ToString();
-                item.PageSize = pagesize.ToString();
-                item.TotalRecord = totalItems.ToString();
-                item.items = items;
-                result.Add(item);
-                return Ok(result);
+                var farmerAffiliationModel = DataRowToObject.ToObject<HFarmerAffiliation>(dataRow);
+                farmerAffiliationList.Add(farmerAffiliationModel);
             }
 
-            catch (Exception ex)
+            return farmerAffiliationList;
+        }
+
+
+        private List<FarmerAffiliationResponseModel> convertFarmerAffiliationToResponseModelList(List<HFarmerAffiliation> farmerAffiliationList)
+        {
+            var farmerAffiliationResponseModels = new List<FarmerAffiliationResponseModel>(); 
+
+            foreach (HFarmerAffiliation farmerAffiliation in farmerAffiliationList)
             {
-                
-                return Problem(ex.GetBaseException().ToString());
+                var farmerAffiliationResponseModel = new FarmerAffiliationResponseModel()
+                {
+                    farmerAffiliationCode = farmerAffiliation.FCode,
+                    farmerAffiliationName = farmerAffiliation.FDesc
+                };
+                farmerAffiliationResponseModels.Add(farmerAffiliationResponseModel);
             }
+
+            return farmerAffiliationResponseModels;
         }
 
         // GET: FarmerAffiliations/search/5

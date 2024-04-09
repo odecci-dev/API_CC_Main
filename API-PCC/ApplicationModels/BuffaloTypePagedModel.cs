@@ -5,7 +5,7 @@ namespace API_PCC.ApplicationModels
 {
     public class BuffaloTypePagedModel : PaginationModel
     {
-        public List<HBuffaloType> items { get; set; }
+        public List<BuffaloTypeResponseModel> items { get; set; }
 
     }
 }

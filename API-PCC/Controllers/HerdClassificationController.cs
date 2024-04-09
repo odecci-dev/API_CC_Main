@@ -1,10 +1,14 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
+using API_PCC.Manager;
 using API_PCC.Models;
+using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
@@ -15,6 +19,7 @@ namespace API_PCC.Controllers
     {
 
         private readonly PCC_DEVContext _context;
+        DbManager db = new DbManager();
 
         public HerdClassificationController(PCC_DEVContext context)
         {
@@ -22,55 +27,14 @@ namespace API_PCC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> List(HerdClassificationSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<HerdClassificationPagedModel>>> List(CommonSearchFilterModel searchFilter)
         {
-            if (_context.HHerdClassifications == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-            }
+            sanitizeInput(searchFilter);
 
-            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
-            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
-            var items = (dynamic)null;
-            int totalItems = 0;
-            int totalPages = 0;
-
-            var herdClassificationList = _context.HHerdClassifications.AsNoTracking();
-            herdClassificationList = herdClassificationList.Where(herdClassification => !herdClassification.DeleteFlag);
             try
             {
-                if (searchFilter.HerdClassCode != null && searchFilter.HerdClassCode != "")
-                {
-                    herdClassificationList = herdClassificationList.Where(herdClassification => herdClassification.HerdClassCode.Contains(searchFilter.HerdClassCode));
-                }
-
-                if (searchFilter.HerdClassDesc != null && searchFilter.HerdClassDesc != "")
-                {
-                    herdClassificationList = herdClassificationList.Where(herdClassification => herdClassification.HerdClassDesc.Contains(searchFilter.HerdClassDesc));
-
-                }
-
-                totalItems = herdClassificationList.ToList().Count();
-                totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-                items = herdClassificationList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
-
-                var result = new List<HerdClassificationPagedModel>();
-                var item = new HerdClassificationPagedModel();
-
-                int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
-                item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
-
-                int page_prev = pages - 1;
-
-                double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
-                int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
-                item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
-                item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
-                item.TotalPage = t_records.ToString();
-                item.PageSize = pagesize.ToString();
-                item.TotalRecord = totalItems.ToString();
-                item.items = items;
-                result.Add(item);
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQuery(searchFilter), null, populateSearchParamSqlParameters.populateSqlParameters(searchFilter));
+                var result = buildHerdClassificationPagedModel(searchFilter, queryResult);
                 return Ok(result);
             }
 
@@ -80,6 +44,94 @@ namespace API_PCC.Controllers
                 return Problem(ex.GetBaseException().ToString());
             }
         }
+
+        private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchParam ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
+        }
+
+        private void sanitizeInput(CommonSearchFilterModel searchFilter)
+        {
+            searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
+        }
+
+        private List<HerdClassificationPagedModel> buildHerdClassificationPagedModel(CommonSearchFilterModel searchFilter, DataTable dt)
+        {
+            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
+            var items = (dynamic)null;
+
+            int totalItems = dt.Rows.Count;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
+
+
+            var herdClassificationModels = convertDataRowToHerdClassificationList(items);
+            List<HerdClassificationResponseModel> herdClassificationResponseModels = convertHerdClassificationToResponseModelList(herdClassificationModels);
+
+            var result = new List<HerdClassificationPagedModel>();
+            var item = new HerdClassificationPagedModel();
+
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
+
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.items = herdClassificationResponseModels;
+            result.Add(item);
+
+            return result;
+        }
+
+        private List<HHerdClassification> convertDataRowToHerdClassificationList(List<DataRow> dataRowList)
+        {
+            var herdClassificationList = new List<HHerdClassification>();
+
+            foreach (DataRow dataRow in dataRowList)
+            {
+                var herdClassificationModel = DataRowToObject.ToObject<HHerdClassification>(dataRow);
+                herdClassificationList.Add(herdClassificationModel);
+            }
+
+            return herdClassificationList;
+        }
+
+        private List<HerdClassificationResponseModel> convertHerdClassificationToResponseModelList(List<HHerdClassification> hHerdClassificationList)
+        {
+            var herdClassificationResponseModels = new List<HerdClassificationResponseModel>();
+
+            foreach (HHerdClassification herdClassification in hHerdClassificationList)
+            {
+                var herdClassificationResponseModel = new HerdClassificationResponseModel()
+                {
+                    herdClassCode = herdClassification.HerdClassCode,
+                    herdClassDesc = herdClassification.HerdClassDesc
+                };
+                herdClassificationResponseModels.Add(herdClassificationResponseModel);
+            }
+
+            return herdClassificationResponseModels;
+        }
+
 
         // GET: HerdClassification/search/5
         [HttpGet("{id}")]

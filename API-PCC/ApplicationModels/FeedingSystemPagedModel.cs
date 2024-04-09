@@ -5,7 +5,7 @@ namespace API_PCC.ApplicationModels
 {
     public class FeedingSystemPagedModel : PaginationModel
     {
-        public List<HFeedingSystem> items { get; set; }
+        public List<FeedingSystemResponseModel> items { get; set; }
 
     }
 }

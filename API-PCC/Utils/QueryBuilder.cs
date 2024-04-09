@@ -198,18 +198,57 @@ namespace API_PCC.Utils
                             "AND OA.REGION = '" + buffAnimalRegistrationModel.OriginOfAcquisition.Region + "'" ;
         }
 
-
-        public static String buildFarmerAffiliationSelectQuery(FarmerAffiliationSearchFilterModel searchFilterModel)
+        public static String buildFarmerAffiliationSearchQuery(CommonSearchFilterModel searchFilterModel)
         {
             String herdSelect = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
             {
                 herdSelect = herdSelect + "AND (F_Code LIKE '%' + @SearchParam + '%' OR F_DESC LIKE '%' + @SearchParam +'%') ";
             }
-
-
             return herdSelect;
         }
+
+        public static String buildHerdClassificationSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                herdSelect = herdSelect + "AND (Herd_Class_Code LIKE '%' + @SearchParam + '%' OR Herd_Class_Desc LIKE '%' + @SearchParam +'%') ";
+            }
+            return herdSelect;
+        }
+
+        public static String buildBreedSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                herdSelect = herdSelect + "AND (Breed_Code LIKE '%' + @SearchParam + '%' OR Breed_Desc LIKE '%' + @SearchParam +'%') ";
+            }
+            return herdSelect;
+        }
+
+        public static String buildFeedingSystemSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.FEEDING_SYSTEM_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                herdSelect = herdSelect + "AND (Feeding_System_Code LIKE '%' + @SearchParam + '%' OR Feeding_System_Desc LIKE '%' + @SearchParam +'%') ";
+            }
+            return herdSelect;
+        }
+
+        public static String buildBuffaloTypeSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String herdSelect = Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                herdSelect = herdSelect + "AND (Breed_Type_Code LIKE '%' + @SearchParam + '%' OR Breed_Type_Desc LIKE '%' + @SearchParam +'%') ";
+            }
+            return herdSelect;
+        }
+
+
     }
 
 }

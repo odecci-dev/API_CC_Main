@@ -1,4 +1,6 @@
-﻿using API_PCC.Data;
+﻿using API_PCC.ApplicationModels;
+using API_PCC.Data;
+using API_PCC.EntityModels;
 using API_PCC.Manager;
 using API_PCC.Models;
 using API_PCC.Utils;
@@ -10,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Text;
 using static API_PCC.Manager.DBMethods;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
@@ -31,9 +34,20 @@ namespace API_PCC.Controllers
         {
             _context = context;
             _emailsettings = emailsettings.Value;
-            TblMailSenderCredential tblMailSenderCredential = _context.TblMailSenderCredentials.First();
-            _emailsettings.username = tblMailSenderCredential.Email;
-            _emailsettings.password = tblMailSenderCredential.Password;
+            try
+            {
+                TblMailSenderCredential tblMailSenderCredential = _context.TblMailSenderCredentials.First();
+
+                _emailsettings.username = tblMailSenderCredential.Email;
+                _emailsettings.password = tblMailSenderCredential.Password;
+            } catch (Exception e)
+            {
+                if (e.Message == "Sequence contains no elements")
+                {
+                    throw new Exception("No records found for email credentials!!");
+                }
+                throw e;
+            }
 
         }
         public class EmailSettings
@@ -82,11 +96,115 @@ namespace API_PCC.Controllers
             public string Password { get; set; }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> UserForApprovalList()
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<UserPagedModel>>> UserForApprovalList(CommonSearchFilterModel searchFilter)
         {
-            var list = _context.TblUsersModels.Where(a => a.Status == 3).ToList();
-            return Ok(list);
+            try
+            {
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildUserSearchQuery(searchFilter), null, populateSqlParameters(searchFilter));
+                var result = buildUserPagedModel(searchFilter, queryResult);
+                return Ok(result);
+            }
+
+            catch (Exception ex)
+            {
+
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchParam ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
+        }
+
+        private List<UserPagedModel> buildUserPagedModel(CommonSearchFilterModel searchFilter, DataTable dt)
+        {
+            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
+            var items = (dynamic)null;
+
+            int totalItems = dt.Rows.Count;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
+
+
+            var userModels = convertDataRowToUserList(items);
+            List<UserResponseModel> userResponseModels = convertUserListToResponseModelList(userModels);
+
+            var result = new List<UserPagedModel>();
+            var item = new UserPagedModel();
+
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
+
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.items = userResponseModels;
+            result.Add(item);
+
+            return result;
+        }
+
+        private List<TblUsersModel> convertDataRowToUserList(List<DataRow> dataRowList)
+        {
+            var userList = new List<TblUsersModel>();
+
+            foreach (DataRow dataRow in dataRowList)
+            {
+                var user = DataRowToObject.ToObject<TblUsersModel>(dataRow);
+                userList.Add(user);
+            }
+
+            return userList;
+        }
+
+        private List<UserResponseModel> convertUserListToResponseModelList(List<TblUsersModel> userList)
+        {
+            var userResponseModels = new List<UserResponseModel>();
+
+            foreach (TblUsersModel user in userList)
+            {
+                var userResponseModel = new UserResponseModel()
+                {
+                    Username = user.Username,
+                    Password = user.Password,
+                    Fullname = user.Fullname,
+                    Fname = user.Fname,
+                    Lname = user.Lname,
+                    Mname = user.Mname,
+                    Email = user.Email,
+                    Gender = user.Gender,
+                    EmployeeId = user.EmployeeId,
+                    Active = user.Active,
+                    Cno = user.Cno,
+                    Address = user.Address,
+                    CenterId = user.CenterId,
+                    AgreementStatus = user.AgreementStatus
+                };
+                userResponseModels.Add(userResponseModel);
+            }
+
+            return userResponseModels;
         }
 
         [HttpPost]

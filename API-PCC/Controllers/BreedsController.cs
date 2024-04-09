@@ -1,10 +1,14 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
+using API_PCC.Manager;
 using API_PCC.Models;
+using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
@@ -14,77 +18,112 @@ namespace API_PCC.Controllers
     public class BreedsController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
+        DbManager db = new DbManager();
 
         public BreedsController(PCC_DEVContext context)
         {
             _context = context;
         }
 
-        public class BreedSearchFilter
-        {
-            public string? breedCode { get; set; }
-            public string? breedDesc { get; set; }
-            public int page { get; set; }
-            public int pageSize { get; set; }
-        }
-
         // POST: Breeds/list
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<ABreed>>> list(BreedSearchFilter searchFilter)
+        public async Task<ActionResult<IEnumerable<ABreed>>> list(CommonSearchFilterModel searchFilter)
         {
-            if (_context.ABreeds == null)
+            try
             {
-                return Problem("Entity set 'PCC_DEVContext.Abreeds' is null!");
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQuery(searchFilter), null, populateSqlParameters(searchFilter));
+                var result = buildHerdClassificationPagedModel(searchFilter, queryResult);
+                return Ok(result);
             }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        private void sanitizeInput(CommonSearchFilterModel searchFilter)
+        {
+            searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
+        }
+        private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchParam ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
+        }
+
+        private List<BreedsPagedModel> buildHerdClassificationPagedModel(CommonSearchFilterModel searchFilter, DataTable dt)
+        {
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
-            int totalItems = 0;
-            int totalPages = 0;
+
+            int totalItems = dt.Rows.Count;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
 
-            var breedList = _context.ABreeds.AsNoTracking();
-            breedList = breedList.Where(breed => !breed.DeleteFlag);
-            try
+            var breedModels = convertDataRowListToBreedList(items);
+            List<BreedResponseModel> breedResponseModels = convertBreedListToResponseModelList(breedModels);
+
+            var result = new List<BreedsPagedModel>();
+            var item = new BreedsPagedModel();
+
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
+
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.items = breedResponseModels;
+            result.Add(item);
+
+            return result;
+        }
+
+        private List<ABreed> convertDataRowListToBreedList(List<DataRow> dataRowList)
+        {
+            var herdClassificationList = new List<ABreed>();
+
+            foreach (DataRow dataRow in dataRowList)
             {
-                if (searchFilter.breedCode != null && searchFilter.breedCode != "")
-                {
-                    breedList = breedList.Where(breed => breed.BreedCode.Contains(searchFilter.breedCode));
-                }
-
-                if (searchFilter.breedDesc != null && searchFilter.breedDesc != "")
-                {
-                    breedList = breedList.Where(breed => breed.BreedDesc.Contains(searchFilter.breedDesc));
-                }
-
-                totalItems = breedList.ToList().Count();
-                totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-                items = breedList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
-
-                var result = new List<BreedsPagedModel>();
-                var item = new BreedsPagedModel();
-
-                int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
-                item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
-                int page_prev = pages - 1;
-
-                double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
-                int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
-                item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
-                item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
-                item.TotalPage = t_records.ToString();
-                item.PageSize = pagesize.ToString();
-                item.TotalRecord = totalItems.ToString();
-                item.items = items;
-                result.Add(item);
-                return Ok(result);
+                var herdClassificationModel = DataRowToObject.ToObject<ABreed>(dataRow);
+                herdClassificationList.Add(herdClassificationModel);
             }
 
-            catch (Exception ex)
+            return herdClassificationList;
+        }
+
+        private List<BreedResponseModel> convertBreedListToResponseModelList(List<ABreed> breedList)
+        {
+            var breedResponseModels = new List<BreedResponseModel>();
+
+            foreach (ABreed breed in breedList)
             {
-                
-                return Problem(ex.GetBaseException().ToString());
+                var breedResponseModel = new BreedResponseModel()
+                {
+                    breedCode = breed.BreedCode,
+                    breedDesc = breed.BreedDesc
+                };
+                breedResponseModels.Add(breedResponseModel);
             }
+            return breedResponseModels;
         }
 
         // GET: Breeds/search/5

@@ -5,7 +5,7 @@ namespace API_PCC.ApplicationModels
 {
     public class HerdClassificationPagedModel : PaginationModel
     {
-        public List<HHerdClassification> items { get; set; }
+        public List<HerdClassificationResponseModel> items { get; set; }
 
     }
 }

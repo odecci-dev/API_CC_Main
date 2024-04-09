@@ -475,6 +475,10 @@ namespace API_PCC.Controllers
         private TblFarmOwner populateOwnerModel(string herdCode)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildHerdOwnerJoinQuery(herdCode)).Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                throw new Exception("Farmer Record not found!");
+            }
             var farmOwnerModel = convertDataRowToFarmOwnerModel(dt.Rows[0]);
             return farmOwnerModel;
 

@@ -28,12 +28,12 @@ namespace API_PCC.Controllers
 
         // POST: FarmerAffiliations/list
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HFarmerAffiliation>>> list(FarmerAffiliationSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<FarmerAffiliationPagedModel>>> list(CommonSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
             try
             {
-                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmerAffiliationSelectQuery(searchFilter), null, populateSqlParameters(searchFilter));
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmerAffiliationSearchQuery(searchFilter), null, populateSqlParameters(searchFilter));
                 var result = buildFarmerAffiliationPagedModel(searchFilter, queryResult);
                 return Ok(result);
             }
@@ -43,7 +43,7 @@ namespace API_PCC.Controllers
             }
         }
 
-        private SqlParameter[] populateSqlParameters(FarmerAffiliationSearchFilterModel searchFilter)
+        private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
         {
 
             var sqlParameters = new List<SqlParameter>();
@@ -61,12 +61,12 @@ namespace API_PCC.Controllers
             return sqlParameters.ToArray();
         }
 
-        private void sanitizeInput(FarmerAffiliationSearchFilterModel searchFilter)
+        private void sanitizeInput(CommonSearchFilterModel searchFilter)
         {
             searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
         }
 
-        private List<FarmerAffiliationPagedModel> buildFarmerAffiliationPagedModel(FarmerAffiliationSearchFilterModel searchFilter, DataTable dt)
+        private List<FarmerAffiliationPagedModel> buildFarmerAffiliationPagedModel(CommonSearchFilterModel searchFilter, DataTable dt)
         {
 
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;

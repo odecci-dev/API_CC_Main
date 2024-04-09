@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
@@ -30,7 +31,7 @@ namespace API_PCC.Controllers
         {
             try
             {
-                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQuery(searchFilter), null, populateSearchParamSqlParameters.populateSqlParameters(searchFilter));
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQuery(searchFilter), null, populateSqlParameters(searchFilter));
                 var result = buildHerdClassificationPagedModel(searchFilter, queryResult);
                 return Ok(result);
             }
@@ -43,6 +44,23 @@ namespace API_PCC.Controllers
         private void sanitizeInput(CommonSearchFilterModel searchFilter)
         {
             searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
+        }
+        private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchParam ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
         }
 
         private List<BreedsPagedModel> buildHerdClassificationPagedModel(CommonSearchFilterModel searchFilter, DataTable dt)

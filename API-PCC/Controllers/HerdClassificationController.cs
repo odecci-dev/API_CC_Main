@@ -33,7 +33,7 @@ namespace API_PCC.Controllers
 
             try
             {
-                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQuery(searchFilter), null, populateSearchParamSqlParameters.populateSqlParameters(searchFilter));
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQuery(searchFilter), null, populateSqlParameters(searchFilter));
                 var result = buildHerdClassificationPagedModel(searchFilter, queryResult);
                 return Ok(result);
             }

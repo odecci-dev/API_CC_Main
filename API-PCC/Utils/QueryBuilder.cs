@@ -248,6 +248,16 @@ namespace API_PCC.Utils
             return herdSelect;
         }
 
+        public static String buildUserSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String userSelect = Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                userSelect = userSelect + "AND (Fname LIKE '%' + @SearchParam + '%' OR Lname LIKE '%' + @SearchParam +'%' OR Mname LIKE '%' + @SearchParam +'%' OR Email LIKE '%' + @SearchParam +'%') ";
+            }
+            return userSelect;
+        }
+
 
     }
 

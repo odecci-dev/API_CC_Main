@@ -42,6 +42,174 @@ namespace API_PCC.Controllers
             }
         }
 
+        // GET: BuffaloTypes/search/5
+        [HttpGet("{breedTypeCode}")]
+        public async Task<ActionResult<IEnumerable<BuffaloTypeResponseModel>>> search(string breedTypeCode)
+        {
+
+            DataTable buffaloTypeRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeSearchQueryByBreedTypeCode(), null, populateSqlParameters(breedTypeCode));
+
+            if (buffaloTypeRecord.Rows.Count == 0)
+            {
+                return Conflict("No records found!");
+            }
+
+            var buffaloTypeModels = convertDataRowListToBuffaloTypelist(buffaloTypeRecord.AsEnumerable().ToList());
+            var buffaloTypeResponseModel = convertBuffaloTypeListToResponseModelList(buffaloTypeModels);
+            return buffaloTypeResponseModel;
+        }
+
+        private HBuffaloType convertDataRowToBuffaloType(DataRow dataRow)
+        {
+            return DataRowToObject.ToObject<HBuffaloType>(dataRow);
+        }
+
+        // GET: buffaloTypes/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BuffaloTypeResponseModel>>> view()
+        {
+            DataTable buffaloTypeRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeSearchQueryAll(), null, new SqlParameter[] { });
+
+            if (buffaloTypeRecord.Rows.Count == 0)
+            {
+                return Conflict("No records found!");
+            }
+
+            var buffaloTypeModels = convertDataRowListToBuffaloTypelist(buffaloTypeRecord.AsEnumerable().ToList());
+            var buffaloTypeResponseModel = convertBuffaloTypeListToResponseModelList(buffaloTypeModels);
+            return buffaloTypeResponseModel;
+        }
+
+        // PUT: BuffaloTypes/update/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> update(int id, BuffaloTypeUpdateModel buffaloTypeUpdateModel)
+        {
+            DataTable farmerAffiliationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmerAffiliationSearchQueryById(), null, populateSqlParameters(id));
+
+            if (farmerAffiliationRecord.Rows.Count == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            DataTable buffaloTypeDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeDuplicateCheckUpdateQuery(), null, populateSqlParameters(id, buffaloTypeUpdateModel));
+
+            // check for duplication
+            if (buffaloTypeDuplicateCheck.Rows.Count == 0)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            var buffaloTypeModel = convertDataRowToBuffaloType(farmerAffiliationRecord.Rows[0]);
+
+            try
+            {
+                populateBuffaloType(buffaloTypeModel, buffaloTypeUpdateModel);
+                _context.Entry(buffaloTypeModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok("Update Successful!");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: BuffaloTypes/save
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<HBuffaloType>> save(BuffaloTypeRegistrationModel buffaloTypeRegistrationModel)
+        {
+            DataTable buffaloTypeDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeDuplicateCheckUpdateQuery(), null, populateSqlParameters(buffaloTypeRegistrationModel));
+
+            // check for duplication
+            if (buffaloTypeDuplicateCheck.Rows.Count == 0)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            var buffaloTypeModel = convertDataRowToBuffaloType(buffaloTypeDuplicateCheck.Rows[0]);
+
+            try
+            {
+                _context.HBuffaloTypes.Add(buffaloTypeModel);
+                await _context.SaveChangesAsync();
+
+                return Ok("Registration Successful!");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: buffaloTypes/delete/5
+        [HttpPost]
+        public async Task<IActionResult> delete(DeletionModel deletionModel)
+        {
+            DataTable buffaloTypeRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeSearchQueryById(), null, populateSqlParameters(deletionModel.id));
+
+            if (buffaloTypeRecord.Rows.Count == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            var buffaloTypeModel = convertDataRowToBuffaloType(buffaloTypeRecord.Rows[0]);
+
+            try
+            {
+                buffaloTypeModel.DeleteFlag = true;
+                buffaloTypeModel.DateDeleted = DateTime.Now;
+                buffaloTypeModel.DeletedBy = deletionModel.deletedBy;
+                buffaloTypeModel.DateRestored = null;
+                buffaloTypeModel.RestoredBy = "";
+                _context.Entry(buffaloTypeModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Deletion Successful!");
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: buffaloTypes/restore/
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<IActionResult> restore(RestorationModel restorationModel)
+        {
+            DataTable buffaloTypeRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeDeletedSearchQueryById(), null, populateSqlParameters(restorationModel.id));
+
+            if (buffaloTypeRecord.Rows.Count == 0)
+            {
+                return Conflict("No deleted records matched!");
+            }
+
+            var buffaloTypeModel = convertDataRowToBuffaloType(buffaloTypeRecord.Rows[0]);
+
+            try
+            {
+                buffaloTypeModel.DeleteFlag = !buffaloTypeModel.DeleteFlag;
+                buffaloTypeModel.DateDeleted = null;
+                buffaloTypeModel.DeletedBy = "";
+                buffaloTypeModel.DateRestored = DateTime.Now;
+                buffaloTypeModel.RestoredBy = restorationModel.restoredBy;
+
+                _context.Entry(buffaloTypeModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Restoration Successful!");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+
         private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
         {
 
@@ -56,6 +224,86 @@ namespace API_PCC.Controllers
                     SqlDbType = System.Data.SqlDbType.VarChar,
                 });
             }
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(string breedTypeCode)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "FCode",
+                Value = breedTypeCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(int id)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "Id",
+                Value = id,
+                SqlDbType = System.Data.SqlDbType.Int,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(int id, BuffaloTypeUpdateModel buffaloTypeUpdateModel)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "Id",
+                Value = id,
+                SqlDbType = System.Data.SqlDbType.Int,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedTypeCode",
+                Value = buffaloTypeUpdateModel.BreedTypeCode,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedTypeDesc",
+                Value = buffaloTypeUpdateModel.BreedTypeDesc,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(BuffaloTypeRegistrationModel buffaloTypeRegistrationModel)
+        {
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedTypeCode",
+                Value = buffaloTypeRegistrationModel.BreedTypeCode,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedTypeDesc",
+                Value = buffaloTypeRegistrationModel.BreedTypeDesc,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
 
             return sqlParameters.ToArray();
         }
@@ -128,191 +376,13 @@ namespace API_PCC.Controllers
             return buffaloTypeResponseModels;
         }
 
-        // GET: BuffaloTypes/search/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<HBuffaloType>> search(int id)
+        private void populateBuffaloType(HBuffaloType buffaloType, BuffaloTypeUpdateModel buffaloTypeUpdateModel)
         {
-            if (_context.HBuffaloTypes == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HBuffaloTypes' is null!");
-            }
-            var hbuffaloType = await _context.HBuffaloTypes.FindAsync(id);
-
-            if (hbuffaloType == null || hbuffaloType.DeleteFlag)
-            {
-                return Conflict("No records found!");
-            }
-
-            return hbuffaloType;
+            buffaloType.BreedTypeCode = buffaloTypeUpdateModel.BreedTypeCode;
+            buffaloType.BreedTypeDesc = buffaloTypeUpdateModel.BreedTypeDesc;
+            buffaloType.DateUpdated = DateTime.Now;
+            buffaloType.UpdatedBy = buffaloTypeUpdateModel.UpdatedBy;
         }
 
-        // PUT: BuffaloTypes/update/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> update(int id, HBuffaloType hBuffaloType)
-        {
-            if (_context.HBuffaloTypes == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.Feeding System' is null!");
-            }
-
-            var buffaloType = _context.HBuffaloTypes.AsNoTracking().Where(buffaloType => !buffaloType.DeleteFlag && buffaloType.Id == id).FirstOrDefault();
-
-            if (buffaloType == null)
-            {
-                return Conflict("No records matched!");
-            }
-
-            if (id != hBuffaloType.Id)
-            {
-                return Conflict("Ids mismatched!");
-            }
-
-            bool hasDuplicateOnUpdate = (_context.HBuffaloTypes?.Any(buffaloType => !buffaloType.DeleteFlag && buffaloType.BreedTypeCode == hBuffaloType.BreedTypeCode && buffaloType.BreedTypeDesc == hBuffaloType.BreedTypeDesc && buffaloType.Id != id)).GetValueOrDefault();
-
-            // check for duplication
-            if (hasDuplicateOnUpdate)
-            {
-                return Conflict("Entity already exists");
-            }
-
-            try
-            {
-                _context.Entry(hBuffaloType).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                return Ok("Update Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        // POST: BuffaloTypes/save
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<HBuffaloType>> save(HBuffaloType hBuffaloType)
-        {
-            if (_context.HBuffaloTypes == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HBuffaloTypes' is null!");
-            }
-
-            bool hasDuplicateOnSave = (_context.HBuffaloTypes?.Any(buffaloType => !buffaloType.DeleteFlag && buffaloType.BreedTypeCode == hBuffaloType.BreedTypeCode && buffaloType.BreedTypeDesc == hBuffaloType.BreedTypeDesc)).GetValueOrDefault();
-
-            if (hasDuplicateOnSave)
-            {
-                return Conflict("Entity already exists");
-            }
-
-            try
-            {
-                _context.HBuffaloTypes.Add(hBuffaloType);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("save", new { id = hBuffaloType.Id }, hBuffaloType);
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        // POST: buffaloTypes/delete/5
-        [HttpPost]
-        public async Task<IActionResult> delete(DeletionModel deletionModel)
-        {
-            if (_context.HBuffaloTypes == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HBuffaloTypes' is null!");
-            }
-            var hbuffaloType = await _context.HBuffaloTypes.FindAsync(deletionModel.id);
-            if (hbuffaloType == null || hbuffaloType.DeleteFlag)
-            {
-                return Conflict("No records matched!");
-            }
-
-            bool breedTypeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.BreedTypeCode == hbuffaloType.BreedTypeCode);
-
-            if (breedTypeCodeExistsInBuffHerd)
-            {
-                return Conflict("Used by other table!");
-            }
-
-            try
-            {
-                hbuffaloType.DeleteFlag = true;
-                hbuffaloType.DateDeleted = DateTime.Now;
-                hbuffaloType.DeletedBy = deletionModel.deletedBy;
-                hbuffaloType.DateRestored = null;
-                hbuffaloType.RestoredBy = "";
-                _context.Entry(hbuffaloType).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                return Ok("Deletion Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-
-        // GET: buffaloTypes/view
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<HBuffaloType>>> view()
-        {
-            if (_context.HBuffaloTypes == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HbuffaloType' is null.");
-            }
-            return await _context.HBuffaloTypes.Where(buffaloType => !buffaloType.DeleteFlag).ToListAsync();
-        }
-
-        // POST: buffaloTypes/restore/
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<IActionResult> restore(RestorationModel restorationModel)
-        {
-
-            if (_context.HBuffaloTypes == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HbuffaloType' is null.");
-            }
-
-            var buffaloType = await _context.HBuffaloTypes.FindAsync(restorationModel.id);
-
-            if (buffaloType == null || !buffaloType.DeleteFlag)
-            {
-                return Conflict("No deleted records matched!");
-            }
-
-            try
-            {
-                buffaloType.DeleteFlag = !buffaloType.DeleteFlag;
-                buffaloType.DateDeleted = null;
-                buffaloType.DeletedBy = "";
-                buffaloType.DateRestored = DateTime.Now;
-                buffaloType.RestoredBy = restorationModel.restoredBy;
-
-                _context.Entry(buffaloType).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return Ok("Restoration Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        private bool HBuffaloTypeExists(int id)
-        {
-            return (_context.HBuffaloTypes?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }

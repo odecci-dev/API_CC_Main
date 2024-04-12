@@ -7,6 +7,7 @@ using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Core.Types;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -41,6 +42,176 @@ namespace API_PCC.Controllers
             }
         }
 
+        // GET: Breeds/search/5
+        [HttpGet("{breedCode}")]
+        public async Task<ActionResult<BreedResponseModel>> search(string breedCode)
+        {
+            DataTable breedRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQueryByBreedCode(), null, populateSqlParameters(breedCode));
+
+            if (breedRecord.Rows.Count == 0)
+            {
+                return Conflict("No records found!");
+            }
+
+            var breedModel = convertDataRowToBreed(breedRecord.Rows[0]);
+            var breedResponseModel = convertBreedToResponseModel(breedModel);
+
+            return Ok(breedResponseModel);
+        }
+
+
+
+        // GET: Breeds/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BreedResponseModel>>> view()
+        {
+            try
+            {
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQueryAll(), null, new SqlParameter[] { });
+                if (queryResult.Rows.Count == 0)
+                {
+                    return Conflict("No records found!");
+                }
+                var breedModels = convertDataRowListToBreedList(queryResult.AsEnumerable().ToList());
+                List<BreedResponseModel> breedResponseList = convertBreedListToResponseModelList(breedModels);
+
+                return Ok(breedResponseList);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // PUT: Breeds/update/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> update(int id, BreedUpdateModel breedUpdateModel)
+        {
+            DataTable breedRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQueryById(), null, populateSqlParameters(id));
+
+            if (breedRecord.Rows.Count == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            DataTable breedDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedDuplicateCheckUpdateQuery(), null, populateSqlParameters(id, breedUpdateModel));
+
+            // check for duplication
+            if (breedDuplicateCheck.Rows.Count > 0)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            try
+            {
+                var breedModel = convertDataRowToBreed(breedRecord.Rows[0]);
+                populateBreed(breedModel, breedUpdateModel);
+                _context.Entry(breedModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok("Update Successful!");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: Breeds/save
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<ABreed>> save(BreedRegistrationModel breedRegistrationModel)
+        {
+            DataTable breedRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedDuplicateCheckSaveQuery(), null, populateSqlParameters(breedRegistrationModel));
+
+            // check for duplication
+            if (breedRecord.Rows.Count > 0)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            var breedModel = convertDataRowToBreed(breedRecord.Rows[0]);
+            try
+            {
+                _context.ABreeds.Add(breedModel);
+                await _context.SaveChangesAsync();
+
+                return Ok("Registration Successful");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: Breeds/delete/5
+        [HttpPost]
+        public async Task<IActionResult> delete(DeletionModel deletionModel)
+        {
+            DataTable breedRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedSearchQueryById(), null, populateSqlParameters(deletionModel.id));
+
+            if (breedRecord.Rows.Count == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            var breedModel = convertDataRowToBreed(breedRecord.Rows[0]);
+
+            try
+            {
+                breedModel.DeleteFlag = true;
+                breedModel.DateDeleted = DateTime.Now;
+                breedModel.DeletedBy = deletionModel.deletedBy;
+                breedModel.DateRestored = null;
+                breedModel.RestoredBy = "";
+                _context.Entry(breedModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok("Deletion Successful!");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: Breeds/restore/
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<IActionResult> restore(RestorationModel restorationModel)
+        {
+            DataTable breedRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBreedDeletedSearchQueryById(), null, populateSqlParameters(restorationModel.id));
+
+            if (breedRecord.Rows.Count == 0)
+            {
+                return Conflict("No deleted records matched!");
+            }
+
+            var breedModel = convertDataRowToBreed(breedRecord.Rows[0]);
+
+            try
+            {
+                breedModel.DeleteFlag = !breedModel.DeleteFlag;
+                breedModel.DateDeleted = null;
+                breedModel.DeletedBy = "";
+                breedModel.DateRestored = DateTime.Now;
+                breedModel.RestoredBy = restorationModel.restoredBy;
+
+                _context.Entry(breedModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Restoration Successful!");
+            }
+            catch (Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
         private void sanitizeInput(CommonSearchFilterModel searchFilter)
         {
             searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
@@ -59,6 +230,84 @@ namespace API_PCC.Controllers
                     SqlDbType = System.Data.SqlDbType.VarChar,
                 });
             }
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(int id)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "Id",
+                Value = id,
+                SqlDbType = System.Data.SqlDbType.Int,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(string breedCode)
+        {
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedCode",
+                Value = breedCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(BreedRegistrationModel breedRegistrationModel)
+        {
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedCode",
+                Value = breedRegistrationModel.BreedCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedDesc",
+                Value = breedRegistrationModel.BreedDesc ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(int id, BreedUpdateModel breedUpdateModel)
+        {
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "Id",
+                Value = id,
+                SqlDbType = System.Data.SqlDbType.Int,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedCode",
+                Value = breedUpdateModel.BreedCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedDesc",
+                Value = breedUpdateModel.BreedDesc ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
 
             return sqlParameters.ToArray();
         }
@@ -126,180 +375,29 @@ namespace API_PCC.Controllers
             return breedResponseModels;
         }
 
-        // GET: Breeds/search/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ABreed>> search(int id)
+        private ABreed convertDataRowToBreed(DataRow dataRow) 
         {
-            if (_context.ABreeds == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.Abreeds' is null!");
-            }
-            var aBreed = await _context.ABreeds.FindAsync(id);
-
-            if (aBreed == null || aBreed.DeleteFlag)
-            {
-                return Conflict("No records found!");
-            }
-            return Ok(aBreed);
+            return DataRowToObject.ToObject<ABreed>(dataRow);
         }
 
-        // PUT: Breeds/update/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> update(int id, ABreed aBreed)
+        private BreedResponseModel convertBreedToResponseModel(ABreed breed)
         {
-            if (id != aBreed.Id)
+            var breedResponseModel = new BreedResponseModel()
             {
-                return BadRequest();
-            }
-
-            var breed = _context.ABreeds.AsNoTracking().Where(breed => !breed.DeleteFlag && breed.Id == id).FirstOrDefault();
-
-            if (breed == null)
-            {
-                return Conflict("No records matched!");
-            }
-
-            if (id != aBreed.Id)
-            {
-                return Conflict("Ids mismatched!");
-            }
-
-            bool hasDuplicateOnUpdate = (_context.ABreeds?.Any(breed => !breed.DeleteFlag && breed.BreedCode == aBreed.BreedCode && breed.BreedDesc == aBreed.BreedDesc && breed.Id != id)).GetValueOrDefault();
-
-            // check for duplication
-            if (hasDuplicateOnUpdate)
-            {
-                return Conflict("Entity already exists");
-            }
-
-            try
-            {
-                _context.Entry(aBreed).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                return Ok("Update Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
+                breedCode = breed.BreedCode,
+                breedDesc = breed.BreedDesc
+            };
+            return breedResponseModel;
         }
 
-        // POST: Breeds/save
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<ABreed>> save(ABreed aBreed)
+        private void populateBreed(ABreed breed, BreedUpdateModel breedUpdateModel)
         {
-            if (_context.ABreeds == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.ABreed'  is null.");
-            }
-            bool hasDuplicateOnSave = (_context.ABreeds?.Any(breed => !breed.DeleteFlag && breed.BreedCode == aBreed.BreedCode && breed.BreedDesc == aBreed.BreedDesc)).GetValueOrDefault();
-
-            if (hasDuplicateOnSave)
-            {
-                return Conflict("Entity already exists");
-            }
-
-            try
-            {
-                _context.ABreeds.Add(aBreed);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("save", new { id = aBreed.Id }, aBreed);
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
+            breed.BreedCode = breedUpdateModel.BreedCode;
+            breed.BreedDesc = breedUpdateModel.BreedDesc;
+            breed.DateUpdated = DateTime.Now;
+            breed.UpdatedBy = breedUpdateModel.UpdatedBy;
         }
 
-        // POST: Breeds/delete/5
-        [HttpPost]
-        public async Task<IActionResult> delete(DeletionModel deletionModel)
-        {
-            if (_context.ABreeds == null)
-            {
-                return NotFound();
-            }
-            var aBreed = await _context.ABreeds.FindAsync(deletionModel.id);
-            if (aBreed == null || aBreed.DeleteFlag)
-            {
-                return Conflict("No records matched!");
-            }
-
-            try
-            {
-                aBreed.DeleteFlag = true;
-                aBreed.DateDeleted = DateTime.Now;
-                aBreed.DeletedBy = deletionModel.deletedBy;
-                aBreed.DateRestored = null;
-                aBreed.RestoredBy = "";
-                _context.Entry(aBreed).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                return Ok("Deletion Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        // GET: Breeds/view
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ABreed>>> view()
-        {
-            if (_context.ABreeds == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.ABreeds' is null.");
-            }
-            return await _context.ABreeds.Where(breed => !breed.DeleteFlag).ToListAsync();
-        }
-
-        // POST: Breeds/restore/
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<IActionResult> restore(RestorationModel restorationModel)
-        {
-
-            if (_context.ABreeds == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.Abreeds' is null!");
-            }
-
-            var aBreed = await _context.ABreeds.FindAsync(restorationModel.id);
-            if (aBreed == null || !aBreed.DeleteFlag)
-            {
-                return Conflict("No deleted records matched!");
-            }
-
-            try
-            {
-                aBreed.DeleteFlag = !aBreed.DeleteFlag;
-                aBreed.DateDeleted = null;
-                aBreed.DeletedBy = "";
-                aBreed.DateRestored = DateTime.Now;
-                aBreed.RestoredBy = restorationModel.restoredBy;
-
-                _context.Entry(aBreed).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return Ok("Restoration Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        private bool ABreedExists(int id)
-        {
-            return (_context.ABreeds?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+       
     }
 }

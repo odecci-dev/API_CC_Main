@@ -208,6 +208,47 @@ namespace API_PCC.Utils
             return herdSelect;
         }
 
+        public static String buildFarmerAffiliationSearchQueryAll()
+        {
+            String farmerAffiliationSearchQueryByFCode = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0";
+
+            return farmerAffiliationSearchQueryByFCode;
+        }
+
+        public static String buildFarmerAffiliationDeletedSearchQueryById()
+        {
+            String farmerAffiliationSearchQueryByFCode = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id ";
+
+            return farmerAffiliationSearchQueryByFCode;
+        }
+
+        public static String buildFarmerAffiliationSearchQueryById()
+        {
+            String farmerAffiliationSearchQueryByFCode = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id ";
+
+            return farmerAffiliationSearchQueryByFCode;
+        }
+
+
+        public static String buildFarmerAffiliationSearchQueryByFCode()
+        {
+            String farmerAffiliationSearchQueryByFCode = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 AND F_CODE = @FCode ";
+            
+            return farmerAffiliationSearchQueryByFCode;
+        }
+
+        public static String buildFarmerAffiliationDuplicateCheckSaveQuery()
+        {
+            String farmerAffiliationDuplicateCheck = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND F_CODE = @FCode AND F_DESC = @FDesc";
+            return farmerAffiliationDuplicateCheck;
+        }
+
+        public static String buildFarmerAffiliationDuplicateCheckUpdateQuery()
+        {
+            String farmerAffiliationDuplicateCheck = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND F_CODE = @FCode AND F_DESC = @FDesc";
+            return farmerAffiliationDuplicateCheck;
+        }
+
         public static String buildHerdClassificationSearchQuery(CommonSearchFilterModel searchFilterModel)
         {
             String herdSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 ";
@@ -218,14 +259,82 @@ namespace API_PCC.Utils
             return herdSelect;
         }
 
+        public static String buildHerdClassificationSearchQueryAll()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0";
+            return herdClassificationSelect;
+        }
+
+        public static String buildHerdClassificationDeletedSearchQueryById()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id";
+            return herdClassificationSelect;
+        }
+
+        public static String buildHerdClassificationSearchQueryById()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id";
+            return herdClassificationSelect;
+        }
+
+        public static String buildHerdClassificationSearchQueryByHerdClassCode()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @HerdClassCode";
+            return herdClassificationSelect;
+        }
+
+        public static String buildHerdClassificationDuplicateCheckSaveQuery()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassCode AND HERD_CLASS_DESC = @HerdClassDesc";
+            return herdClassificationSelect;
+        }
+
+        public static String buildHerdClassificationDuplicateCheckUpdateQuery()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND HERD_CLASS_CODE = @HerdClassCode AND HERD_CLASS_DESC = @HerdClassDesc";
+            return herdClassificationSelect;
+        }
+
+
+        // Breed Query
         public static String buildBreedSearchQuery(CommonSearchFilterModel searchFilterModel)
         {
-            String herdSelect = Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 ";
+            String breedSearchQuery = Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
             {
-                herdSelect = herdSelect + "AND (Breed_Code LIKE '%' + @SearchParam + '%' OR Breed_Desc LIKE '%' + @SearchParam +'%') ";
+                breedSearchQuery = breedSearchQuery + "AND (Breed_Code LIKE '%' + @SearchParam + '%' OR Breed_Desc LIKE '%' + @SearchParam +'%') ";
             }
-            return herdSelect;
+            return breedSearchQuery;
+        }
+
+        public static String buildBreedSearchQueryAll()
+        {
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0";
+        }
+
+        public static String buildBreedDeletedSearchQueryById()
+        {
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id";
+        }
+
+        public static String buildBreedSearchQueryById()
+        {
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id";
+        }
+
+        public static String buildBreedSearchQueryByBreedCode()
+        {
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 AND BREED_CODE = @BreedCode";
+        }
+
+        public static String buildBreedDuplicateCheckSaveQuery()
+        {
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 AND Breed_Code = @BreedCode AND Breed_Desc = @BreedDesc ";
+        }
+
+        public static String buildBreedDuplicateCheckUpdateQuery()
+        {
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND Breed_Code = @BreedCode AND Breed_Desc = @BreedDesc ";
         }
 
         public static String buildFeedingSystemSearchQuery(CommonSearchFilterModel searchFilterModel)
@@ -246,6 +355,36 @@ namespace API_PCC.Utils
                 herdSelect = herdSelect + "AND (Breed_Type_Code LIKE '%' + @SearchParam + '%' OR Breed_Type_Desc LIKE '%' + @SearchParam +'%') ";
             }
             return herdSelect;
+        }
+
+        public static String buildBuffaloTypeSearchQueryAll()
+        {
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0";
+        }
+
+        public static String buildBuffaloTypeDeletedSearchQueryById()
+        {
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id";
+        }
+
+        public static String buildBuffaloTypeSearchQueryById()
+        {
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id";
+        }
+
+        public static String buildBuffaloTypeSearchQueryByBreedTypeCode()
+        {
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND BREED_TYPE_CODE = @BreedTypeCode";
+        }
+
+        public static String buildBuffaloTypeDuplicateCheckSaveQuery()
+        {
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND BREED_TYPE_CODE = @BreedTypeCode AND BREED_TYPE_DESC = @BreedTypeDesc ";
+        }
+
+        public static String buildBuffaloTypeDuplicateCheckUpdateQuery()
+        {
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND BREED_TYPE_CODE = @BreedTypeCode AND BREED_TYPE_DESC = @BreedTypeDesc ";
         }
 
         public static String buildUserSearchQuery(CommonSearchFilterModel searchFilterModel)

@@ -45,6 +45,185 @@ namespace API_PCC.Controllers
             }
         }
 
+        // GET: HerdClassification/search/5
+        [HttpGet("{herdClassCode}")]
+        public async Task<ActionResult<IEnumerable<HerdClassificationResponseModel>>> search(string herdClassCode)
+        {
+            try { 
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryByHerdClassCode(), null, populateSqlParameters(herdClassCode));
+                if (queryResult.Rows.Count == 0)
+                {
+                    return Conflict("No records found!");
+                }
+                var herdClassificationModels = convertDataRowToHerdClassificationList(queryResult.AsEnumerable().ToList());
+                List<HerdClassificationResponseModel> herdClassificationResponseModels = convertHerdClassificationToResponseModelList(herdClassificationModels);
+
+                return Ok(herdClassificationResponseModels);
+            }
+            catch (Exception ex)
+            {    
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // GET: HerdClassification/view
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<HHerdClassification>>> view()
+        {
+            try
+            {
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryAll(), null, new SqlParameter[] { });
+                if (queryResult.Rows.Count == 0)
+                {
+                    return Conflict("No records found!");
+                }
+                var herdClassificationModels = convertDataRowToHerdClassificationList(queryResult.AsEnumerable().ToList());
+                List<HerdClassificationResponseModel> herdClassificationResponseModels = convertHerdClassificationToResponseModelList(herdClassificationModels);
+
+                return Ok(herdClassificationResponseModels);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // PUT: HerdClassification/update/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> update(int id, HerdClassificationUpdateModel herdClassificationUpdateModel)
+        {
+            DataTable herdClassificationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryById(), null, populateSqlParameters(id));
+
+            if (herdClassificationRecord.Rows.Count == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            DataTable herdClassificationDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationDuplicateCheckUpdateQuery(), null, populateSqlParameters(id, herdClassificationUpdateModel));
+
+            // check for duplication
+            if (herdClassificationDuplicateCheck.Rows.Count > 0)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            var herdClassificationModel = convertDataRowToHerdClassification(herdClassificationRecord.Rows[0]);
+
+            try
+            {
+                populateHerdClassification(herdClassificationModel, herdClassificationUpdateModel);
+                _context.Entry(herdClassificationModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok("Update Successful!");
+            }
+            catch (Exception ex)
+            {
+
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: HerdClassification/save
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<HHerdClassification>> save(HerdClassificationRegistrationModel herdClassificationRegistrationModel)
+        {
+
+          DataTable hasDuplicateOnSave = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationDuplicateCheckSaveQuery(), null, populateSqlParameters(herdClassificationRegistrationModel));
+
+            // check for duplication
+          if (hasDuplicateOnSave.Rows.Count > 0)
+          {
+              return Conflict("Entity already exists");
+          }
+          try
+          {
+                var herdClassification = buildHerdClassificationRegistrationModel(herdClassificationRegistrationModel);
+                _context.HHerdClassifications.Add(herdClassification);
+                await _context.SaveChangesAsync();
+                return Ok("Herd successfully registered!");
+            }
+          catch (Exception ex) 
+          { 
+                
+                return Problem(ex.GetBaseException().ToString());
+          }
+        }
+
+        // POST: HerdClassification/delete/5
+        [HttpPost]
+        public async Task<IActionResult> delete(DeletionModel deletionModel)
+        {
+            DataTable herdClassificationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationDuplicateCheckSaveQuery(), null, populateSqlParameters(deletionModel.id));
+
+            if (herdClassificationRecord.Rows.Count == 0)
+            {
+                return Conflict("No records found!");
+            }
+
+            var herdClassificationModel = convertDataRowToHerdClassification(herdClassificationRecord.Rows[0]);
+            DataTable herdRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryByHerdClassCode(), null, populateSqlParameters(herdClassificationModel.HerdClassCode));
+
+            if (herdRecord.Rows.Count > 0)
+            {
+                return Conflict("Used by other table!");
+            }
+
+            try
+            {
+                herdClassificationModel.DeleteFlag = true;
+                herdClassificationModel.DateDeleted = DateTime.Now;
+                herdClassificationModel.DeletedBy = deletionModel.deletedBy;
+                herdClassificationModel.DateRestored = null;
+                herdClassificationModel.RestoredBy = "";
+                _context.Entry(herdClassificationModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Deletion Successful!");
+            }
+            catch(Exception ex)
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        // POST: HerdClassification/restore/
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<IActionResult> restore(RestorationModel restorationModel)
+        {
+
+
+            DataTable herdClassificationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationDeletedSearchQueryById(), null, populateSqlParameters(restorationModel.id));
+
+            if (herdClassificationRecord.Rows.Count == 0)
+            {
+                return Conflict("No deleted records found!");
+            }
+
+            var herdClassificationModel = convertDataRowToHerdClassification(herdClassificationRecord.Rows[0]);
+
+            try
+            {
+                herdClassificationModel.DeleteFlag = !herdClassificationModel.DeleteFlag;
+                herdClassificationModel.DateDeleted = null;
+                herdClassificationModel.DeletedBy = "";
+                herdClassificationModel.DateRestored = DateTime.Now;
+                herdClassificationModel.RestoredBy = restorationModel.restoredBy;
+
+                _context.Entry(herdClassificationModel).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Restoration Successful!");
+            }
+            catch (Exception ex) 
+            {
+                
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
         private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
         {
 
@@ -59,6 +238,88 @@ namespace API_PCC.Controllers
                     SqlDbType = System.Data.SqlDbType.VarChar,
                 });
             }
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(int id)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+            
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "SearchParam",
+                Value = id,
+                SqlDbType = System.Data.SqlDbType.Int,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(string herdClassCode)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "Id",
+                Value = herdClassCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(int id, HerdClassificationUpdateModel herdClassificationUpdateModel)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "Id",
+                Value = id,
+                SqlDbType = System.Data.SqlDbType.Int,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "HerdClassCode",
+                Value = herdClassificationUpdateModel.HerdClassCode,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "HerdClassDesc",
+                Value = herdClassificationUpdateModel.HerdClassDesc ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(HerdClassificationRegistrationModel herdClassificationRegistrationModel)
+        {
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "HerdClassCode",
+                Value = herdClassificationRegistrationModel.HerdClassCode,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "HerdClassDesc",
+                Value = herdClassificationRegistrationModel.HerdClassDesc ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
 
             return sqlParameters.ToArray();
         }
@@ -132,189 +393,33 @@ namespace API_PCC.Controllers
             return herdClassificationResponseModels;
         }
 
-
-        // GET: HerdClassification/search/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<HHerdClassification>> search(int id)
+        private HHerdClassification convertDataRowToHerdClassification(DataRow dataRow)
         {
-            if (_context.HHerdClassifications == null)
+            return DataRowToObject.ToObject<HHerdClassification>(dataRow);
+        }
+        private HHerdClassification buildHerdClassificationRegistrationModel(HerdClassificationRegistrationModel herdClassificationRegistrationModel)
+        {
+            var herdClassification = new HHerdClassification()
             {
-                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-            }
-            var HHerdClassification = await _context.HHerdClassifications.FindAsync(id);
-
-            if (HHerdClassification == null || HHerdClassification.DeleteFlag)
-            {
-                return Conflict("No records found!");
-            }
-
-            return HHerdClassification;
+                HerdClassCode = herdClassificationRegistrationModel.HerdClassCode,
+                HerdClassDesc = herdClassificationRegistrationModel.HerdClassDesc,
+                LevelFrom = herdClassificationRegistrationModel.LevelFrom,
+                LevelTo = herdClassificationRegistrationModel.LevelTo,
+                CreatedBy = herdClassificationRegistrationModel.CreatedBy,
+                DateCreated = DateTime.Now
+            };
+            return herdClassification;
         }
 
-        // PUT: HerdClassification/update/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> update(int id, HHerdClassification HHerdClassification)
+        private void populateHerdClassification(HHerdClassification herdClassification, HerdClassificationUpdateModel herdClassificationUpdateModel)
         {
-            if (_context.HHerdClassifications == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-            }
-
-            var herdType = _context.HHerdClassifications.AsNoTracking().Where(herdType => !herdType.DeleteFlag && herdType.Id == id).FirstOrDefault();
-
-            if (herdType == null)
-            {
-                return Conflict("No records matched!");
-            }
-
-            if (id != HHerdClassification.Id)
-            {
-                return Conflict("Ids mismatched!");
-            }
-
-            bool hasDuplicateOnUpdate = (_context.HHerdClassifications.Any(hs => !hs.DeleteFlag && hs.HerdClassCode == HHerdClassification.HerdClassCode && hs.HerdClassDesc == HHerdClassification.HerdClassDesc && hs.Id != id));
-
-            // check for duplication
-            if (hasDuplicateOnUpdate)
-            {
-                return Conflict("Entity already exists");
-            }
-
-            try
-            {
-                _context.Entry(HHerdClassification).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return Ok("Update Successful!");
-            }
-            catch (Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-
+            herdClassification.HerdClassCode = herdClassificationUpdateModel.HerdClassCode;
+            herdClassification.HerdClassDesc = herdClassificationUpdateModel.HerdClassDesc;
+            herdClassification.LevelFrom = herdClassificationUpdateModel.LevelFrom;
+            herdClassification.LevelTo = herdClassificationUpdateModel.LevelTo;
+            herdClassification.DateUpdated = DateTime.Now;
+            herdClassification.UpdatedBy = herdClassificationUpdateModel.UpdatedBy;
         }
 
-        // POST: HerdClassification/save
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<HHerdClassification>> save(HHerdClassification HHerdClassification)
-        {
-          if (_context.HHerdClassifications == null)
-          {
-            return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-          }
-
-            bool hasDuplicateOnSave = (_context.HHerdClassifications?.Any(hs => !hs.DeleteFlag && hs.HerdClassCode == hs.HerdClassCode 
-                                        && hs.HerdClassDesc == hs.HerdClassDesc)).GetValueOrDefault();
-
-            // check for duplication
-          if (hasDuplicateOnSave)
-          {
-              return Conflict("Entity already exists");
-          }
-          try
-          {
-                _context.HHerdClassifications.Add(HHerdClassification);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction("save", new { id = HHerdClassification.Id }, HHerdClassification);
-          }
-          catch (Exception ex) 
-          { 
-                
-                return Problem(ex.GetBaseException().ToString());
-          }
-        }
-
-        // POST: HerdClassification/delete/5
-        [HttpPost]
-        public async Task<IActionResult> delete(DeletionModel deletionModel)
-        {
-            if (_context.HHerdClassifications == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-            }
-            var HHerdClassification = await _context.HHerdClassifications.FindAsync(deletionModel.id);
-            if (HHerdClassification == null || HHerdClassification.DeleteFlag)
-            {
-                return Conflict("No records found!");
-            }
-
-            bool typeCodeExistsInBuffHerd = _context.HBuffHerds.Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.HerdClassDesc == HHerdClassification.HerdClassCode);
-
-            if (typeCodeExistsInBuffHerd)
-            {
-                return Conflict("Used by other table!");
-            }
-
-            try
-            {
-                HHerdClassification.DeleteFlag = true;
-                HHerdClassification.DateDeleted = DateTime.Now;
-                HHerdClassification.DeletedBy = deletionModel.deletedBy;
-                HHerdClassification.DateRestored = null;
-                HHerdClassification.RestoredBy = "";
-                _context.Entry(HHerdClassification).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return Ok("Deletion Successful!");
-            }
-            catch(Exception ex)
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        // GET: HerdClassification/view
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<HHerdClassification>>> view()
-        {
-            if (_context.HHerdClassifications == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-            }
-            return await _context.HHerdClassifications.Where(HerdClassification => !HerdClassification.DeleteFlag).ToListAsync();
-        }
-
-        // POST: HerdClassification/restore/
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<IActionResult> restore(RestorationModel restorationModel)
-        {
-
-            if(_context.HHerdClassifications == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.HerdClassification' is null!");
-            }
-
-            var HHerdClassification = await _context.HHerdClassifications.FindAsync(restorationModel.id);
-            if (HHerdClassification == null || !HHerdClassification.DeleteFlag)
-            {
-                return Conflict("No deleted records matched!");
-            }
-
-            try
-            {
-                HHerdClassification.DeleteFlag = !HHerdClassification.DeleteFlag;
-                HHerdClassification.DateDeleted = null;
-                HHerdClassification.DeletedBy = "";
-                HHerdClassification.DateRestored = DateTime.Now;
-                HHerdClassification.RestoredBy = restorationModel.restoredBy;
-
-                _context.Entry(HHerdClassification).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return Ok("Restoration Successful!");
-            }
-            catch (Exception ex) 
-            {
-                
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        private bool HHerdClassificationExists(int id)
-        {
-            return (_context.HHerdClassifications?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }

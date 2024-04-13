@@ -12,7 +12,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    [Authorize("ApiKey")]
+    //[Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class HerdClassificationController : ControllerBase
@@ -156,7 +156,7 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<IActionResult> delete(DeletionModel deletionModel)
         {
-            DataTable herdClassificationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationDuplicateCheckSaveQuery(), null, populateSqlParameters(deletionModel.id));
+            DataTable herdClassificationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryById(), null, populateSqlParameters(deletionModel.id));
 
             if (herdClassificationRecord.Rows.Count == 0)
             {
@@ -164,7 +164,7 @@ namespace API_PCC.Controllers
             }
 
             var herdClassificationModel = convertDataRowToHerdClassification(herdClassificationRecord.Rows[0]);
-            DataTable herdRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryByHerdClassCode(), null, populateSqlParameters(herdClassificationModel.HerdClassCode));
+            DataTable herdRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSelectQueryByHerdClassDesc(), null, populateSqlParameters(herdClassificationModel.HerdClassCode));
 
             if (herdRecord.Rows.Count > 0)
             {
@@ -249,7 +249,7 @@ namespace API_PCC.Controllers
             
             sqlParameters.Add(new SqlParameter
             {
-                ParameterName = "SearchParam",
+                ParameterName = "Id",
                 Value = id,
                 SqlDbType = System.Data.SqlDbType.Int,
             });
@@ -257,15 +257,15 @@ namespace API_PCC.Controllers
             return sqlParameters.ToArray();
         }
 
-        private SqlParameter[] populateSqlParameters(string herdClassCode)
+        private SqlParameter[] populateSqlParameters(string herdClassDesc)
         {
 
             var sqlParameters = new List<SqlParameter>();
 
             sqlParameters.Add(new SqlParameter
             {
-                ParameterName = "Id",
-                Value = herdClassCode ?? Convert.DBNull,
+                ParameterName = "HerdClassDesc",
+                Value = herdClassDesc ?? Convert.DBNull,
                 SqlDbType = System.Data.SqlDbType.VarChar,
             });
 

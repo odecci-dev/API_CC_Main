@@ -13,7 +13,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    [Authorize("ApiKey")]
+    //[Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class BreedsController : ControllerBase
@@ -119,6 +119,7 @@ namespace API_PCC.Controllers
             }
         }
 
+
         // POST: Breeds/save
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -132,10 +133,11 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            var breedModel = convertDataRowToBreed(breedRecord.Rows[0]);
+            var breed = buildBreedRegistrationModel(breedRegistrationModel);
+
             try
             {
-                _context.ABreeds.Add(breedModel);
+                _context.ABreeds.Add(breed);
                 await _context.SaveChangesAsync();
 
                 return Ok("Registration Successful");
@@ -145,6 +147,19 @@ namespace API_PCC.Controllers
                 
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+
+        private ABreed buildBreedRegistrationModel(BreedRegistrationModel breedRegistrationModel)
+        {
+            var breed = new ABreed()
+            {
+                BreedCode = breedRegistrationModel.BreedCode,
+                BreedDesc = breedRegistrationModel.BreedDesc,
+                Status = 1,
+                CreatedBy = breedRegistrationModel.CreatedBy,
+                DateCreated = DateTime.Now
+            };
+            return breed;
         }
 
         // POST: Breeds/delete/5

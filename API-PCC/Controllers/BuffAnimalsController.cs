@@ -16,7 +16,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    [Authorize("ApiKey")]
+    //[Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class BuffAnimalsController : ControllerBase
@@ -45,86 +45,6 @@ namespace API_PCC.Controllers
             {
                 return Problem(ex.GetBaseException().ToString());
             }
-        }
-
-        private SqlParameter[] populateSqlParameters(BuffAnimalSearchFilterModel searchFilter)
-        {
-
-            var sqlParameters = new List<SqlParameter>();
-
-            if (searchFilter.searchValue != null && searchFilter.searchValue != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "SearchParam",
-                    Value = searchFilter.searchValue ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            if (searchFilter.sex != null && searchFilter.sex != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "Sex",
-                    Value = searchFilter.sex ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            if (searchFilter.status != null && searchFilter.status != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "Status",
-                    Value = searchFilter.status ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            if (searchFilter.filterBy.BloodCode != null && searchFilter.filterBy.BloodCode != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "BloodCode",
-                    Value = searchFilter.filterBy.BloodCode ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            if (searchFilter.filterBy.BreedCode != null && searchFilter.filterBy.BreedCode != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "BreedCode",
-                    Value = searchFilter.filterBy.BreedCode ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            if (searchFilter.filterBy.TypeOfOwnership != null && searchFilter.filterBy.TypeOfOwnership != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "TypeOfOwnership",
-                    Value = searchFilter.filterBy.TypeOfOwnership ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            return sqlParameters.ToArray();
-        }
-
-        private void sanitizeInput(BuffAnimalSearchFilterModel searchFilter)
-        {
-            searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
-            searchFilter.sex = StringSanitizer.sanitizeString(searchFilter.sex);
-            searchFilter.status = StringSanitizer.sanitizeString(searchFilter.status);
-            searchFilter.filterBy.BloodCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BloodCode);
-            searchFilter.filterBy.BreedCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BreedCode);
-            searchFilter.filterBy.TypeOfOwnership = StringSanitizer.sanitizeString(searchFilter.filterBy.TypeOfOwnership);
-            searchFilter.sortBy.Field = StringSanitizer.sanitizeString(searchFilter.sortBy.Field);
-            searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
         }
 
         // GET: BuffAnimals/search/5
@@ -676,6 +596,87 @@ namespace API_PCC.Controllers
                 BloodCode = registrationModel.BloodCode
             };
             return buffAnimal;
+        }
+
+
+        private SqlParameter[] populateSqlParameters(BuffAnimalSearchFilterModel searchFilter)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            if (searchFilter.searchValue != null && searchFilter.searchValue != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "SearchParam",
+                    Value = searchFilter.searchValue ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.sex != null && searchFilter.sex != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "Sex",
+                    Value = searchFilter.sex ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.status != null && searchFilter.status != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "Status",
+                    Value = searchFilter.status ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy.BloodCode != null && searchFilter.filterBy.BloodCode != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "BloodCode",
+                    Value = searchFilter.filterBy.BloodCode ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy.BreedCode != null && searchFilter.filterBy.BreedCode != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "BreedCode",
+                    Value = searchFilter.filterBy.BreedCode ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            if (searchFilter.filterBy.TypeOfOwnership != null && searchFilter.filterBy.TypeOfOwnership != "")
+            {
+                sqlParameters.Add(new SqlParameter
+                {
+                    ParameterName = "TypeOfOwnership",
+                    Value = searchFilter.filterBy.TypeOfOwnership ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.VarChar,
+                });
+            }
+
+            return sqlParameters.ToArray();
+        }
+
+        private void sanitizeInput(BuffAnimalSearchFilterModel searchFilter)
+        {
+            searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
+            searchFilter.sex = StringSanitizer.sanitizeString(searchFilter.sex);
+            searchFilter.status = StringSanitizer.sanitizeString(searchFilter.status);
+            searchFilter.filterBy.BloodCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BloodCode);
+            searchFilter.filterBy.BreedCode = StringSanitizer.sanitizeString(searchFilter.filterBy.BreedCode);
+            searchFilter.filterBy.TypeOfOwnership = StringSanitizer.sanitizeString(searchFilter.filterBy.TypeOfOwnership);
+            searchFilter.sortBy.Field = StringSanitizer.sanitizeString(searchFilter.sortBy.Field);
+            searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
         }
 
     }

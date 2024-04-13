@@ -83,6 +83,11 @@ namespace API_PCC.Utils
             return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND NOT id = " + id + "  AND HERD_NAME = '" + herdName + "' AND HERD_CODE = '" + herdCode + "'";
         }
 
+        public static String buildHerdSelectQueryByHerdClassDesc()
+        {
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_DESC = @HerdClassDesc";
+        }
+
         public static String buildFarmOwnerSearchQueryByFirstNameAndLastName(String firstName, String lastName)
         {
             return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = '" + firstName + "' AND LastName = '" + lastName + "'";
@@ -239,13 +244,13 @@ namespace API_PCC.Utils
 
         public static String buildFarmerAffiliationDuplicateCheckSaveQuery()
         {
-            String farmerAffiliationDuplicateCheck = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND F_CODE = @FCode AND F_DESC = @FDesc";
+            String farmerAffiliationDuplicateCheck = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 AND F_CODE = @FCode AND F_DESC = @FDesc";
             return farmerAffiliationDuplicateCheck;
         }
 
         public static String buildFarmerAffiliationDuplicateCheckUpdateQuery()
         {
-            String farmerAffiliationDuplicateCheck = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND F_CODE = @FCode AND F_DESC = @FDesc";
+            String farmerAffiliationDuplicateCheck = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND F_CODE = @FCode AND F_DESC = @FDesc";
             return farmerAffiliationDuplicateCheck;
         }
 
@@ -279,7 +284,7 @@ namespace API_PCC.Utils
 
         public static String buildHerdClassificationSearchQueryByHerdClassCode()
         {
-            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @HerdClassCode";
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassCode";
             return herdClassificationSelect;
         }
 

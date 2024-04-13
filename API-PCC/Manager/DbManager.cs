@@ -1,9 +1,15 @@
 ﻿using API_PCC.ApplicationModels;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol.Core.Types;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text.Json;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
+using SqlParameter = System.Data.SqlClient.SqlParameter;
+using SqlCommand = System.Data.SqlClient.SqlCommand;
+using SqlDataAdapter = System.Data.SqlClient.SqlDataAdapter;
+using SqlException = System.Data.SqlClient.SqlException;
 
 namespace API_PCC.Manager
 {
@@ -19,7 +25,7 @@ namespace API_PCC.Manager
 
         public void ConnectioStr()
         {
-            //cnnstr = "Data Source=LEARI-PC\\MSSQLSERVER01;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev12345!";// local
+            //cnnstr = "Data Source=LEARI-PC;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev12345!";// local
             cnnstr = "Data Source=EC2AMAZ-V52FJK1;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server
 
             conn = new SqlConnection(cnnstr);
@@ -43,7 +49,8 @@ namespace API_PCC.Manager
                 dt.Columns.Add("Error");
                 dt.Rows.Add(new object[] { e.Message });
                 ds.Tables.Add(dt);*/
-                
+                conn.Close();
+                conn = null;
                 throw e;
             }
 
@@ -63,9 +70,23 @@ namespace API_PCC.Manager
                 cmd.CommandTimeout = 0;
                 cmd.CommandText = strSql;
 
-                foreach (SqlParameter sqlParameter in sqlParams)
+
+                foreach (SqlParameter sqlParameterInput in sqlParams)
                 {
-                    cmd.Parameters.Add(sqlParameter);
+                    bool exists = false;
+                    foreach (SqlParameter sqlParameterExisting in cmd.Parameters)
+                    {
+                        if (sqlParameterExisting.ParameterName.Equals(sqlParameterInput.ParameterName))
+                        {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists)
+                    {
+                        cmd.Parameters.Add(sqlParameterInput);
+                    }
+
                 }
 
                 da.SelectCommand = cmd;
@@ -92,8 +113,10 @@ namespace API_PCC.Manager
                 dt.Columns.Add("Error");
                 dt.Rows.Add(new object[] { e.Message });
                 ds.Tables.Add(dt);*/
-
+                conn.Close();
+                conn = null;
                 throw e;
+
             }
 
             conn.Close();
@@ -154,6 +177,8 @@ namespace API_PCC.Manager
                 dt.Columns.Add("Error");
                 dt.Rows.Add(new object[] { ex.Message });
                 ds.Tables.Add(dt);*/
+                conn.Close();
+                conn = null;
                 throw ex;
             }
 
@@ -189,6 +214,8 @@ namespace API_PCC.Manager
             }
             catch (SqlException ex)
             {
+                conn.Close();
+                conn = null;
                 string filePath = @"C:\data\SQL_Error.json"; // Replace with your desired file path
 
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(ex.Message + "!"));

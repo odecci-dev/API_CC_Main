@@ -13,7 +13,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    [Authorize("ApiKey")]
+    //[Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class FarmerAffiliationsController : ControllerBase
@@ -325,7 +325,7 @@ namespace API_PCC.Controllers
                 return Conflict("Entity already exists");
             }
 
-            var farmerAffiliationModel = convertDataRowToFarmerAffiliation(farmerAffiliationDuplicateCheck.Rows[0]);
+            var farmerAffiliationModel = buildFarmerAffiliationRegistrationModel(farmerAffiliationRegistrationModel);
 
             try
             {
@@ -339,6 +339,18 @@ namespace API_PCC.Controllers
 
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+        private HFarmerAffiliation buildFarmerAffiliationRegistrationModel(FarmerAffiliationRegistrationModel farmerAffiliationRegistrationModel)
+        {
+            var farmerAffiliation = new HFarmerAffiliation()
+            {
+                FCode = farmerAffiliationRegistrationModel.FCode,
+                FDesc = farmerAffiliationRegistrationModel.FDesc,
+                Status = 1,
+                CreatedBy = farmerAffiliationRegistrationModel.CreatedBy,
+                DateCreated = DateTime.Now
+            };
+            return farmerAffiliation;
         }
 
         // POST: FarmerAffiliations/delete/5

@@ -12,7 +12,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    [Authorize("ApiKey")]
+    //[Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class BuffaloTypesController : ControllerBase
@@ -85,7 +85,7 @@ namespace API_PCC.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> update(int id, BuffaloTypeUpdateModel buffaloTypeUpdateModel)
         {
-            DataTable farmerAffiliationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmerAffiliationSearchQueryById(), null, populateSqlParameters(id));
+            DataTable farmerAffiliationRecord = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeSearchQueryById(), null, populateSqlParameters(id));
 
             if (farmerAffiliationRecord.Rows.Count == 0)
             {
@@ -95,7 +95,7 @@ namespace API_PCC.Controllers
             DataTable buffaloTypeDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeDuplicateCheckUpdateQuery(), null, populateSqlParameters(id, buffaloTypeUpdateModel));
 
             // check for duplication
-            if (buffaloTypeDuplicateCheck.Rows.Count == 0)
+            if (buffaloTypeDuplicateCheck.Rows.Count > 0)
             {
                 return Conflict("Entity already exists");
             }
@@ -122,18 +122,19 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<HBuffaloType>> save(BuffaloTypeRegistrationModel buffaloTypeRegistrationModel)
         {
-            DataTable buffaloTypeDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeDuplicateCheckUpdateQuery(), null, populateSqlParameters(buffaloTypeRegistrationModel));
+            DataTable buffaloTypeDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeDuplicateCheckSaveQuery(), null, populateSqlParameters(buffaloTypeRegistrationModel));
 
             // check for duplication
-            if (buffaloTypeDuplicateCheck.Rows.Count == 0)
+            if (buffaloTypeDuplicateCheck.Rows.Count > 0)
             {
                 return Conflict("Entity already exists");
             }
 
-            var buffaloTypeModel = convertDataRowToBuffaloType(buffaloTypeDuplicateCheck.Rows[0]);
+            var buffaloTypeModel = buildBuffaloTypeRegistrationModel(buffaloTypeRegistrationModel);
 
             try
             {
+
                 _context.HBuffaloTypes.Add(buffaloTypeModel);
                 await _context.SaveChangesAsync();
 
@@ -144,6 +145,19 @@ namespace API_PCC.Controllers
                 
                 return Problem(ex.GetBaseException().ToString());
             }
+        }
+
+        private HBuffaloType buildBuffaloTypeRegistrationModel(BuffaloTypeRegistrationModel buffaloTypeRegistrationModel)
+        {
+            var buffaloType = new HBuffaloType()
+            {
+                BreedTypeCode = buffaloTypeRegistrationModel.BreedTypeCode,
+                BreedTypeDesc = buffaloTypeRegistrationModel.BreedTypeDesc,
+                Status = 1,
+                CreatedBy = buffaloTypeRegistrationModel.CreatedBy,
+                DateCreated = DateTime.Now
+            };
+            return buffaloType;
         }
 
         // POST: buffaloTypes/delete/5
@@ -235,7 +249,7 @@ namespace API_PCC.Controllers
 
             sqlParameters.Add(new SqlParameter
             {
-                ParameterName = "FCode",
+                ParameterName = "BreedTypeCode",
                 Value = breedTypeCode ?? Convert.DBNull,
                 SqlDbType = System.Data.SqlDbType.VarChar,
             });

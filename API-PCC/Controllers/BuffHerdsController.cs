@@ -9,7 +9,6 @@ using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol.Core.Types;
 using System.Data;
 using System.Data.SqlClient;
@@ -36,7 +35,6 @@ namespace API_PCC.Controllers
         {
             sanitizeInput(searchFilter);
             validateDate(searchFilter);
-            SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
             try
             {
                 DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchQuery(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
@@ -519,20 +517,9 @@ namespace API_PCC.Controllers
 
         private void validateDate(BuffHerdSearchFilterModel searchFilter)
         {
-            if (!searchFilter.dateFrom.IsNullOrEmpty())
+            if (!DateTime.TryParse(searchFilter.dateFrom, out DateTime dateTimeFrom) || !DateTime.TryParse(searchFilter.dateTo, out DateTime dateTimeTo))
             {
-                if (!DateTime.TryParse(searchFilter.dateFrom, out DateTime dateTimeFrom))
-                {
-                    throw new System.FormatException("Date From is not a valid Date!");
-                }
-            }
-
-            if (!searchFilter.dateTo.IsNullOrEmpty())
-            {
-                if (!DateTime.TryParse(searchFilter.dateTo, out DateTime dateTimeTo))
-                {
-                    throw new System.FormatException("Date To is not a valid Date!");
-                }
+                throw new System.FormatException("Input is not a valid Date!");
             }
         }
 

@@ -250,7 +250,7 @@ namespace API_PCC.Utils
 
         public static String buildFarmerAffiliationDuplicateCheckUpdateQuery()
         {
-            String farmerAffiliationDuplicateCheck = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND F_CODE = @FCode AND F_DESC = @FDesc";
+            String farmerAffiliationDuplicateCheck = Constants.DBQuery.FARMER_AFFILIATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND F_CODE = @FCode AND F_DESC = @FDesc";
             return farmerAffiliationDuplicateCheck;
         }
 
@@ -296,7 +296,7 @@ namespace API_PCC.Utils
 
         public static String buildHerdClassificationDuplicateCheckUpdateQuery()
         {
-            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND HERD_CLASS_CODE = @HerdClassCode AND HERD_CLASS_DESC = @HerdClassDesc";
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND HERD_CLASS_CODE = @HerdClassCode AND HERD_CLASS_DESC = @HerdClassDesc";
             return herdClassificationSelect;
         }
 
@@ -339,7 +339,7 @@ namespace API_PCC.Utils
 
         public static String buildBreedDuplicateCheckUpdateQuery()
         {
-            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND Breed_Code = @BreedCode AND Breed_Desc = @BreedDesc ";
+            return Constants.DBQuery.BREED_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND Breed_Code = @BreedCode AND Breed_Desc = @BreedDesc ";
         }
 
         public static String buildFeedingSystemSearchQuery(CommonSearchFilterModel searchFilterModel)
@@ -389,7 +389,7 @@ namespace API_PCC.Utils
 
         public static String buildBuffaloTypeDuplicateCheckUpdateQuery()
         {
-            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id AND BREED_TYPE_CODE = @BreedTypeCode AND BREED_TYPE_DESC = @BreedTypeDesc ";
+            return Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND BREED_TYPE_CODE = @BreedTypeCode AND BREED_TYPE_DESC = @BreedTypeDesc ";
         }
 
         public static String buildUserSearchQuery(CommonSearchFilterModel searchFilterModel)
@@ -401,7 +401,35 @@ namespace API_PCC.Utils
             }
             return userSelect;
         }
+        public static String buildUserSearchQueryById()
+        {
+            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0  AND Id = @Id";
+        }
 
+        public static String buildUserSearchQuery()
+        {
+            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0  AND USERNAME = @Username";
+        }
+
+        public static String buildUserDeletedSearchQueryById()
+        {
+            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id";
+        }
+
+        public static String buildUserForApprovalSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String userSelect = Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0 AND Status = 3";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                userSelect = userSelect + "AND (Fname LIKE '%' + @SearchParam + '%' OR Lname LIKE '%' + @SearchParam +'%' OR Mname LIKE '%' + @SearchParam +'%' OR Email LIKE '%' + @SearchParam +'%') ";
+            }
+            return userSelect;
+        }
+
+        public static String buildUserDuplicateCheckUpdateQuery()
+        {
+            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND (USERNAME = @Username OR (Fullname = @Fullname AND Fname = @Fname AND Lname = @Lname AND Mname = @Mname AND Email = @Email))";
+        }
 
     }
 

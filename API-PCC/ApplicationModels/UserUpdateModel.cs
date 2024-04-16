@@ -1,7 +1,7 @@
 ﻿namespace API_PCC.ApplicationModels
 {
-    public class HerdClassificationUpdateModel : HerdClassificationBaseModel
-    { 
+    public class UserUpdateModel : UserBaseModel
+    {
         public string UpdatedBy { get; set; }
     }
 }

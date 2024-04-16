@@ -923,6 +923,7 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasMaxLength(255)
                 .HasColumnName("RememberToken");
+            entity.Property(e => e.DeleteFlag).IsUnicode(false);
         });
 
         modelBuilder.Entity<TblFarmOwner>(entity =>

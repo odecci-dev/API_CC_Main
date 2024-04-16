@@ -12,7 +12,7 @@ using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
-    //[Authorize("ApiKey")]
+    [Authorize("ApiKey")]
     [Route("[controller]/[action]")]
     [ApiController]
     public class HerdClassificationController : ControllerBase

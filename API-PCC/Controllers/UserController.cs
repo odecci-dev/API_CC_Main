@@ -34,7 +34,7 @@ namespace API_PCC.Controllers
         {
             _context = context;
             _emailsettings = emailsettings.Value;
-            try
+           /* try
             {
                 TblMailSenderCredential tblMailSenderCredential = _context.TblMailSenderCredentials.First();
 
@@ -47,7 +47,7 @@ namespace API_PCC.Controllers
                     throw new Exception("No records found for email credentials!!");
                 }
                 throw e;
-            }
+            }*/
 
         }
         public class EmailSettings
@@ -96,167 +96,7 @@ namespace API_PCC.Controllers
             public string Password { get; set; }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<IEnumerable<UserPagedModel>>> UserForApprovalList(CommonSearchFilterModel searchFilter)
-        {
-            try
-            {
-                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildUserSearchQuery(searchFilter), null, populateSqlParameters(searchFilter));
-                var result = buildUserPagedModel(searchFilter, queryResult);
-                return Ok(result);
-            }
-
-            catch (Exception ex)
-            {
-
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        private SqlParameter[] populateSqlParameters(CommonSearchFilterModel searchFilter)
-        {
-
-            var sqlParameters = new List<SqlParameter>();
-
-            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
-            {
-                sqlParameters.Add(new SqlParameter
-                {
-                    ParameterName = "SearchParam",
-                    Value = searchFilter.searchParam ?? Convert.DBNull,
-                    SqlDbType = System.Data.SqlDbType.VarChar,
-                });
-            }
-
-            return sqlParameters.ToArray();
-        }
-
-        private List<UserPagedModel> buildUserPagedModel(CommonSearchFilterModel searchFilter, DataTable dt)
-        {
-            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
-            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
-            var items = (dynamic)null;
-
-            int totalItems = dt.Rows.Count;
-            int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
-
-
-            var userModels = convertDataRowToUserList(items);
-            List<UserResponseModel> userResponseModels = convertUserListToResponseModelList(userModels);
-
-            var result = new List<UserPagedModel>();
-            var item = new UserPagedModel();
-
-            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
-            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
-            int page_prev = pages - 1;
-
-            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
-            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
-            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
-            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
-            item.TotalPage = t_records.ToString();
-            item.PageSize = pagesize.ToString();
-            item.TotalRecord = totalItems.ToString();
-            item.items = userResponseModels;
-            result.Add(item);
-
-            return result;
-        }
-
-        private List<TblUsersModel> convertDataRowToUserList(List<DataRow> dataRowList)
-        {
-            var userList = new List<TblUsersModel>();
-
-            foreach (DataRow dataRow in dataRowList)
-            {
-                var user = DataRowToObject.ToObject<TblUsersModel>(dataRow);
-                userList.Add(user);
-            }
-
-            return userList;
-        }
-
-        private List<UserResponseModel> convertUserListToResponseModelList(List<TblUsersModel> userList)
-        {
-            var userResponseModels = new List<UserResponseModel>();
-
-            foreach (TblUsersModel user in userList)
-            {
-                var userResponseModel = new UserResponseModel()
-                {
-                    Username = user.Username,
-                    Password = user.Password,
-                    Fullname = user.Fullname,
-                    Fname = user.Fname,
-                    Lname = user.Lname,
-                    Mname = user.Mname,
-                    Email = user.Email,
-                    Gender = user.Gender,
-                    EmployeeId = user.EmployeeId,
-                    Active = user.Active,
-                    Cno = user.Cno,
-                    Address = user.Address,
-                    CenterId = user.CenterId,
-                    AgreementStatus = user.AgreementStatus
-                };
-                userResponseModels.Add(userResponseModel);
-            }
-
-            return userResponseModels;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ApproveRegistration(TblRegistrationOtpmodel data)
-        {
-            try
-            {
-                if (_context.TblRegistrationOtpmodels == null)
-                {
-                    return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
-                }
-                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 3).FirstOrDefault();
-
-                if (registOtpModels != null)
-                {
-                    if (registOtpModels.Otp == data.Otp)
-                    {
-                        registOtpModels.Status = 5;
-                        _context.Entry(registOtpModels).State = EntityState.Modified;
-
-                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
-                        _context.Entry(userModel).State = EntityState.Modified;
-                        userModel.Status = 5;
-
-                        await _context.SaveChangesAsync();
-
-                        MailSender email = new MailSender(_emailsettings);
-                        email.sendApprovalMail(data.Email);
-                        return Ok("OTP verification successful!");
-                    }
-                    else
-                    {
-                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
-                        _context.Entry(userModel).State = EntityState.Modified;
-                        userModel.Status = 4;
-                        await _context.SaveChangesAsync();
-
-                        return Problem("Incorrect OTP. Please try again!");
-                    }
-
-                }
-                else
-                {
-                    return BadRequest("Record not found on database!");
-                }
-            }
-
-            catch (Exception ex)
-            {
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
+       
         // POST: user/login
 
         [HttpPost]
@@ -315,6 +155,57 @@ namespace API_PCC.Controllers
             }
 
             return Ok(userList);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveRegistration(TblRegistrationOtpmodel data)
+        {
+            try
+            {
+                if (_context.TblRegistrationOtpmodels == null)
+                {
+                    return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
+                }
+                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 3).FirstOrDefault();
+
+                if (registOtpModels != null)
+                {
+                    if (registOtpModels.Otp == data.Otp)
+                    {
+                        registOtpModels.Status = 5;
+                        _context.Entry(registOtpModels).State = EntityState.Modified;
+
+                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
+                        _context.Entry(userModel).State = EntityState.Modified;
+                        userModel.Status = 5;
+                        await _context.SaveChangesAsync();
+
+                        MailSender email = new MailSender(_emailsettings);
+                        email.sendApprovalMail(data.Email);
+                        return Ok("OTP verification successful!");
+                    }
+                    else
+                    {
+                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
+                        _context.Entry(userModel).State = EntityState.Modified;
+                        userModel.Status = 4;
+                        await _context.SaveChangesAsync();
+
+                        return Problem("Incorrect OTP. Please try again!");
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Record not found on database!");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
         }
 
         [HttpPost]
@@ -380,7 +271,8 @@ namespace API_PCC.Controllers
                                            ,[Status]
                                            ,[Date_Created]
                                            ,[CenterId]
-                                           ,[AgreementStatus])
+                                           ,[AgreementStatus]
+                                           ,[Delete_Flag])
                                      VALUES
                                            ('" + userTbl.Username + "'" +
                                             ",'" + Cryptography.Encrypt(userTbl.Password) + "'," +
@@ -399,7 +291,8 @@ namespace API_PCC.Controllers
                                            "'6'," +
                                            "'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," +
                                            "'" + userTbl.CenterId + "'," +
-                                           "'" + userTbl.AgreementStatus + "')";
+                                           "'" + userTbl.AgreementStatus + "'," +
+                                           "'0')";
                     db.DB_WithParam(user_insert);
 
 
@@ -411,7 +304,7 @@ namespace API_PCC.Controllers
                     {
                         otp_res += chars[random.Next(chars.Length)];
                     }
-                    TblRegistrationOtpmodel items = new TblRegistrationOtpmodel();
+                    /*TblRegistrationOtpmodel items = new TblRegistrationOtpmodel();
                     items.Email = userTbl.Email;
                     items.Otp = otp_res.ToString();
 
@@ -419,7 +312,7 @@ namespace API_PCC.Controllers
                     email.sendOtpMail(items);
 
                     string OTPInsert = $@"insert into tbl_RegistrationOTPModel (email,OTP,status) values ('" + userTbl.Email + "','" + otp_res + "','4')";
-                    db.DB_WithParam(OTPInsert);
+                    db.DB_WithParam(OTPInsert);*/
 
                     Stats = "Ok";
                     Mess = "User is for Verification, OTP Already Send!";

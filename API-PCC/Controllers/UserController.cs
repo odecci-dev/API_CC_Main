@@ -34,7 +34,7 @@ namespace API_PCC.Controllers
         {
             _context = context;
             _emailsettings = emailsettings.Value;
-            try
+           /* try
             {
                 TblMailSenderCredential tblMailSenderCredential = _context.TblMailSenderCredentials.First();
 
@@ -47,7 +47,7 @@ namespace API_PCC.Controllers
                     throw new Exception("No records found for email credentials!!");
                 }
                 throw e;
-            }
+            }*/
 
         }
         public class EmailSettings
@@ -304,7 +304,7 @@ namespace API_PCC.Controllers
                     {
                         otp_res += chars[random.Next(chars.Length)];
                     }
-                    TblRegistrationOtpmodel items = new TblRegistrationOtpmodel();
+                    /*TblRegistrationOtpmodel items = new TblRegistrationOtpmodel();
                     items.Email = userTbl.Email;
                     items.Otp = otp_res.ToString();
 
@@ -312,7 +312,7 @@ namespace API_PCC.Controllers
                     email.sendOtpMail(items);
 
                     string OTPInsert = $@"insert into tbl_RegistrationOTPModel (email,OTP,status) values ('" + userTbl.Email + "','" + otp_res + "','4')";
-                    db.DB_WithParam(OTPInsert);
+                    db.DB_WithParam(OTPInsert);*/
 
                     Stats = "Ok";
                     Mess = "User is for Verification, OTP Already Send!";

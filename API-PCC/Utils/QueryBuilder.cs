@@ -9,7 +9,7 @@ namespace API_PCC.Utils
 
         public static String buildHerdSearchQuery(BuffHerdSearchFilterModel searchFilterModel)
         {
-            String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 ";
+            String herdSelect = Constants.DBQuery.HERD_SELECT + " WHERE H_BUFF_HERD.DELETE_FLAG = 0 ";
             if (searchFilterModel.searchValue != null && searchFilterModel.searchValue != "")
             {
                 herdSelect = herdSelect + "AND (HERD_CODE LIKE '%' + @SearchParam + '%' OR HERD_NAME LIKE '%' + @SearchParam +'%') ";

@@ -403,6 +403,7 @@ namespace API_PCC.Controllers
                     HerdClassification = buffHerd.HerdClassDesc,
                     CowLevel = buffHerd.HerdSize.ToString(),
                     FarmManager = buffHerd.FarmManager,
+                    HerdCode = buffHerd.HerdCode,
                     DateOfApplication = buffHerd.DateCreated.ToString("yyyy-MM-dd")
                 };
                 buffHerdResponseModels.Add(buffHerdResponseModel);

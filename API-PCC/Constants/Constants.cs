@@ -8,7 +8,7 @@
         public static readonly String BUFF_ANIMAL_SELECT = $@"SELECT BA.* FROM A_BUFF_ANIMAL AS BA ";
         public static readonly String TYPE_OWNERSHIP_SELECT = $@"SELECT * FROM A_TYPE_OWNERSHIP ";
         //public static readonly String HERD_SELECT = $@"SELECT * FROM H_BUFF_HERD ";
-        public static readonly String HERD_SELECT = $@"SELECT  H_Buff_Herd.id,       H_Buff_Herd.Herd_Name, H_Herd_Classification.Herd_Class_Desc, H_Buff_Herd.Herd_Size, H_Buff_Herd.Farm_Manager, H_Buff_Herd.Herd_Code, H_Buff_Herd.Date_Created, H_Buff_Herd.Breed_Type_Code, 
+        public static readonly String HERD_SELECT = $@"SELECT  H_Buff_Herd.id,       H_Buff_Herd.Herd_Name, H_Herd_Classification.Herd_Class_Desc, H_Herd_Classification.Herd_Class_Code, H_Buff_Herd.Herd_Size, H_Buff_Herd.Farm_Manager, H_Buff_Herd.Herd_Code, H_Buff_Herd.Date_Created, H_Buff_Herd.Breed_Type_Code, 
                          H_Buff_Herd.Farm_Affil_Code, H_Buff_Herd.Feeding_System_Code, H_Buff_Herd.Farm_Address, H_Buff_Herd.Owner, H_Buff_Herd.Status, H_Buff_Herd.Date_Updated, H_Buff_Herd.Created_By, H_Buff_Herd.Delete_Flag, 
                          H_Buff_Herd.Updated_By, H_Buff_Herd.Date_Deleted, H_Buff_Herd.Date_Restored, H_Buff_Herd.Deleted_By, H_Buff_Herd.Restored_By, H_Buff_Herd.Center, H_Buff_Herd.Organization_name, H_Buff_Herd.Photo
 FROM            H_Buff_Herd INNER JOIN

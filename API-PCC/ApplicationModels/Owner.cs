@@ -7,7 +7,7 @@
         public string Address { get; set; }
         public string TelNo { get; set; }
         public string MNo { get; set; }
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
     }
 }

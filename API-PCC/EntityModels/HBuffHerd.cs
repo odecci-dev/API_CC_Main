@@ -21,8 +21,6 @@ public partial class HBuffHerd
 
     public string HerdClassDesc { get; set; }
 
-    public string HerdClassCode { get; set; }
-
     public string FeedingSystemCode { get; set; }
 
     public string FarmManager { get; set; }

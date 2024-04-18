@@ -358,6 +358,8 @@ namespace API_PCC.Controllers
             {
                 var userResponseModel = new UserResponseModel()
                 {
+                    Id= user.Id,
+                    FilePath= user.FilePath,
                     Username = user.Username,
                     Fullname = user.Fullname,
                     Fname = user.Fname,

@@ -406,12 +406,14 @@ namespace API_PCC.Controllers
             var Dam = populateDamModel(buffAnimalEntityModel);
             var farmOwner = populateOwnerModel(buffAnimalEntityModel.HerdCode);
 
+            string Fname = farmOwner == null ? "N/A" : farmOwner.FirstName;
+            string Lname = farmOwner == null ? "N/A" : farmOwner.FirstName;
             var buffAnimalResponseModel = new BuffAnimalListResponseModel()
             {
                 BreedRegNo = Dam.DamRegistrationNumber,
                 HerdCode = buffAnimalEntityModel.HerdCode,
                 AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
-                Owner = farmOwner.FirstName + " " + farmOwner.LastName,
+                Owner = Fname + " " + Lname,
                 DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition?.ToString("yyyy-MM-dd")
             };
 
@@ -420,12 +422,20 @@ namespace API_PCC.Controllers
 
         private TblFarmOwner populateOwnerModel(string herdCode)
         {
+            //DataTable dt = db.SelectDb(QueryBuilder.buildHerdOwnerJoinQuery(herdCode)).Tables[0];
+            //if (dt.Rows.Count == 0)
+            //{
+            //    throw new Exception("Farmer Record not found!");
+            //}
+            //var farmOwnerModel = convertDataRowToFarmOwnerModel(dt.Rows[0]);
+            //return farmOwnerModel;
+            var farmOwnerModel = (dynamic)null;
             DataTable dt = db.SelectDb(QueryBuilder.buildHerdOwnerJoinQuery(herdCode)).Tables[0];
-            if (dt.Rows.Count == 0)
+            if (dt.Rows.Count != 0)
             {
-                throw new Exception("Farmer Record not found!");
+                 farmOwnerModel = convertDataRowToFarmOwnerModel(dt.Rows[0]);
             }
-            var farmOwnerModel = convertDataRowToFarmOwnerModel(dt.Rows[0]);
+    
             return farmOwnerModel;
 
         }

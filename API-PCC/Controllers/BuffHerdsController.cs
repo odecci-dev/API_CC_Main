@@ -160,7 +160,7 @@ namespace API_PCC.Controllers
                 buffHerd.UpdatedBy = registrationModel.UpdatedBy;
 
                 _context.Entry(buffHerd).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                 _context.SaveChanges();
 
                 return Ok("Update Successful!");
             }
@@ -377,6 +377,10 @@ namespace API_PCC.Controllers
             {
                 buffHerd.HerdCode = updateModel.HerdCode;
             }
+            if (updateModel.HerdClassCode != null && updateModel.HerdClassCode != "")
+            {
+                buffHerd.HerdClassCode = updateModel.HerdClassCode;
+            }
             if (updateModel.BreedTypeCode != null && updateModel.BreedTypeCode != "")
             {
                 buffHerd.BreedTypeCode = updateModel.BreedTypeCode;
@@ -441,6 +445,8 @@ namespace API_PCC.Controllers
                     HerdClassification = buffHerd.HerdClassDesc,
                     CowLevel = buffHerd.HerdSize.ToString(),
                     FarmManager = buffHerd.FarmManager,
+                    HerdCode = buffHerd.HerdCode,
+                    Photo = buffHerd.Photo,
                     DateOfApplication = buffHerd.DateCreated.ToString("yyyy-MM-dd")
                 };
                 buffHerdResponseModels.Add(buffHerdResponseModel);

@@ -32,11 +32,19 @@ namespace API_PCC.Controllers
 
         // POST: BuffHerds/search
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> search(BuffHerdSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> list(BuffHerdSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
             validateDate(searchFilter);
-            SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
+            if (searchFilter.sortBy.Field.ToLower().Equals("cowlevel"))
+            {
+                searchFilter.sortBy.Field = "HERD_SIZE";
+            }
+            else
+            {
+                SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
+            }
+
             try
             {
                 DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchQuery(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
@@ -51,18 +59,48 @@ namespace API_PCC.Controllers
 
         // GET: BuffHerds/view/5
         [HttpGet("{herdCode}")]
-        public async Task<ActionResult<HBuffHerd>> view(String herdCode)
+        public async Task<ActionResult<IEnumerable<BuffHerdListResponseModel>>> search(String herdCode)
         {
-            DataTable dt = db.SelectDb(QueryBuilder.buildHerdViewQuery(herdCode)).Tables[0];
-
-            if (dt.Rows.Count == 0)
+            try
             {
-                return Conflict("No records found!");
-            }
+                DataTable dt = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchByHerdCode(), null, populateSqlParameters(herdCode));
 
-            return Ok(DataRowToObject.ToObject<HBuffHerd>(dt.Rows[0]));
+                if (dt.Rows.Count == 0)
+                {
+                    return Conflict("No records found!");
+                }
+                var buffHerdModelList = convertDataRowListToHerdModelList(dt.AsEnumerable().ToList());
+                List<BuffHerdListResponseModel> buffHerdResponseModels = convertBuffHerdToResponseModelList(buffHerdModelList);
+
+                return Ok(buffHerdResponseModels);
+            } catch (Exception ex) {
+                return Problem(ex.GetBaseException().ToString());
+            }
         }
-       
+
+        // GET: BuffHerds/view/5
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BuffHerdListResponseModel>>> view()
+        {
+            try
+            {
+                DataTable dt = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchAll(), null, new SqlParameter[]{ });
+
+                if (dt.Rows.Count == 0)
+                {
+                    return Conflict("No records found!");
+                }
+                var buffHerdResponseModelList = convertDataRowListToHerdModelList(dt.AsEnumerable().ToList());
+                List<BuffHerdListResponseModel> buffHerdResponseModels = convertBuffHerdToResponseModelList(buffHerdResponseModelList);
+
+                return Ok(buffHerdResponseModels);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
         // GET: BuffHerds/archive
         [HttpPost]
         public async Task<ActionResult<IEnumerable<HBuffHerd>>> archive(BuffHerdSearchFilterModel searchFilter)
@@ -507,6 +545,21 @@ namespace API_PCC.Controllers
                     SqlDbType = System.Data.SqlDbType.VarChar,
                 });
             }
+
+            return sqlParameters.ToArray();
+        }
+
+        private SqlParameter[] populateSqlParameters(String herdCode)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "HerdCode",
+                Value = herdCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
 
             return sqlParameters.ToArray();
         }

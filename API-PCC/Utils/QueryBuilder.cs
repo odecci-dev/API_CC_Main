@@ -53,7 +53,7 @@ namespace API_PCC.Utils
         public static String buildHerdViewQuery(String herdCode)
         {
             String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0";
-            if (herdCode!= null && herdCode != "")
+            if (herdCode != null && herdCode != "")
             {
                 herdSelect = herdSelect + " AND (HERD_CODE LIKE '%" + herdCode + "%' OR HERD_NAME = '%" + herdCode + "%')";
             }
@@ -61,6 +61,15 @@ namespace API_PCC.Utils
 
             return herdSelect;
         }
+        public static String buildHerdSearchByHerdCode()
+        {
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CODE = @HerdCode";
+        }
+        public static String buildHerdSearchAll()
+        {
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 ";
+        }
+
         public static String buildHerdArchiveQuery()
         {
             return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 1";
@@ -133,6 +142,12 @@ namespace API_PCC.Utils
                 }
             }
 
+            return buffAnimalSelect;
+        }
+
+        public static String buildBuffAnimalSearchAll()
+        {
+            String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 ";
             return buffAnimalSelect;
         }
 

@@ -359,10 +359,6 @@ namespace API_PCC.Controllers
             {
                 buffHerd.HerdCode = updateModel.HerdCode;
             }
-            if (updateModel.HerdClassCode != null && updateModel.HerdClassCode != "")
-            {
-                buffHerd.HerdClassCode = updateModel.HerdClassCode;
-            }
             if (updateModel.BreedTypeCode != null && updateModel.BreedTypeCode != "")
             {
                 buffHerd.BreedTypeCode = updateModel.BreedTypeCode;

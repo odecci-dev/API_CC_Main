@@ -387,57 +387,45 @@ public partial class PCC_DEVContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.HerdName)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Herd_Name");
             entity.Property(e => e.HerdCode)
-                .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("Herd_Code");
             entity.Property(e => e.HerdSize).HasColumnName("Herd_Size");
             entity.Property(e => e.BreedTypeCode)
-                .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("Breed_Type_COde");
+                .HasColumnName("Breed_Type_Code");
             entity.Property(e => e.FarmAffilCode)
-                .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("Farm_Affil_Code");
             entity.Property(e => e.HerdClassDesc)
-                .IsRequired()
                 .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("Herd_Class_Desc");
             entity.Property(e => e.FeedingSystemCode)
-                .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("Feeding_System_Code");
             entity.Property(e => e.FarmManager)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Farm_Manager");
             entity.Property(e => e.FarmAddress)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Farm_Address");
             entity.Property(e => e.Owner)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Owner");
             entity.Property(e => e.Status)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Status");
             entity.Property(e => e.DateCreated)
-                .IsRequired()
                 .HasColumnType("date")
                 .HasColumnName("Date_Created");
             entity.Property(e => e.CreatedBy)
-                .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Created_By");
             entity.Property(e => e.DateUpdated)

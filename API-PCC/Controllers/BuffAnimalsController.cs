@@ -413,6 +413,7 @@ namespace API_PCC.Controllers
                 BreedRegNo = Dam.DamRegistrationNumber,
                 HerdCode = buffAnimalEntityModel.HerdCode,
                 AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
+                Photo = buffAnimalEntityModel.Photo,
                 Owner = Fname + " " + Lname,
                 DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition?.ToString("yyyy-MM-dd")
             };

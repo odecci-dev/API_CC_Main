@@ -6,6 +6,7 @@
         public string? HerdCode { get; set; }
         public string? AnimalIdNumber { get; set; }
         public string? Owner { get; set; }
+        public string? Photo { get; set; }
         public string? DateOfAcquisition { get; set; }
     }
 }

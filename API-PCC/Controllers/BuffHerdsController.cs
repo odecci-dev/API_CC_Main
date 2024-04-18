@@ -32,19 +32,22 @@ namespace API_PCC.Controllers
 
         // POST: BuffHerds/search
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> list(BuffHerdSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> search(BuffHerdSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
             validateDate(searchFilter);
-            if (searchFilter.sortBy.Field.ToLower().Equals("cowlevel"))
+            if (!searchFilter.sortBy.Field.IsNullOrEmpty())
             {
-                searchFilter.sortBy.Field = "HERD_SIZE";
-            }
-            else
-            {
-                SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
-            }
+                if (searchFilter.sortBy.Field.ToLower().Equals("cowlevel"))
+                {
+                    searchFilter.sortBy.Field = "HERD_SIZE";
+                }
+                else
+                {
+                    SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
+                }
 
+            }
             try
             {
                 DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchQuery(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
@@ -53,27 +56,6 @@ namespace API_PCC.Controllers
             }
             catch (Exception ex)
             {
-                return Problem(ex.GetBaseException().ToString());
-            }
-        }
-
-        // GET: BuffHerds/view/5
-        [HttpGet("{herdCode}")]
-        public async Task<ActionResult<IEnumerable<BuffHerdListResponseModel>>> search(String herdCode)
-        {
-            try
-            {
-                DataTable dt = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchByHerdCode(), null, populateSqlParameters(herdCode));
-
-                if (dt.Rows.Count == 0)
-                {
-                    return Conflict("No records found!");
-                }
-                var buffHerdModelList = convertDataRowListToHerdModelList(dt.AsEnumerable().ToList());
-                List<BuffHerdListResponseModel> buffHerdResponseModels = convertBuffHerdToResponseModelList(buffHerdModelList);
-
-                return Ok(buffHerdResponseModels);
-            } catch (Exception ex) {
                 return Problem(ex.GetBaseException().ToString());
             }
         }
@@ -90,8 +72,8 @@ namespace API_PCC.Controllers
                 {
                     return Conflict("No records found!");
                 }
-                var buffHerdResponseModelList = convertDataRowListToHerdModelList(dt.AsEnumerable().ToList());
-                List<BuffHerdListResponseModel> buffHerdResponseModels = convertBuffHerdToResponseModelList(buffHerdResponseModelList);
+                var buffHerdResponseModel= convertDataRowToHerdModel(dt.Rows[0]);
+                var buffHerdResponseModels = convertBuffHerdToResponseModel(buffHerdResponseModel);
 
                 return Ok(buffHerdResponseModels);
             }
@@ -453,6 +435,21 @@ namespace API_PCC.Controllers
             }
            
             return buffHerdResponseModels;
+        }
+
+        private BuffHerdListResponseModel convertBuffHerdToResponseModel(HBuffHerd buffHerd)
+        {
+            var buffHerdResponseModel = new BuffHerdListResponseModel()
+            {
+                HerdName = buffHerd.HerdName,
+                HerdClassification = buffHerd.HerdClassDesc,
+                CowLevel = buffHerd.HerdSize.ToString(),
+                FarmManager = buffHerd.FarmManager,
+                HerdCode = buffHerd.HerdCode,
+                Photo = buffHerd.Photo,
+                DateOfApplication = buffHerd.DateCreated.ToString("yyyy-MM-dd")
+            };
+            return buffHerdResponseModel;
         }
 
         private Owner populateOwner(HBuffHerd buffHerd)

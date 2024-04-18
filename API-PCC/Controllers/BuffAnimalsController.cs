@@ -34,6 +34,8 @@ namespace API_PCC.Controllers
         public async Task<ActionResult<IEnumerable<BuffAnimalPagedModel>>> list(BuffAnimalSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
+            SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
+
             try
             {
                 DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffAnimalSearch(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
@@ -50,7 +52,7 @@ namespace API_PCC.Controllers
         // GET: BuffAnimals/search/5
         // search by registrationNumber and RFID number
         [HttpGet("{referenceNumber}")]
-        public async Task<ActionResult<BuffAnimalBaseModel>> view(String referenceNumber)
+        public async Task<ActionResult<BuffAnimalBaseModel>> search(String referenceNumber)
         {
             DataTable dt = db.SelectDb(QueryBuilder.buildBuffAnimalSearchByReferenceNumber(referenceNumber)).Tables[0];
 
@@ -62,6 +64,30 @@ namespace API_PCC.Controllers
             var animalModel= convertDataRowToBuffAnimalModel(dt.Rows[0]);
 
             return Ok(animalModel);
+        }
+
+        // GET: BuffAnimals/search/5
+        // search by registrationNumber and RFID number
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BuffAnimalListResponseModel>>> view()
+        {
+            try { 
+                DataTable dt = db.SelectDb(QueryBuilder.buildBuffAnimalSearchAll()).Tables[0];
+
+                if (dt.Rows.Count == 0)
+                {
+                    return Conflict("No records found!");
+                }
+
+                var animalModelResponseList = convertDataRowListToBuffAnimalResponseModelList(dt.AsEnumerable().ToList());
+
+                return Ok(animalModelResponseList);
+            
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
         }
 
         // PUT: BuffAnimals/update/5

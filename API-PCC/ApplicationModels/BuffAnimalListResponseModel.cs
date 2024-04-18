@@ -3,6 +3,7 @@
     public class BuffAnimalListResponseModel
     {
         public string? BreedRegNo { get; set; }
+        public int? Id { get; set; }
         public string? HerdCode { get; set; }
         public string? AnimalIdNumber { get; set; }
         public string? Owner { get; set; }

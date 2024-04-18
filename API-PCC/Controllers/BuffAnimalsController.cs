@@ -414,6 +414,7 @@ namespace API_PCC.Controllers
                 HerdCode = buffAnimalEntityModel.HerdCode,
                 AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
                 Photo = buffAnimalEntityModel.Photo,
+                Id = buffAnimalEntityModel.Id,
                 Owner = Fname + " " + Lname,
                 DateOfAcquisition = buffAnimalEntityModel.DateOfAcquisition?.ToString("yyyy-MM-dd")
             };

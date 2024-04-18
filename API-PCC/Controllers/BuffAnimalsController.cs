@@ -524,6 +524,7 @@ namespace API_PCC.Controllers
             var buffAnimalEntityModel = DataRowToObject.ToObject<ABuffAnimal>(datarow);
             var buffAnimalResponseModel = new BuffAnimalBaseModel()
             {
+                Id = buffAnimalEntityModel.Id,
                 AnimalIdNumber = buffAnimalEntityModel.AnimalIdNumber,
                 AnimalName = buffAnimalEntityModel.AnimalName,
                 Photo = buffAnimalEntityModel.Photo,

@@ -63,18 +63,7 @@ namespace API_PCC.Utils
         }
         public static String buildHerdSearchByHerdCode()
         {
-<<<<<<< HEAD
             return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CODE = @HerdCode";
-=======
-            String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0";
-            if (herdCode!= null && herdCode != "")
-            {
-                herdSelect = herdSelect + " AND (HERD_CODE LIKE '%" + herdCode + "%' OR HERD_NAME = '%" + herdCode + "%')";
-            }
-
-
-            return herdSelect;
->>>>>>> 209896318e9465d81feb778de5ddcc2aebce12c7
         }
         public static String buildHerdSearchAll()
         {

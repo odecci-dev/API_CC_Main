@@ -32,7 +32,7 @@ namespace API_PCC.Controllers
 
         // POST: BuffHerds/search
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> search(BuffHerdSearchFilterModel searchFilter)
+        public async Task<ActionResult<IEnumerable<HerdPagedModel>>> list(BuffHerdSearchFilterModel searchFilter)
         {
             sanitizeInput(searchFilter);
             validateDate(searchFilter);
@@ -61,26 +61,17 @@ namespace API_PCC.Controllers
         }
 
         // GET: BuffHerds/view/5
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<BuffHerdListResponseModel>>> view()
+        [HttpGet("{herdCode}")]
+        public async Task<ActionResult<HBuffHerd>> view(String herdCode)
         {
-            try
-            {
-                DataTable dt = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchAll(), null, new SqlParameter[]{ });
+            DataTable dt = db.SelectDb(QueryBuilder.buildHerdViewQuery(herdCode)).Tables[0];
 
-                if (dt.Rows.Count == 0)
-                {
-                    return Conflict("No records found!");
-                }
-                var buffHerdResponseModel= convertDataRowToHerdModel(dt.Rows[0]);
-                var buffHerdResponseModels = convertBuffHerdToResponseModel(buffHerdResponseModel);
-
-                return Ok(buffHerdResponseModels);
-            }
-            catch (Exception ex)
+            if (dt.Rows.Count == 0)
             {
-                return Problem(ex.GetBaseException().ToString());
+                return Conflict("No records found!");
             }
+
+            return Ok(DataRowToObject.ToObject<HBuffHerd>(dt.Rows[0]));
         }
 
         // GET: BuffHerds/archive
@@ -442,6 +433,7 @@ namespace API_PCC.Controllers
                 CowLevel = buffHerd.HerdSize.ToString(),
                 FarmManager = buffHerd.FarmManager,
                 HerdCode = buffHerd.HerdCode,
+                
                 Photo = buffHerd.Photo,
                 DateOfApplication = buffHerd.DateCreated.ToString("yyyy-MM-dd")
             };

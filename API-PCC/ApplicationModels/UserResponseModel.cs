@@ -14,6 +14,8 @@
         public string Cno { get; set; }
         public string Address { get; set; }
         public int? CenterId { get; set; }
+        public int? Id { get; set; }
+        public string? FilePath { get; set; }
         public bool? AgreementStatus { get; set; }
     }
 }

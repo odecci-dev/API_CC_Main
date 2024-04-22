@@ -50,15 +50,9 @@ namespace API_PCC.Utils
         {
             return "SELECT FA.* FROM H_BUFF_HERD BH INNER JOIN TBL_FARMOWNER FA ON BH.OWNER = FA.ID where BH.HERD_CODE = '" + herdCode + "'";
         }
-        public static String buildHerdViewQuery(String herdCode)
+        public static String buildHerdViewQuery()
         {
-            String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0";
-            if (herdCode != null && herdCode != "")
-            {
-                herdSelect = herdSelect + " AND (HERD_CODE LIKE '%" + herdCode + "%' OR HERD_NAME = '%" + herdCode + "%')";
-            }
-
-
+            String herdSelect = Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND HERD_CODE = @HerdCode";
             return herdSelect;
         }
         public static String buildHerdSearchByHerdCode()
@@ -305,7 +299,7 @@ namespace API_PCC.Utils
 
         public static String buildHerdClassificationSearchQueryByHerdClassDesc()
         {
-            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassDesc";
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_DESC = @HerdClassDesc";
             return herdClassificationSelect;
         }
 

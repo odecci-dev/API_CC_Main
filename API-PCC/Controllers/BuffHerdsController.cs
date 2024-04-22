@@ -66,14 +66,14 @@ namespace API_PCC.Controllers
         [HttpGet("{herdCode}")]
         public async Task<ActionResult<BuffHerdViewResponseModel>> view(String herdCode)
         {
-            DataTable dt = db.SelectDb(QueryBuilder.buildHerdViewQuery(herdCode)).Tables[0];
+            DataTable dt = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdViewQuery(), null, populateSqlParameters(herdCode));
 
             if (dt.Rows.Count == 0)
             {
                 return Conflict("No records found!");
             }
-            var buffHerdList = convertDataRowListToHerdModelList(dt.AsEnumerable().ToList());
-            var viewResponseModel = populateViewResponseModel(buffHerdList);
+            var buffHerdModel = convertDataRowToHerdModel(dt.Rows[0]);
+            var viewResponseModel = populateViewResponseModel(buffHerdModel);
 
             
             return Ok(viewResponseModel);
@@ -707,43 +707,38 @@ namespace API_PCC.Controllers
             searchFilter.sortBy.Sort = StringSanitizer.sanitizeString(searchFilter.sortBy.Sort);
         }
 
-        private List<BuffHerdViewResponseModel> populateViewResponseModel(List<HBuffHerd> buffHerdList)
+        private BuffHerdViewResponseModel populateViewResponseModel(HBuffHerd buffHerd)
         {
-            List<BuffHerdViewResponseModel> viewResponseModelList = new List<BuffHerdViewResponseModel> ();
-            foreach (HBuffHerd buffHerd in buffHerdList)
+            var herdClassification = populateHerdClassification(buffHerd.HerdClassDesc);
+            var viewResponseModel = new BuffHerdViewResponseModel()
             {
-                var herdClassification = populateHerdClassification(buffHerd.HerdClassDesc);
-                var viewResponseModel = new BuffHerdViewResponseModel()
-                {
-                    id = buffHerd.Id,
-                    HerdName = buffHerd.HerdName,
-                    HerdClassDesc = herdClassification.HerdClassDesc,
-                    HerdClassCode = herdClassification.HerdClassCode,
-                    HerdSize = buffHerd.HerdSize,
-                    FarmManager = buffHerd.FarmManager,
-                    HerdCode = buffHerd.HerdCode,
-                    BreedTypeCode = buffHerd.BreedTypeCode,
-                    FarmAffilCode = buffHerd.FarmAffilCode,
-                    FeedingSystemCode = buffHerd.FeedingSystemCode,
-                    FarmAddress = buffHerd.FarmAddress,
-                    Owner = populateOwner(buffHerd.Owner),
-                    Status = buffHerd.Status,
-                    OrganizationName = buffHerd.OrganizationName,
-                    Center = buffHerd.Center,
-                    Photo = buffHerd.Photo,
-                    DateCreated = buffHerd.DateCreated,
-                    CreatedBy = buffHerd.CreatedBy,
-                    DeleteFlag = buffHerd.DeleteFlag,
-                    DateUpdated = buffHerd.DateUpdated,
-                    UpdatedBy = buffHerd.UpdatedBy,
-                    DateDeleted = buffHerd.DateDeleted,
-                    DeletedBy = buffHerd.DeletedBy,
-                    DateRestored = buffHerd.DateRestored,
-                    RestoredBy = buffHerd.RestoredBy
-                };
-                viewResponseModelList.Add(viewResponseModel);
-            }
-            return viewResponseModelList;
+                id = buffHerd.Id,
+                HerdName = buffHerd.HerdName,
+                HerdClassDesc = herdClassification.HerdClassDesc,
+                HerdClassCode = herdClassification.HerdClassCode,
+                HerdSize = buffHerd.HerdSize,
+                FarmManager = buffHerd.FarmManager,
+                HerdCode = buffHerd.HerdCode,
+                BreedTypeCode = buffHerd.BreedTypeCode,
+                FarmAffilCode = buffHerd.FarmAffilCode,
+                FeedingSystemCode = buffHerd.FeedingSystemCode,
+                FarmAddress = buffHerd.FarmAddress,
+                Owner = populateOwner(buffHerd.Owner),
+                Status = buffHerd.Status,
+                OrganizationName = buffHerd.OrganizationName,
+                Center = buffHerd.Center,
+                Photo = buffHerd.Photo,
+                DateCreated = buffHerd.DateCreated,
+                CreatedBy = buffHerd.CreatedBy,
+                DeleteFlag = buffHerd.DeleteFlag,
+                DateUpdated = buffHerd.DateUpdated,
+                UpdatedBy = buffHerd.UpdatedBy,
+                DateDeleted = buffHerd.DateDeleted,
+                DeletedBy = buffHerd.DeletedBy,
+                DateRestored = buffHerd.DateRestored,
+                RestoredBy = buffHerd.RestoredBy
+            };
+            return viewResponseModel;
         }
 
         private void validateDate(BuffHerdSearchFilterModel searchFilter)

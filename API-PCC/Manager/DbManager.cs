@@ -69,24 +69,11 @@ namespace API_PCC.Manager
                 SQLConnOpen();
                 cmd.CommandTimeout = 0;
                 cmd.CommandText = strSql;
-
+                cmd.Parameters.Clear();
 
                 foreach (SqlParameter sqlParameterInput in sqlParams)
                 {
-                    bool exists = false;
-                    foreach (SqlParameter sqlParameterExisting in cmd.Parameters)
-                    {
-                        if (sqlParameterExisting.ParameterName.Equals(sqlParameterInput.ParameterName))
-                        {
-                            exists = true;
-                            break;
-                        }
-                    }
-                    if (!exists)
-                    {
-                        cmd.Parameters.Add(sqlParameterInput);
-                    }
-
+                    cmd.Parameters.Add(sqlParameterInput);
                 }
 
                 da.SelectCommand = cmd;

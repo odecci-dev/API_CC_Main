@@ -35,12 +35,12 @@ namespace API_PCC.Utils
 
             if (searchFilterModel.dateFrom != null && searchFilterModel.dateFrom != "")
             {
-                herdSelect = herdSelect + "H_BUFF_HERD.Date_Created >= @DateFrom ";
+                herdSelect = herdSelect + "AND H_BUFF_HERD.Date_Created >= @DateFrom ";
             }
 
             if (searchFilterModel.dateTo != null && searchFilterModel.dateTo != "")
             {
-                herdSelect = herdSelect + "H_BUFF_HERD.Date_Created >= @DateFrom ";
+                herdSelect = herdSelect + "AND H_BUFF_HERD.Date_Created >= @DateFrom ";
             }
 
             return herdSelect;
@@ -74,22 +74,22 @@ namespace API_PCC.Utils
         {
             return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 1";
         }
-        public static String buildHerdSelectForRestoreQuery(int id)
+        public static String buildHerdSelectForRestoreQuery()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 1 AND H_Buff_Herd.id = " + id;
+            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 1 AND id = @Id";
         }
-        public static String buildHerdCheckDuplicateQuery(String herdName, String herdCode)
+        public static String buildHerdDuplicateCheckSaveQuery()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND (HERD_NAME = '" + herdName + "' AND HERD_CODE = '" + herdCode + "')";
+            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_NAME = @HerdName AND HERD_CODE = @HerdCode";
         }
 
-        public static String buildHerdSelectQueryById(int id)
+        public static String buildHerdSelectQueryById()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND H_Buff_Herd.id = " + id;
+            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND H_Buff_Herd.id = @Id";
         }
-        public static String buildHerdSelectDuplicateQueryByIdHerdNameHerdCode(int id, String herdName, String herdCode)
+        public static String buildHerdSelectDuplicateQueryByIdHerdNameHerdCode()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND NOT H_Buff_Herd.id = " + id + "  AND HERD_NAME = '" + herdName + "' AND HERD_CODE = '" + herdCode + "'";
+            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND NOT H_Buff_Herd.id = @Id  AND HERD_NAME = @HerdName AND HERD_CODE = @HerdCode";
         }
 
         public static String buildHerdSelectQueryByHerdClassDesc()
@@ -97,13 +97,13 @@ namespace API_PCC.Utils
             return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND HERD_CLASS_DESC = @HerdClassDesc";
         }
 
-        public static String buildFarmOwnerSearchQueryByFirstNameAndLastName(String firstName, String lastName)
+        public static String buildFarmOwnerSearchQueryByFirstNameAndLastName()
         {
-            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = '" + firstName + "' AND LastName = '" + lastName + "'";
+            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = @FirstName AND LastName = @LastName";
         }
-        public static String buildFarmOwnerSearchQueryById(int id)
+        public static String buildFarmOwnerSearchQueryById()
         {
-            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE id = " + id;
+            return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE id = @Id";
         }
 
         public static String buildBuffAnimalSearch(BuffAnimalSearchFilterModel searchFilterModel)
@@ -300,6 +300,12 @@ namespace API_PCC.Utils
         public static String buildHerdClassificationSearchQueryByHerdClassCode()
         {
             String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassCode";
+            return herdClassificationSelect;
+        }
+
+        public static String buildHerdClassificationSearchQueryByHerdClassDesc()
+        {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassDesc";
             return herdClassificationSelect;
         }
 

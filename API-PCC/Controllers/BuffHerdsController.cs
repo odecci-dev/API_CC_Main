@@ -464,7 +464,15 @@ namespace API_PCC.Controllers
 
             if (queryResult.Rows.Count == 0)
             {
-                throw new Exception("Owner Record Not Found!");
+                return new Owner()
+                {
+                    FirstName = string.Empty,
+                    LastName = string.Empty,
+                    Address = string.Empty,
+                    Email = string.Empty,
+                    MNo = string.Empty,
+                    TelNo = string.Empty
+                };
             }
             var farmOwnerEntity = convertDataRowToFarmOwnerEntity(queryResult.Rows[0]);
 
@@ -486,7 +494,14 @@ namespace API_PCC.Controllers
             DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryByHerdClassDesc(), null, populateSqlParametersHerdClassDesc(herdClassDesc));
             if (queryResult.Rows.Count == 0)
             {
-                throw new Exception("Owner Record Not Found!");
+                return new HHerdClassification()
+                {
+                    HerdClassCode = string.Empty,
+                    HerdClassDesc = string.Empty,
+                    Status = new int(),
+                    LevelFrom = string.Empty,
+                    LevelTo = string.Empty,
+                };
             }
             var herdClassificationEntity = convertDataRowToHerdClassification(queryResult.Rows[0]);
 

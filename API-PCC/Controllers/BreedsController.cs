@@ -382,7 +382,7 @@ namespace API_PCC.Controllers
             {
                 var breedResponseModel = new BreedResponseModel()
                 {
-                    breedCode = breed.BreedCode,
+                    breedCode = breed.Id.ToString(),
                     breedDesc = breed.BreedDesc
                 };
                 breedResponseModels.Add(breedResponseModel);

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using API_PCC.EntityModels;
 using API_PCC.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.Extensions.Hosting;
 
 namespace API_PCC.Data;
 
@@ -58,11 +60,40 @@ public partial class PCC_DEVContext : DbContext
     public virtual DbSet<TblFarmOwner> TblFarmOwners { get; set; }
 
     public virtual DbSet<SireModel> tblSireModels { get; set; }
-
     public virtual DbSet<DamModel> tblDamModels { get; set; }
+    public virtual DbSet<TblUserTypeModel> tblUserTypeModels { get; set; }
 
+    public virtual DbSet<BuffHerdJoinTable> HerdJoinTables { get; set; }
+
+    public virtual DbSet<TblBLoodCalculator> bloodCalculators { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<HBuffHerd>()
+            .HasMany(e => e.buffaloType)
+            .WithMany(e => e.buffHerd)
+            .UsingEntity<BuffHerdJoinTable>();
+
+        modelBuilder.Entity<HBuffHerd>()
+            .HasMany(e => e.feedingSystem)
+            .WithMany(e => e.buffHerd)
+            .UsingEntity<BuffHerdJoinTable>();
+
+        modelBuilder.Entity<BuffHerdJoinTable>(entity =>
+        {
+            entity.ToTable("tbl_Join_BuffHerd");
+
+            entity.HasKey(e => e.BuffHerdJoinTableId).HasName("PK_tbl_Join_BuffHerd");
+
+            entity.Property(e => e.BuffHerdJoinTableId)
+                  .HasColumnName("Join_BuffHerd_Id");
+            entity.Property(e => e.BuffaloTypeId)
+                  .HasColumnName("Buffalo_Type_Id");
+            entity.Property(e => e.BuffHerdId)
+                  .HasColumnName("Buff_Herd_Id");
+            entity.Property(e => e.FeedingSystemId)
+                 .HasColumnName("Feeding_System_Id");
+        });
+
         modelBuilder.Entity<ABirthType>(entity =>
         {
             entity.ToTable("A_Birth_Type");
@@ -108,6 +139,7 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.RestoredBy)
                 .IsUnicode(false)
                 .HasColumnName("Restored_By");
+
         });
 
         modelBuilder.Entity<ABloodComp>(entity =>
@@ -155,6 +187,12 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DateRestored)
                 .HasColumnType("date")
                 .HasColumnName("Date_Restored");
+            entity.Property(e => e.From)
+             .IsUnicode(false)
+             .HasColumnName("From");
+            entity.Property(e => e.To)
+                .IsUnicode(false)
+                .HasColumnName("To");
         });
 
         modelBuilder.Entity<ABreed>(entity =>
@@ -324,7 +362,7 @@ public partial class PCC_DEVContext : DbContext
             entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
-                .HasColumnName("Deleted_By"); 
+                .HasColumnName("Deleted_By");
             entity.Property(e => e.DateDeleted)
                 .HasColumnType("date")
                 .HasColumnName("Date_Deleted");
@@ -394,10 +432,6 @@ public partial class PCC_DEVContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("Herd_Code");
             entity.Property(e => e.HerdSize).HasColumnName("Herd_Size");
-            entity.Property(e => e.BreedTypeCode)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("Breed_Type_Code");
             entity.Property(e => e.FarmAffilCode)
                 .HasMaxLength(10)
                 .IsUnicode(false)
@@ -406,10 +440,6 @@ public partial class PCC_DEVContext : DbContext
                 .HasMaxLength(3)
                 .IsUnicode(false)
                 .HasColumnName("Herd_Class_Desc");
-            entity.Property(e => e.FeedingSystemCode)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("Feeding_System_Code");
             entity.Property(e => e.FarmManager)
                 .IsUnicode(false)
                 .HasColumnName("Farm_Manager");
@@ -462,8 +492,9 @@ public partial class PCC_DEVContext : DbContext
         modelBuilder.Entity<HBuffaloType>(entity =>
         {
             entity.ToTable("H_Buffalo_Type");
+            entity.HasKey(e => e.Id).HasName("PK_H_Buffalo_Type");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("Id");
             entity.Property(e => e.BreedTypeCode)
                 .IsRequired()
                 .HasMaxLength(10)
@@ -564,12 +595,12 @@ public partial class PCC_DEVContext : DbContext
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("Feeding_System_Code");
+                .HasColumnName("FeedingSystemCode");
             entity.Property(e => e.FeedingSystemDesc)
                 .IsRequired()
                 .HasMaxLength(15)
                 .IsUnicode(false)
-                .HasColumnName("Feeding_System_Desc");
+                .HasColumnName("FeedingSystemDesc");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .IsUnicode(false)
@@ -603,9 +634,9 @@ public partial class PCC_DEVContext : DbContext
                 .HasColumnName("Date_Restored");
         });
 
-            modelBuilder.Entity<HHerdClassification>(entity =>
-            {
-                entity.ToTable("H_Herd_Classification");
+        modelBuilder.Entity<HHerdClassification>(entity =>
+        {
+            entity.ToTable("H_Herd_Classification");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.HerdClassCode)
@@ -629,9 +660,9 @@ public partial class PCC_DEVContext : DbContext
                 .IsRequired()
                 .IsUnicode(false)
                 .HasColumnName("Updated_By");
-                entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DateUpdated)
+            .HasColumnType("date")
+            .HasColumnName("Date_Updated");
             entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
             entity.Property(e => e.DeletedBy)
                 .IsUnicode(false)
@@ -936,7 +967,7 @@ public partial class PCC_DEVContext : DbContext
                    .IsUnicode(false)
                    .IsRequired()
                    .HasColumnName("TelephoneNumber");
-            entity.Property(e => e. MobileNumber)
+            entity.Property(e => e.MobileNumber)
                    .IsUnicode(false)
                    .IsRequired()
                    .HasColumnName("MobileNumber");
@@ -1021,6 +1052,59 @@ public partial class PCC_DEVContext : DbContext
                    .HasColumnName("Region");
         });
 
+        modelBuilder.Entity<TblUserTypeModel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_UserTypeModel");
+
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.ToTable("tbl_UserTypeModel");
+            entity.Property(e => e.code)
+                   .IsUnicode(false)
+                   .HasColumnName("Code");
+            entity.Property(e => e.name)
+                   .IsUnicode(false)
+                   .IsRequired()
+                   .HasColumnName("Name");
+            entity.Property(e => e.CreatedBy)
+                .IsUnicode(false)
+                .HasColumnName("Created_By");
+            entity.Property(e => e.DateCreated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Created");
+            entity.Property(e => e.UpdatedBy)
+                .IsUnicode(false)
+                .HasColumnName("Updated_By");
+            entity.Property(e => e.DateUpdated)
+                .HasColumnType("date")
+                .HasColumnName("Date_Updated");
+            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+            entity.Property(e => e.DeletedBy)
+                .IsUnicode(false)
+                .HasColumnName("Deleted_By");
+            entity.Property(e => e.DateDeleted)
+                .HasColumnType("date")
+                .HasColumnName("Date_Deleted");
+            entity.Property(e => e.RestoredBy)
+                .IsUnicode(false)
+                .HasColumnName("Restored_By");
+            entity.Property(e => e.DateRestored)
+                .HasColumnType("date")
+                .HasColumnName("Date_Restored");
+        });
+        modelBuilder.Entity<TblBLoodCalculator>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_tbl_bloodCalculator");
+            entity.ToTable("tbl_BloodCalculator");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.Name)
+                .HasColumnName("Name");
+            entity.Property(e => e.Criteria)
+                .HasColumnName("Criteria");
+            entity.Property(e => e.Formula)
+                .HasColumnName("Formula");
+        });
         OnModelCreatingGeneratedProcedures(modelBuilder);
         OnModelCreatingPartial(modelBuilder);
     }

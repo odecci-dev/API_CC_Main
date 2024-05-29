@@ -2,6 +2,7 @@
 {
     public class BuffHerdListResponseModel
     {
+        public string? Id { get; set; }
         public string? HerdName { get; set; }
         public string? HerdClassification { get; set; }
         public string? CowLevel { get; set; }

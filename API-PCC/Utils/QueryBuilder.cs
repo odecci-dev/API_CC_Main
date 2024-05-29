@@ -57,11 +57,11 @@ namespace API_PCC.Utils
         }
         public static String buildHerdSearchByHerdCode()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CODE = @HerdCode";
+            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND HERD_CODE = @HerdCode";
         }
         public static String buildHerdSearchAll()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 ";
+            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 ";
         }
 
         public static String buildHerdArchiveQuery()
@@ -74,7 +74,7 @@ namespace API_PCC.Utils
         }
         public static String buildHerdDuplicateCheckSaveQuery()
         {
-            return Constants.DBQuery.HERD_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_NAME = @HerdName AND HERD_CODE = @HerdCode";
+            return Constants.DBQuery.HERD_SELECT + "WHERE H_Buff_Herd.DELETE_FLAG = 0 AND HERD_NAME = @HerdName AND HERD_CODE = @HerdCode";
         }
 
         public static String buildHerdSelectQueryById()
@@ -95,6 +95,18 @@ namespace API_PCC.Utils
         {
             return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = @FirstName AND LastName = @LastName";
         }
+        public static String buildFarmOwnerSearchQueryByFirstNameOrLastName(FarmOwnerSearchFilterModel searchFilterModel)
+        {
+            String BuffaloType = Constants.DBQuery.FARM_OWNER_SELECT;
+            //return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE FirstName = @SearchParam OR LastName = @SearchParam";
+
+            //String herdSelect = Constants.DBQuery.BUFFALO_TYPE_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                BuffaloType = BuffaloType + "WHERE (FirstName LIKE '%' + @SearchParam + '%' OR LastName LIKE '%' + @SearchParam +'%') ";
+            }
+            return BuffaloType;
+        }
         public static String buildFarmOwnerSearchQueryById()
         {
             return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE id = @Id";
@@ -105,7 +117,7 @@ namespace API_PCC.Utils
             String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchValue != null && searchFilterModel.searchValue != "")
             {
-                buffAnimalSelect = buffAnimalSelect + "AND (ANIMAL_ID_NUMBER LIKE '%' + @SearchParam + '%' OR ANIMAL_NAME LIKE '%' + @SearchParam + '%') ";
+                buffAnimalSelect = buffAnimalSelect + "AND (BreedRegistryNumber LIKE '%' + @SearchParam + '%' OR ANIMAL_NAME LIKE '%' + @SearchParam + '%') ";
             }
 
             if (searchFilterModel.sex != null && searchFilterModel.sex != "")
@@ -147,7 +159,7 @@ namespace API_PCC.Utils
 
         public static String buildBuffAnimalSearchByReferenceNumber(String referencenUmber)
         {
-            String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "INNER JOIN TBL_DAMMODEL AS DM ON BA.Dam_ID = DM.ID WHERE DELETE_FLAG = 0 AND ( DM.DAM_REGISTRATION_NUMBER = '" + referencenUmber + "' OR BA.RFID_NUMBER = '" + referencenUmber + "')";
+            String buffAnimalSelect = Constants.DBQuery.BUFF_ANIMAL_SELECT + "INNER JOIN TBL_DAMMODEL AS DM ON BA.Dam_ID = DM.ID WHERE DELETE_FLAG = 0 AND ( BA.Animal_ID_Number = '" + referencenUmber + "' OR BA.RFID_NUMBER = '" + referencenUmber + "')";
             return buffAnimalSelect;
         }
 
@@ -299,10 +311,14 @@ namespace API_PCC.Utils
 
         public static String buildHerdClassificationSearchQueryByHerdClassDesc()
         {
+            String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassDesc";
+            return herdClassificationSelect;
+        }
+        public static String buildHerdClassificationSearchQueryByHerdClassDesc2()
+        {
             String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_DESC = @HerdClassDesc";
             return herdClassificationSelect;
         }
-
         public static String buildHerdClassificationDuplicateCheckSaveQuery()
         {
             String herdClassificationSelect = Constants.DBQuery.HERD_CLASSIFICATION_SELECT + "WHERE DELETE_FLAG = 0 AND HERD_CLASS_CODE = @HerdClassCode AND HERD_CLASS_DESC = @HerdClassDesc";
@@ -362,9 +378,13 @@ namespace API_PCC.Utils
             String herdSelect = Constants.DBQuery.FEEDING_SYSTEM_SELECT + "WHERE DELETE_FLAG = 0 ";
             if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
             {
-                herdSelect = herdSelect + "AND (Feeding_System_Code LIKE '%' + @SearchParam + '%' OR Feeding_System_Desc LIKE '%' + @SearchParam +'%') ";
+                herdSelect = herdSelect + "AND (FeedingSystemCode LIKE '%' + @SearchParam + '%' OR FeedingSystemDesc LIKE '%' + @SearchParam +'%') ";
             }
             return herdSelect;
+        }
+        public static String buildFeedingSystemSearchByFeedingSystemCode()
+        {
+            return Constants.DBQuery.FEEDING_SYSTEM_SELECT + "WHERE DELETE_FLAG = 0  AND FeedingSystemCode = @FeedCode";
         }
 
         public static String buildBuffaloTypeSearchQuery(CommonSearchFilterModel searchFilterModel)
@@ -409,43 +429,102 @@ namespace API_PCC.Utils
 
         public static String buildUserSearchQuery(CommonSearchFilterModel searchFilterModel)
         {
-            String userSelect = Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0 ";
+            String userSelect = Constants.DBQuery.USERS_SELECT + " WHERE tbl_UsersModel.DELETE_FLAG = 0 ";
             if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
             {
-                userSelect = userSelect + "AND (Fname LIKE '%' + @SearchParam + '%' OR Lname LIKE '%' + @SearchParam +'%' OR Mname LIKE '%' + @SearchParam +'%' OR Email LIKE '%' + @SearchParam +'%') ";
+                userSelect = userSelect + "AND (tbl_UsersModel.Fname LIKE '%' + @SearchParam + '%' OR tbl_UsersModel.Lname LIKE '%' + @SearchParam +'%' OR tbl_UsersModel.Mname LIKE '%' + @SearchParam +'%' OR tbl_UsersModel.Email LIKE '%' + @SearchParam +'%') ";
             }
             return userSelect;
         }
         public static String buildUserSearchQueryById()
         {
-            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0  AND Id = @Id";
+            return Constants.DBQuery.USERS_SELECT + "WHERE tbl_UsersModel.DELETE_FLAG = 0  AND tbl_UsersModel.Id = @Id";
         }
 
         public static String buildUserSearchQuery()
         {
-            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0  AND USERNAME = @Username";
+            return Constants.DBQuery.USERS_SELECT + " WHERE tbl_UsersModel.DELETE_FLAG = 0  AND tbl_UsersModel.USERNAME = @Username";
         }
 
         public static String buildUserDeletedSearchQueryById()
         {
-            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id";
+            return Constants.DBQuery.USERS_SELECT + " WHERE tbl_UsersModel.DELETE_FLAG = 1 AND tbl_UsersModel.ID = @Id";
         }
 
         public static String buildUserForApprovalSearchQuery(CommonSearchFilterModel searchFilterModel)
         {
-            String userSelect = Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0 AND Status = 3";
+            String userSelect = Constants.DBQuery.USERS_SELECT + " WHERE tbl_UsersModel.DELETE_FLAG = 0 AND tbl_UsersModel.Status = 3";
             if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
             {
-                userSelect = userSelect + "AND (Fname LIKE '%' + @SearchParam + '%' OR Lname LIKE '%' + @SearchParam +'%' OR Mname LIKE '%' + @SearchParam +'%' OR Email LIKE '%' + @SearchParam +'%') ";
+                userSelect = userSelect + " AND (tbl_UsersModel.Fname LIKE '%' + @SearchParam + '%' OR tbl_UsersModel.Lname LIKE '%' + @SearchParam +'%' OR tbl_UsersModel.Mname LIKE '%' + @SearchParam +'%' OR tbl_UsersModel.Email LIKE '%' + @SearchParam +'%') ";
             }
             return userSelect;
         }
 
         public static String buildUserDuplicateCheckUpdateQuery()
         {
-            return Constants.DBQuery.USERS_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND (USERNAME = @Username OR (Fullname = @Fullname AND Fname = @Fname AND Lname = @Lname AND Mname = @Mname AND Email = @Email))";
+            return Constants.DBQuery.USERS_SELECT + "WHERE tbl_UsersModel.DELETE_FLAG = 0 AND ID <> @Id AND (tbl_UsersModel.USERNAME = @Username OR (Fullname = @Fullname AND tbl_UsersModel.Fname = @Fname AND tbl_UsersModel.Lname = @Lname AND tbl_UsersModel.Mname = @Mname AND tbl_UsersModel.Email = @Email))";
+        }
+        public static String buildBirthTypeSearchQueryByBirthTypeCodeOrBirthTypeDesc(BirthTypesSearchFilterModel searchFilter)
+        {
+            String BirthType = Constants.DBQuery.BIRTH_TYPE_SELECT + " WHERE DELETE_FLAG = 0 ";
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                BirthType = BirthType + "AND (BIRTH_TYPE_CODE = @SearchParam OR BIRTH_TYPE_DESC = @SearchParam)";
+            }
+            //return Constants.DBQuery.BIRTH_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND (BIRTH_TYPE_CODE = @SearchParam OR BIRTH_TYPE_DESC = @SearchParam)";
+            return BirthType;
+        }
+        public static String animalsearch(animalsearchfilter searchFilter)
+        {
+            String BirthType = Constants.DBQuery.BIRTH_TYPE_SELECT + " WHERE DELETE_FLAG = 0 ";
+            if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+            {
+                BirthType = BirthType + "AND (BIRTH_TYPE_CODE = @SearchParam OR BIRTH_TYPE_DESC = @SearchParam)";
+            }
+            //return Constants.DBQuery.BIRTH_TYPE_SELECT + "WHERE DELETE_FLAG = 0 AND (BIRTH_TYPE_CODE = @SearchParam OR BIRTH_TYPE_DESC = @SearchParam)";
+            return BirthType;
+        }
+        public static String buildUserTypeSearchQuery(CommonSearchFilterModel searchFilterModel)
+        {
+            String userTypeSelect = Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 0 ";
+            if (searchFilterModel.searchParam != null && searchFilterModel.searchParam != "")
+            {
+                userTypeSelect = userTypeSelect + "AND (CODE = @SearchParam OR NAME = @SearchParam) ";
+            }
+            return userTypeSelect;
         }
 
-    }
+        public static String buildUserTypeQueryByCodeOrName()
+        {
+            return Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 0 AND (CODE = @SearchParam OR NAME = @SearchParam)";
+        }
 
+        public static String buildUserTypeQueryByName()
+        {
+            return Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 0 AND NAME = @Name";
+        }
+
+        public static String buildUserTypeQueryById()
+        {
+            return Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 0 AND ID = @Id";
+        }
+
+        public static String buildUserTypeDuplicateCheckUpdateQuery()
+        {
+            return Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 0 AND ID <> @Id AND (Code = @Code AND Name = @Name)";
+        }
+
+        public static String buildUserTypeDuplicateCheckSaveQuery()
+        {
+            return Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 0 AND (Code = @Code AND Name = @Name)";
+        }
+
+        public static String buildUserTypeDeletedSearchQueryById()
+        {
+            return Constants.DBQuery.USER_TYPE_TABLE_SELECT + "WHERE DELETE_FLAG = 1 AND ID = @Id";
+        }
+    }
 }
+
+

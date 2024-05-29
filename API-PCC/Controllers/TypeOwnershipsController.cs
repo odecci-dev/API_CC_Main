@@ -22,8 +22,7 @@ namespace API_PCC.Controllers
 
         public class TypeOwnershipSearchFilter
         {
-            public string? typeOwnCode { get; set; }
-            public string? typeOwnDesc { get; set; }
+            public string searchParam { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
         }
@@ -48,14 +47,14 @@ namespace API_PCC.Controllers
             typeOwnershipList = typeOwnershipList.Where(typeOwnership => !typeOwnership.DeleteFlag);
             try
             {
-                if (searchFilter.typeOwnCode != null && searchFilter.typeOwnCode != "")
+                if (searchFilter.searchParam != null && searchFilter.searchParam != "")
                 {
-                    typeOwnershipList = typeOwnershipList.Where(typeOwnership => typeOwnership.TypeOwnCode.Contains(searchFilter.typeOwnCode));
+                    typeOwnershipList = typeOwnershipList.Where(typeOwnership => typeOwnership.TypeOwnCode.Contains(searchFilter.searchParam));
                 }
 
-                if (searchFilter.typeOwnDesc != null && searchFilter.typeOwnDesc != "")
+                if (searchFilter.searchParam != null && searchFilter.searchParam != "")
                 {
-                    typeOwnershipList = typeOwnershipList.Where(typeOwnership => typeOwnership.TypeOwnDesc.Contains(searchFilter.typeOwnDesc));
+                    typeOwnershipList = typeOwnershipList.Where(typeOwnership => typeOwnership.TypeOwnDesc.Contains(searchFilter.searchParam));
                 }
 
                 totalItems = typeOwnershipList.ToList().Count();

@@ -1,10 +1,14 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
+using API_PCC.Manager;
 using API_PCC.Models;
+using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Linq;
 
 namespace API_PCC.Controllers
 {
@@ -13,6 +17,7 @@ namespace API_PCC.Controllers
     [ApiController]
     public class BloodCompsController : ControllerBase
     {
+        DBMethods dbmet = new DBMethods();
         private readonly PCC_DEVContext _context;
         public BloodCompsController(PCC_DEVContext context)
         {
@@ -21,13 +26,24 @@ namespace API_PCC.Controllers
 
         public class BloodCompSearchFilter
         {
-            public string? bloodCode { get; set; }
-            public string? bloodDesc { get; set; }
+            public string searchParam { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
         }
 
         // POST: BloodComps/list
+        public class BloodCompositionModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public List<ABloodComp_2> items { get; set; }
+
+
+        }
         [HttpPost]
         public async Task<ActionResult<IEnumerable<ABloodComp>>> list(BloodCompSearchFilter searchFilter)
         {
@@ -43,26 +59,24 @@ namespace API_PCC.Controllers
             int totalPages = 0;
 
 
-            var bloodCompList = _context.ABloodComps.AsNoTracking();
-            bloodCompList = bloodCompList.Where(bloodComp => !bloodComp.DeleteFlag);
+            //var bloodCompList = _context.ABloodComps.AsNoTracking();
+            //bloodCompList = bloodCompList.Where(bloodComp => !bloodComp.DeleteFlag);
             try
             {
-                if (searchFilter.bloodCode != null && searchFilter.bloodCode != "")
-                {
-                    bloodCompList = bloodCompList.Where(bloodComp => bloodComp.BloodCode.Contains(searchFilter.bloodCode));
-                }
+                //if (searchFilter.searchParam != null && searchFilter.searchParam != "")
+                //{
+                //    //bloodCompList = dbmet.getBlodyList().Where(bloodComp => bloodComp.BloodCode.Contains(searchFilter.searchParam));
 
-                if (searchFilter.bloodDesc != null && searchFilter.bloodDesc != "")
-                {
-                    bloodCompList = bloodCompList.Where(bloodComp => bloodComp.BloodDesc.Contains(searchFilter.bloodDesc));
-                }
+                //}
 
+                var bloodCompList = dbmet.getBlodyList().Where(a => a.BloodCode.ToUpper().Contains(searchFilter.searchParam.ToUpper())).ToList();
                 totalItems = bloodCompList.ToList().Count();
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
                 items = bloodCompList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
-
-                var result = new List<BloodCompsPagedModel>();
-                var item = new BloodCompsPagedModel();
+                //var bloodcompo = convertDataRowListToBloodCompList(items);
+                var result = new List<BloodCompositionModel>();
+                var item = new BloodCompositionModel();
+         
 
                 int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
                 item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
@@ -86,7 +100,18 @@ namespace API_PCC.Controllers
                 return Problem(ex.GetBaseException().ToString());
             }
         }
+        public partial class ABloodComp_2
+        {
+            public int Id { get; set; }
 
+            public string BloodCode { get; set; }
+
+            public string BloodDesc { get; set; }
+
+            public string Status { get; set; }
+            public string DateCreated { get; set; }
+        }
+        
         // GET: BloodComps/search/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ABloodComp>> search(int id)

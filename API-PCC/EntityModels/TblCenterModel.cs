@@ -9,11 +9,19 @@ public partial class TblCenterModel
 {
     public int Id { get; set; }
 
-    public string CenterName { get; set; }
+    public string? CenterName { get; set; }
 
-    public string CenterDesc { get; set; }
+    public string? CenterDesc { get; set; }
+    public string? CenterCode { get; set; }
+    public string? Address { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? MobileNumber { get; set; }
+    public string? TelNumber { get; set; }
+    public string? Email { get; set; }
+    public string? StatusName { get; set; }
 
     public int? Status { get; set; }
+    public int? StatusId { get; set; }
 
     public DateTime? DateCreated { get; set; }
 
@@ -21,15 +29,15 @@ public partial class TblCenterModel
 
     public bool DeleteFlag { get; set; }
 
-    public string CreatedBy { get; set; }
+    public string? CreatedBy { get; set; }
 
-    public string UpdatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
 
     public DateTime? DateDeleted { get; set; }
 
-    public string DeletedBy { get; set; }
+    public string? DeletedBy { get; set; }
 
     public DateTime? DateRestored { get; set; }
 
-    public string RestoredBy { get; set; }
+    public string? RestoredBy { get; set; }
 }

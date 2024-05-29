@@ -15,7 +15,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using static API_PCC.Manager.DBMethods;
-
+using System.Linq.Dynamic.Core;
 namespace API_PCC.Controllers
 {
     [Authorize("ApiKey")]
@@ -36,24 +36,18 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<HerdPagedModel>>> search(BuffHerdSearchFilterModel searchFilter)
         {
-            sanitizeInput(searchFilter);
             validateDate(searchFilter);
             if (!searchFilter.sortBy.Field.IsNullOrEmpty())
             {
                 if (searchFilter.sortBy.Field.ToLower().Equals("cowlevel"))
                 {
-                    searchFilter.sortBy.Field = "HERD_SIZE";
+                    searchFilter.sortBy.Field = "HerdSize";
                 }
-                else
-                {
-                    SortRequestToColumnNameConverter.convert(searchFilter.sortBy);
-                }
-
             }
             try
             {
-                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSearchQuery(searchFilter), searchFilter.sortBy, populateSqlParameters(searchFilter));
-                var result = buildHerdPagedModel(searchFilter, queryResult);
+                List<HBuffHerd> buffHerdList = await buildHerdSearchQuery(searchFilter).ToListAsync();
+                var result = buildHerdPagedModel(searchFilter, buffHerdList);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -61,21 +55,87 @@ namespace API_PCC.Controllers
                 return Problem(ex.GetBaseException().ToString());
             }
         }
+        private IQueryable<HBuffHerd> buildHerdArchiveQuery(BuffHerdSearchFilterModel searchFilter)
+        {
+            IQueryable<HBuffHerd> query = _context.HBuffHerds;
 
+            query = query
+                .Include(herd => herd.buffaloType)
+                .Include(herd => herd.feedingSystem);
+
+            query = query.Where(herd => herd.DeleteFlag);
+
+            return query;
+        }
+
+        private IQueryable<HBuffHerd> buildHerdSearchQuery(BuffHerdSearchFilterModel searchFilter)
+        {
+            IQueryable<HBuffHerd> query = _context.HBuffHerds;
+
+            query = query
+                .Include(herd => herd.buffaloType)
+                .Include(herd => herd.feedingSystem).Where(a=> !a.DeleteFlag);
+    
+            // assuming that you return all records when nothing is specified in the filter
+
+            if (!searchFilter.searchValue.IsNullOrEmpty())
+                query = query.Where(herd =>
+                               herd.HerdCode.Contains(searchFilter.searchValue) ||
+                               herd.HerdName.Contains(searchFilter.searchValue) );
+            if (!searchFilter.filterBy.Status.IsNullOrEmpty())
+                query = query.Where(herd =>
+                               herd.Status == int.Parse(searchFilter.filterBy.Status));
+            if (!searchFilter.filterBy.BreedTypeCode.IsNullOrEmpty())
+                query = query.Where(herd => herd.buffaloType.Any(buffaloType => buffaloType.BreedTypeCode.Equals(searchFilter.filterBy.BreedTypeCode)));
+
+            if (!searchFilter.filterBy.HerdClassDesc.IsNullOrEmpty())
+                query = query.Where(herd => herd.HerdClassDesc.Equals(searchFilter.filterBy.HerdClassDesc));
+
+            if (!searchFilter.filterBy.feedingSystemCode.IsNullOrEmpty())
+                query = query.Where(herd => herd.feedingSystem.Any(feedingSystem => feedingSystem.FeedingSystemCode.Equals(searchFilter.filterBy.feedingSystemCode)));
+
+            if (!searchFilter.dateFrom.IsNullOrEmpty())
+                query = query.Where(herd => herd.DateCreated >= DateTime.Parse(searchFilter.dateFrom));
+
+            if (!searchFilter.dateTo.IsNullOrEmpty())
+                query = query.Where(herd => herd.DateCreated <= DateTime.Parse(searchFilter.dateTo));
+
+
+            if (!searchFilter.sortBy.Field.IsNullOrEmpty())
+            {
+
+                if (!searchFilter.sortBy.Sort.IsNullOrEmpty())
+                {
+                    query = query.OrderBy(searchFilter.sortBy.Field + " " + searchFilter.sortBy.Sort);
+                }
+                else
+                {
+                    query = query.OrderBy(searchFilter.sortBy.Field + " asc");
+
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(herd => herd.Id);
+            }
+
+            return query;
+        }
         // GET: BuffHerds/view/5
         [HttpGet("{herdCode}")]
         public async Task<ActionResult<BuffHerdViewResponseModel>> view(String herdCode)
         {
-            DataTable dt = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdViewQuery(), null, populateSqlParameters(herdCode));
+            var buffHerdModel = await _context.HBuffHerds
+               .Include(herd => herd.buffaloType)
+               .Include(herd => herd.feedingSystem)
+               .Where(herd => !herd.DeleteFlag && herd.HerdCode.Equals(herdCode))
+               .FirstOrDefaultAsync();
 
-            if (dt.Rows.Count == 0)
+            if (buffHerdModel == null)
             {
                 return Conflict("No records found!");
             }
-            var buffHerdModel = convertDataRowToHerdModel(dt.Rows[0]);
             var viewResponseModel = populateViewResponseModel(buffHerdModel);
-
-            
             return Ok(viewResponseModel);
         }
 
@@ -83,9 +143,9 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<HBuffHerd>>> archive(BuffHerdSearchFilterModel searchFilter)
         {
-            DataTable dt = db.SelectDb(QueryBuilder.buildHerdArchiveQuery()).Tables[0];
+            List<HBuffHerd> buffHerdList = await buildHerdArchiveQuery(searchFilter).ToListAsync();
 
-            var result = buildHerdPagedModel(searchFilter, dt);
+            var result = buildHerdPagedModel(searchFilter, buffHerdList);
             return Ok(result);
         }
 
@@ -109,7 +169,7 @@ namespace API_PCC.Controllers
                 return Conflict("No Herd Classification records matched!");
             }
 
-            var buffHerd = convertDataRowToHerdModel(buffHerdDataTable.Rows[0]);
+            //var buffHerd = convertDataRowToHerdModel(buffHerdDataTable.Rows[0]);
 
             DataTable buffHerdDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSelectDuplicateQueryByIdHerdNameHerdCode(), null, populateSqlParameters(id, registrationModel));
 
@@ -118,6 +178,11 @@ namespace API_PCC.Controllers
             {
                 return Conflict("Entity already exists");
             }
+
+            var buffHerd = _context.HBuffHerds
+                    .Include(x => x.buffaloType)
+                    .Include(x => x.feedingSystem)
+                    .Single(x => x.Id == id);
 
             DataTable farmOwnerRecordsCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmOwnerSearchQueryById(), null, populateSqlParameters(buffHerd.Owner));
 
@@ -141,12 +206,18 @@ namespace API_PCC.Controllers
             try
             {
                 buffHerd = populateBuffHerd(buffHerd, registrationModel);
+
+                buffHerd.buffaloType.Clear();
+                buffHerd.feedingSystem.Clear();
+
+                populateFeedingSystemAndBuffaloType(buffHerd, registrationModel);
+
                 buffHerd.Owner = farmOwner.Id;
                 buffHerd.DateUpdated = DateTime.Now;
                 buffHerd.UpdatedBy = registrationModel.UpdatedBy;
 
                 _context.Entry(buffHerd).State = EntityState.Modified;
-                 _context.SaveChanges();
+                _context.SaveChanges();
 
                 return Ok("Update Successful!");
             }
@@ -174,7 +245,7 @@ namespace API_PCC.Controllers
 
                 var BuffHerdModel = buildBuffHerd(registrationModel);
                 DataTable farmOwnerRecordsCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmOwnerSearchQueryByFirstNameAndLastName(), null, populateSqlParametersFarmer(registrationModel.Owner));
-            
+
                 if (farmOwnerRecordsCheck.Rows.Count == 0)
                 {
                     // Create new Farm Owner Record
@@ -198,11 +269,14 @@ namespace API_PCC.Controllers
 
                     var farmOwner = convertDataRowToFarmOwnerEntity(farmOwnerRecord.Rows[0]);
                     BuffHerdModel.Owner = farmOwner.Id;
-                } else
+                }
+                else
                 {
                     var farmOwner = convertDataRowToFarmOwnerEntity(farmOwnerRecordsCheck.Rows[0]);
                     BuffHerdModel.Owner = farmOwner.Id;
                 }
+
+                populateFeedingSystemAndBuffaloType(BuffHerdModel, registrationModel);
 
                 BuffHerdModel.CreatedBy = registrationModel.CreatedBy;
                 BuffHerdModel.DateCreated = DateTime.Now;
@@ -218,7 +292,35 @@ namespace API_PCC.Controllers
                 return Problem(ex.GetBaseException().ToString());
             }
         }
+        private void populateFeedingSystemAndBuffaloType(HBuffHerd buffHerd, BuffHerdBaseModel baseModel)
+        {
+            var buffaloTypes = new List<HBuffaloType>();
+            var feedingSystems = new List<HFeedingSystem>();
 
+            foreach (string breedTypeCode in baseModel.BreedTypeCodes)
+            {
+                DataTable buffaloType = db.SelectDb_WithParamAndSorting(QueryBuilder.buildBuffaloTypeSearchQueryByBreedTypeCode(), null, populateSqlParametersBuffaloType(breedTypeCode));
+                if (buffaloType.Rows.Count == 0)
+                {
+                    break;
+                }
+                var buffaloTypeRecord = convertDataRowToBuffaloType(buffaloType.Rows[0]);
+                _context.Attach(buffaloTypeRecord);
+                buffHerd.buffaloType.Add(buffaloTypeRecord);
+            }
+
+            foreach (string feedingSystemCode in baseModel.FeedingSystemCodes)
+            {
+                DataTable feedingSystem = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFeedingSystemSearchByFeedingSystemCode(), null, populateSqlParametersFeedingSystem(feedingSystemCode));
+                if (feedingSystem.Rows.Count == 0)
+                {
+                    break;
+                }
+                var feedingSystemRecord = convertDataRowToFeedingSystem(feedingSystem.Rows[0]);
+                _context.Attach(feedingSystemRecord);
+                buffHerd.feedingSystem.Add(feedingSystemRecord);
+            }
+        }
         private TblFarmOwner convertDataRowToFarmOwnerEntity(DataRow dataRow)
         {
             var farmOwner = DataRowToObject.ToObject<TblFarmOwner>(dataRow);
@@ -299,19 +401,19 @@ namespace API_PCC.Controllers
             }
         }
 
-        private List<HerdPagedModel> buildHerdPagedModel(BuffHerdSearchFilterModel searchFilter, DataTable dt)
+        private List<HerdPagedModel> buildHerdPagedModel(BuffHerdSearchFilterModel searchFilter, List<HBuffHerd> buffHerdList)
         {
 
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
 
-            int totalItems = dt.Rows.Count;
+            int totalItems = buffHerdList.Count;
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
+            items = buffHerdList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var herdModels = convertDataRowListToHerdModelList(items);
-            List<BuffHerdListResponseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(herdModels);
+            //var herdModels = convertDataRowListToHerdModelList(items);
+            List<BuffHerdListResponseModel> buffHerdBaseModels = convertBuffHerdToResponseModelList(buffHerdList);
 
             var result = new List<HerdPagedModel>();
             var item = new HerdPagedModel();
@@ -332,7 +434,6 @@ namespace API_PCC.Controllers
 
             return result;
         }
-
         private List<HBuffHerd> convertDataRowListToHerdModelList(List<DataRow> dataRowList)
         {
             var herdModelList = new List<HBuffHerd>();
@@ -345,7 +446,6 @@ namespace API_PCC.Controllers
 
             return herdModelList;
         }
-
         private HBuffHerd convertDataRowToHerdModel(DataRow dataRow)
         {
             return DataRowToObject.ToObject<HBuffHerd>(dataRow);
@@ -355,6 +455,17 @@ namespace API_PCC.Controllers
         {
             return DataRowToObject.ToObject<HHerdClassification>(dataRow);
         }
+
+        private HBuffaloType convertDataRowToBuffaloType(DataRow dataRow)
+        {
+            return DataRowToObject.ToObject<HBuffaloType>(dataRow);
+        }
+
+        private HFeedingSystem convertDataRowToFeedingSystem(DataRow dataRow)
+        {
+            return DataRowToObject.ToObject<HFeedingSystem>(dataRow);
+        }
+
 
 
         private HBuffHerd populateBuffHerd(HBuffHerd buffHerd, BuffHerdUpdateModel updateModel)
@@ -368,10 +479,6 @@ namespace API_PCC.Controllers
             {
                 buffHerd.HerdCode = updateModel.HerdCode;
             }
-            if (updateModel.BreedTypeCode != null && updateModel.BreedTypeCode != "")
-            {
-                buffHerd.BreedTypeCode = updateModel.BreedTypeCode;
-            }
             if (updateModel.FarmAffilCode != null && updateModel.FarmAffilCode != "")
             {
                 buffHerd.FarmAffilCode = updateModel.FarmAffilCode;
@@ -379,10 +486,6 @@ namespace API_PCC.Controllers
             if (updateModel.HerdClassDesc != null && updateModel.HerdClassDesc != "")
             {
                 buffHerd.HerdClassDesc = updateModel.HerdClassDesc;
-            }
-            if (updateModel.FeedingSystemCode != null && updateModel.FeedingSystemCode != "")
-            {
-                buffHerd.FeedingSystemCode = updateModel.FeedingSystemCode;
             }
             if (updateModel.FarmManager != null && updateModel.FarmManager != "")
             {
@@ -398,8 +501,6 @@ namespace API_PCC.Controllers
             }
             return buffHerd;
         }
-
-
         private HBuffHerd buildBuffHerd(BuffHerdBaseModel registrationModel)
         {
             var BuffHerdModel = new HBuffHerd()
@@ -407,10 +508,8 @@ namespace API_PCC.Controllers
                 HerdName = registrationModel.HerdName,
                 HerdCode = registrationModel.HerdCode,
                 HerdSize = registrationModel.HerdSize,
-                BreedTypeCode = registrationModel.BreedTypeCode,
                 FarmAffilCode = registrationModel.FarmAffilCode,
                 HerdClassDesc = registrationModel.HerdClassDesc,
-                FeedingSystemCode = registrationModel.FeedingSystemCode,
                 FarmManager = registrationModel.FarmManager,
                 FarmAddress = registrationModel.FarmAddress,
                 OrganizationName = registrationModel.OrganizationName,
@@ -420,16 +519,18 @@ namespace API_PCC.Controllers
 
             return BuffHerdModel;
         }
-
         private List<BuffHerdListResponseModel> convertBuffHerdToResponseModelList(List<HBuffHerd> buffHerdList)
         {
             var buffHerdResponseModels = new List<BuffHerdListResponseModel>();
             foreach (HBuffHerd buffHerd in buffHerdList)
             {
+                string tbl = $@"SELECT  Herd_Class_Desc FROM H_Herd_Classification where Herd_Class_Code='" + buffHerd.HerdClassDesc + "'";
+                DataTable tbl_hc = db.SelectDb(tbl).Tables[0];
                 var buffHerdResponseModel = new BuffHerdListResponseModel()
-                {
+                {  
+                    Id=buffHerd.Id.ToString(),
                     HerdName = buffHerd.HerdName,
-                    HerdClassification = buffHerd.HerdClassDesc,
+                    HerdClassification = tbl_hc.Rows[0]["Herd_Class_Desc"].ToString(),
                     CowLevel = buffHerd.HerdSize.ToString(),
                     FarmManager = buffHerd.FarmManager,
                     HerdCode = buffHerd.HerdCode,
@@ -491,7 +592,7 @@ namespace API_PCC.Controllers
 
         private HHerdClassification populateHerdClassification(string herdClassDesc)
         {
-            DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryByHerdClassDesc(), null, populateSqlParametersHerdClassDesc(herdClassDesc));
+            DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdClassificationSearchQueryByHerdClassDesc2(), null, populateSqlParametersHerdClassDesc(herdClassDesc));
             if (queryResult.Rows.Count == 0)
             {
                 return new HHerdClassification()
@@ -709,7 +810,34 @@ namespace API_PCC.Controllers
 
             return sqlParameters.ToArray();
         }
+        private SqlParameter[] populateSqlParametersBuffaloType(String breedTypeCode)
+        {
 
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "BreedTypeCode",
+                Value = breedTypeCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+        private SqlParameter[] populateSqlParametersFeedingSystem(String feedingSystemCode)
+        {
+
+            var sqlParameters = new List<SqlParameter>();
+
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "FeedCode",
+                Value = feedingSystemCode ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
         private void sanitizeInput(BuffHerdSearchFilterModel searchFilter)
         {
             searchFilter.searchValue = StringSanitizer.sanitizeString(searchFilter.searchValue);
@@ -725,18 +853,18 @@ namespace API_PCC.Controllers
         private BuffHerdViewResponseModel populateViewResponseModel(HBuffHerd buffHerd)
         {
             var herdClassification = populateHerdClassification(buffHerd.HerdClassDesc);
+            string tbl = $@"SELECT  Herd_Class_Desc,Herd_Class_Code FROM H_Herd_Classification where Herd_Class_Code='" + buffHerd.HerdClassDesc + "'";
+            DataTable tbl_hc = db.SelectDb(tbl).Tables[0];
             var viewResponseModel = new BuffHerdViewResponseModel()
             {
                 id = buffHerd.Id,
                 HerdName = buffHerd.HerdName,
-                HerdClassDesc = herdClassification.HerdClassDesc,
-                HerdClassCode = herdClassification.HerdClassCode,
+                HerdClassDesc = tbl_hc.Rows[0]["Herd_Class_Desc"].ToString(),
+                HerdClassCode = tbl_hc.Rows[0]["Herd_Class_Code"].ToString(),
                 HerdSize = buffHerd.HerdSize,
                 FarmManager = buffHerd.FarmManager,
                 HerdCode = buffHerd.HerdCode,
-                BreedTypeCode = buffHerd.BreedTypeCode,
                 FarmAffilCode = buffHerd.FarmAffilCode,
-                FeedingSystemCode = buffHerd.FeedingSystemCode,
                 FarmAddress = buffHerd.FarmAddress,
                 Owner = populateOwner(buffHerd.Owner),
                 Status = buffHerd.Status,
@@ -753,6 +881,21 @@ namespace API_PCC.Controllers
                 DateRestored = buffHerd.DateRestored,
                 RestoredBy = buffHerd.RestoredBy
             };
+
+            var buffaloTypeList = new List<string>();
+            var feedingSystemList = new List<string>();
+            foreach (HBuffaloType buffaloType in buffHerd.buffaloType)
+            {
+                buffaloTypeList.Add(buffaloType.BreedTypeCode);
+            }
+
+            foreach (HFeedingSystem feedingSystem in buffHerd.feedingSystem)
+            {
+                feedingSystemList.Add(feedingSystem.FeedingSystemCode);
+            }
+
+            viewResponseModel.BreedTypeCodeList.AddRange(buffaloTypeList);
+            viewResponseModel.FeedingSystemCodeList.AddRange(feedingSystemList);
             return viewResponseModel;
         }
 

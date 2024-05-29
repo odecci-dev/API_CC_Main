@@ -13,6 +13,7 @@ using System.Data;
 using System.Text;
 using static API_PCC.Manager.DBMethods;
 using System.Data.SqlClient;
+using NuGet.Packaging;
 
 namespace API_PCC.Controllers
 {
@@ -96,7 +97,45 @@ namespace API_PCC.Controllers
             public string Password { get; set; }
         }
 
-       
+        public partial class RegistrationModel
+        {
+            public string Username { get; set; }
+
+            public string Password { get; set; }
+
+            public string Fname { get; set; }
+
+            public string? Lname { get; set; }
+
+            public string? Mname { get; set; }
+
+            public string Email { get; set; }
+
+            public string Gender { get; set; }
+
+            public string? EmployeeId { get; set; }
+
+            public string Jwtoken { get; set; }
+
+            public string? FilePath { get; set; }
+
+            public int? Active { get; set; }
+
+            public string? Cno { get; set; }
+
+            public string? Address { get; set; }
+
+            public int? Status { get; set; }
+            public string? CreatedBy { get; set; }
+
+            public int? CenterId { get; set; }
+
+            public bool? AgreementStatus { get; set; }
+
+            public string UserType { get; set; }
+            public Dictionary<string, List<int>>? userAccess { get; set; }
+        }
+
         // POST: user/login
 
         [HttpPost]
@@ -157,49 +196,56 @@ namespace API_PCC.Controllers
             return Ok(userList);
         }
 
-
+        public partial class approvalId
+        {
+            public int Id { get; set; }
+        }
         [HttpPost]
-        public async Task<IActionResult> ApproveRegistration(TblRegistrationOtpmodel data)
+        public async Task<IActionResult> ApproveRegistration(List<approvalId> data)
         {
             try
             {
+                string status = "";
                 if (_context.TblRegistrationOtpmodels == null)
                 {
                     return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
                 }
-                var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 3).FirstOrDefault();
+                for(int x=0;x<data.Count; x++)
+                { 
+                    var registOtpModels = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Id == data[x].Id ).FirstOrDefault();
 
-                if (registOtpModels != null)
-                {
-                    if (registOtpModels.Otp == data.Otp)
+                    if (registOtpModels != null)
                     {
-                        registOtpModels.Status = 5;
-                        _context.Entry(registOtpModels).State = EntityState.Modified;
+                        if (registOtpModels.Id == data[x].Id)
+                         {
+                            registOtpModels.Status = 5;
+                            _context.Entry(registOtpModels).State = EntityState.Modified;
 
-                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
-                        _context.Entry(userModel).State = EntityState.Modified;
-                        userModel.Status = 5;
-                        await _context.SaveChangesAsync();
+                            var userModel = _context.TblUsersModels.Where(user => user.Id == data[x].Id).FirstOrDefault();
+                            _context.Entry(userModel).State = EntityState.Modified;
+                            userModel.Status = 5;
+                            await _context.SaveChangesAsync();
 
-                        MailSender email = new MailSender(_emailsettings);
-                        email.sendApprovalMail(data.Email);
-                        return Ok("OTP verification successful!");
+                            return Ok("Approved Registration");
+                        }
+                        else
+                        {
+                            //var userModel = _context.TblUsersModels.Where(user => user.Id == data.Id).FirstOrDefault();
+                            //_context.Entry(userModel).State = EntityState.Modified;
+                            //userModel.Status = 4;
+                            //await _context.SaveChangesAsync();
+
+                            return Problem("No record found.");
+                        }
+
                     }
                     else
                     {
-                        var userModel = _context.TblUsersModels.Where(user => user.Email == data.Email).FirstOrDefault();
-                        _context.Entry(userModel).State = EntityState.Modified;
-                        userModel.Status = 4;
-                        await _context.SaveChangesAsync();
-
-                        return Problem("Incorrect OTP. Please try again!");
+                        return BadRequest("Record not found on database!");
                     }
 
                 }
-                else
-                {
-                    return BadRequest("Record not found on database!");
-                }
+                return Ok("Approved Registration");
             }
 
             catch (Exception ex)
@@ -253,48 +299,12 @@ namespace API_PCC.Controllers
                         filepath = userTbl.FilePath.Replace(" ", "%20");
                     }
                     string fullname = userTbl.Fname + ", " + userTbl.Mname + ", " + userTbl.Lname;
-                    string user_insert = $@"INSERT INTO [dbo].[tbl_UsersModel]
-                                           ([Username]
-                                           ,[Password]
-                                           ,[Fullname]
-                                           ,[Fname]
-                                           ,[Lname]
-                                           ,[Mname]
-                                           ,[Email]
-                                           ,[Gender]
-                                           ,[EmployeeID]
-                                           ,[JWToken]
-                                           ,[FilePath]
-                                           ,[Active]
-                                           ,[Cno]
-                                           ,[Address]
-                                           ,[Status]
-                                           ,[Date_Created]
-                                           ,[CenterId]
-                                           ,[AgreementStatus]
-                                           ,[Delete_Flag])
-                                     VALUES
-                                           ('" + userTbl.Username + "'" +
-                                            ",'" + Cryptography.Encrypt(userTbl.Password) + "'," +
-                                           "'" + fullname + "'," +
-                                           "'" + userTbl.Fname + "'," +
-                                           "'" + userTbl.Lname + "'," +
-                                           "'" + userTbl.Mname + "'," +
-                                           "'" + userTbl.Email + "'," +
-                                           "'" + userTbl.Gender + "'," +
-                                           "'" + userTbl.EmployeeId + "'," +
-                                           "'" + string.Concat(strtokenresult.TakeLast(15)) + "'," +
-                                           "'" + filepath + "'," +
-                                           "'1'," +
-                                           "'" + userTbl.Cno + "'," +
-                                           "'" + userTbl.Address + "'," +
-                                           "'6'," +
-                                           "'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," +
-                                           "'" + userTbl.CenterId + "'," +
-                                           "'" + userTbl.AgreementStatus + "'," +
-                                           "'0')";
-                    db.DB_WithParam(user_insert);
+                    var userModel = buildUserModel(userTbl, fullname, strtokenresult);
+                    populateUserAccess(userModel, userTbl);
 
+                    _context.TblUsersModels.Add(userModel);
+
+                    await _context.SaveChangesAsync();
 
                     const string chars = "0123456789";
                     Random random_OTP = new Random();
@@ -308,7 +318,7 @@ namespace API_PCC.Controllers
                     items.Email = userTbl.Email;
                     items.Otp = otp_res.ToString();
 
-                    MailSender email =  new MailSender(_emailsettings);
+                    MailSender email = new MailSender(_emailsettings);
                     email.sendOtpMail(items);
 
                     string OTPInsert = $@"insert into tbl_RegistrationOTPModel (email,OTP,status) values ('" + userTbl.Email + "','" + otp_res + "','4')";
@@ -335,6 +345,62 @@ namespace API_PCC.Controllers
             return Ok(result);
         }
 
+        private TblUsersModel buildUserModel(RegistrationModel registrationModel, string fullName, string strtokenresult)
+        {
+            var userModel = new TblUsersModel()
+            {
+                Username = registrationModel.Username,
+                Password = Cryptography.Encrypt(registrationModel.Password),
+                Fullname = fullName,
+                Fname = registrationModel.Fname,
+                Lname = registrationModel.Lname,
+                Mname = registrationModel.Mname,
+                Email = registrationModel.Email,
+                Gender = registrationModel.Gender,
+                EmployeeId = registrationModel.EmployeeId,
+                Jwtoken = string.Concat(strtokenresult.TakeLast(15)),
+                FilePath = registrationModel.FilePath,
+                Active = 1,
+                Cno = registrationModel.Cno,
+                Address = registrationModel.Address,
+                Status = registrationModel.Status,
+                DateCreated = DateTime.Now,
+                CenterId = registrationModel.CenterId,
+                AgreementStatus = registrationModel.AgreementStatus,
+                DeleteFlag = false
+            };
+            return userModel;
+        }
+        private void populateUserAccess(TblUsersModel usersModel, RegistrationModel registrationModel)
+        {
+            var userAccessModels = new List<UserAccessModel>();
+
+            foreach (var access in registrationModel.userAccess)
+            {
+                var userAccessTypeList = new List<UserAccessType>();
+                foreach (int userAccess in access.Value)
+                {
+                    var userAccessType = new UserAccessType()
+                    {
+                        Code = userAccess
+                    };
+                    _context.Attach(userAccessType);
+
+                    userAccessTypeList.Add(userAccessType);
+                }
+
+                var userAccessModel = new UserAccessModel()
+                {
+                    module = access.Key
+                };
+
+                _context.Attach(userAccessModel);
+
+                userAccessModel.userAccess.AddRange(userAccessTypeList);
+                userAccessModels.Add(userAccessModel);
+            }
+            usersModel.userAccessModels.AddRange(userAccessModels);
+        }
 
         // POST: user/rememberPassword
         [HttpPost]

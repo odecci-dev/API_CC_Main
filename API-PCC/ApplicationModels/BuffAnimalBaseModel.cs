@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string AnimalIdNumber { get; set; }
         public string AnimalName { get; set; }
-        public String Photo { get; set; }
+        public String? Photo { get; set; }
         public string HerdCode { get; set; }
         public string RfidNumber { get; set; }
         public DateTime? DateOfBirth { get; set; }
@@ -18,7 +18,7 @@
         public string Marking { get; set; }
         public string TypeOfOwnership { get; set; }
         public string BloodCode { get; set; }
-        public Sire Sire { get; set; }
-        public Dam Dam { get; set; }
+        public Sire? Sire { get; set; }
+        public Dam? Dam { get; set; }
     }
 }

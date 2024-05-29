@@ -1,6 +1,7 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.ApplicationModels.Common;
 using API_PCC.Data;
+using API_PCC.Manager;
 using API_PCC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,10 @@ namespace API_PCC.Controllers
     public class CenterController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
-
+        DBMethods dbmet = new DBMethods();
         public class CenterSearchFilter
         {
-            public string? CenterName { get; set; }
-            public string? CenterDesc { get; set; }
+            public string? searchParam { get; set; }
             public int page { get; set; }
             public int pageSize { get; set; }
         }
@@ -44,19 +44,15 @@ namespace API_PCC.Controllers
             int totalPages = 0;
 
 
-            var centerList = _context.TblCenterModels.AsNoTracking();
-            centerList = centerList.Where(centerModel => !centerModel.DeleteFlag);
+            var centerList = dbmet.getcenterlist().Where(a=> !a.DeleteFlag ).ToList();
             try
             {
-                if (searchFilter.CenterName != null && searchFilter.CenterName != "")
+                if (searchFilter.searchParam != null && searchFilter.searchParam != "")
                 {
-                    centerList = centerList.Where(centerModel => centerModel.CenterName.Contains(searchFilter.CenterName));
+                    centerList = centerList.Where(centerModel => centerModel.CenterName.Contains(searchFilter.searchParam)).ToList();
                 }
 
-                if (searchFilter.CenterDesc != null && searchFilter.CenterDesc != "")
-                {
-                    centerList = centerList.Where(centerModel => centerModel.CenterDesc.Contains(searchFilter.CenterDesc));
-                }
+             
 
                 totalItems = centerList.ToList().Count();
                 totalPages = (int)Math.Ceiling((double)totalItems / pagesize);

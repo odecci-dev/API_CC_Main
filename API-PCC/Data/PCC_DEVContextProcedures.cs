@@ -56,7 +56,7 @@ namespace API_PCC.Data
                 SqlDbType = System.Data.SqlDbType.Int,
             };
 
-            var sqlParameters = new []
+            var sqlParameters = new[]
             {
                 new SqlParameter
                 {

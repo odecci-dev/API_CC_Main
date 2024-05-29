@@ -1,9 +1,18 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.Data;
 using API_PCC.EntityModels;
+using API_PCC.Manager;
+using API_PCC.Models;
+using API_PCC.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Utilities;
+using System.Data;
+using System.Drawing.Printing;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace API_PCC.Controllers
 {
@@ -13,7 +22,7 @@ namespace API_PCC.Controllers
     public class FarmOwnerController : ControllerBase
     {
         private readonly PCC_DEVContext _context;
-
+        DbManager db = new DbManager();
         public FarmOwnerController(PCC_DEVContext context)
         {
             _context = context;
@@ -23,77 +32,82 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<TblFarmOwner>>> list(FarmOwnerSearchFilterModel searchFilter)
         {
-            if (_context.TblFarmOwners == null)
+            searchFilter.searchParam = StringSanitizer.sanitizeString(searchFilter.searchParam);
+            try
             {
-                return Problem("Entity set 'PCC_DEVContext.TblFarmOwners' is null!");
+                DataTable queryResult = db.SelectDb_WithParamAndSorting(QueryBuilder.buildFarmOwnerSearchQueryByFirstNameOrLastName(searchFilter), null, populateSqlParameters(searchFilter));
+                var result = buildFarmOwnerPagedModel(searchFilter, queryResult);
+                return Ok(result);
             }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
 
+        private List<FarmOwnerPagedModel> buildFarmOwnerPagedModel(FarmOwnerSearchFilterModel searchFilter, DataTable dt)
+        {
             int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
             var items = (dynamic)null;
             int totalItems = 0;
             int totalPages = 0;
 
+            totalItems = dt.Rows.Count;
+            totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = dt.AsEnumerable().Skip((page - 1) * pagesize).Take(pagesize).ToList();
 
-            var farmOwnerList = _context.TblFarmOwners.AsNoTracking();
-            try
-            {
-                if (searchFilter.Name != null && searchFilter.Name != "")
-                {
-                    farmOwnerList = farmOwnerList.Where(farmOwner => farmOwner.FirstName.Contains(searchFilter.Name));
-                }
+            var farmOwners = convertDataRowListToFarmOwnerList(items);
 
-                if (searchFilter.LastName != null && searchFilter.LastName != "")
-                {
-                    farmOwnerList = farmOwnerList.Where(farmOwner => farmOwner.LastName.Contains(searchFilter.LastName));
-                }
+            var result = new List<FarmOwnerPagedModel>();
+            var item = new FarmOwnerPagedModel();
 
-                totalItems = farmOwnerList.ToList().Count();
-                totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-                items = farmOwnerList.Skip((page - 1) * pagesize).Take(pagesize).ToList();
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
 
-                var result = new List<FarmOwnerPagedModel>();
-                var item = new FarmOwnerPagedModel();
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.items = farmOwners;
+            result.Add(item);
 
-                int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
-                item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
-                int page_prev = pages - 1;
-
-                double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
-                int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
-                item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
-                item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
-                item.TotalPage = t_records.ToString();
-                item.PageSize = pagesize.ToString();
-                item.TotalRecord = totalItems.ToString();
-                item.items = items;
-                result.Add(item);
-                return Ok(result);
-            }
-
-            catch (Exception ex)
-            {
-
-                return Problem(ex.GetBaseException().ToString());
-            }
+            return result;
         }
 
-        // GET: farmOwners/search/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TblFarmOwner>> search(int id)
+        private SqlParameter[] populateSqlParameters(FarmOwnerSearchFilterModel searchFilterModel)
         {
-            if (_context.TblFarmOwners == null)
-            {
-                return Problem("Entity set 'PCC_DEVContext.TblFarmOwners' is null!");
-            }
-            var farmOwner = await _context.TblFarmOwners.FindAsync(id);
 
-            if (farmOwner == null)
-            {
-                return Conflict("No records found!");
-            }
+            var sqlParameters = new List<SqlParameter>();
 
-            return farmOwner;
+            sqlParameters.Add(new SqlParameter
+            {
+                ParameterName = "SearchParam",
+                Value = searchFilterModel.searchParam ?? Convert.DBNull,
+                SqlDbType = System.Data.SqlDbType.VarChar,
+            });
+
+            return sqlParameters.ToArray();
+        }
+
+        private List<TblFarmOwner> convertDataRowListToFarmOwnerList(List<DataRow> dataRowList)
+        {
+            var farmOwnerList = new List<TblFarmOwner>();
+
+          
+                foreach (DataRow dataRow in dataRowList)
+                {
+                    var herdModel = DataRowToObject.ToObject<TblFarmOwner>(dataRow);
+                    farmOwnerList.Add(herdModel);
+                }
+            
+           
+
+            return farmOwnerList;
         }
 
         // PUT: farmOwners/update/5
